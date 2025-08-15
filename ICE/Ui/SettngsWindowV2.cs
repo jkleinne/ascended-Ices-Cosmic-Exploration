@@ -121,27 +121,27 @@ internal class SettingsWindowV2 : Window
 
     }
 
-    private bool animationLockAbandon = C.AnimationLockAbandon;
-    private bool stopOnAbort = C.StopOnAbort;
-    private bool rejectUnknownYesNo = C.RejectUnknownYesno;
-    private bool delayGrabMission = C.DelayGrabMission;
-    private int delayAmount = C.DelayIncrease;
-    private bool delayCraft = C.DelayCraft;
-    private int delayCraftAmount = C.DelayCraftIncrease;
+    private bool animationLockAbandon = OldConfig.AnimationLockAbandon;
+    private bool stopOnAbort = OldConfig.StopOnAbort;
+    private bool rejectUnknownYesNo = OldConfig.RejectUnknownYesno;
+    private bool delayGrabMission = OldConfig.DelayGrabMission;
+    private int delayAmount = OldConfig.DelayIncrease;
+    private bool delayCraft = OldConfig.DelayCraft;
+    private int delayCraftAmount = OldConfig.DelayCraftIncrease;
 
     private void SafetySettings()
     {
         if (ImGui.Checkbox("[Experimental] Animation Lock Unstuck", ref animationLockAbandon))
         {
-            C.AnimationLockAbandon = animationLockAbandon;
-            C.Save();
+            OldConfig.AnimationLockAbandon = animationLockAbandon;
+            OldConfig.Save();
         }
-        ImGui.Checkbox("[Experimental] Animation Lock Manual Unstuck", ref SchedulerMain.AnimationLockAbandonState);
+        // ImGui.Checkbox("[Experimental] Animation Lock Manual Unstuck", ref SchedulerMain.AnimationLockAbandonState);
 
         if (ImGui.Checkbox("Stop on Errors", ref stopOnAbort))
         {
-            C.StopOnAbort = stopOnAbort;
-            C.Save();
+            OldConfig.StopOnAbort = stopOnAbort;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker(
             "Warning! This is a safety feature to stop if something goes wrong!\n" +
@@ -150,8 +150,8 @@ internal class SettingsWindowV2 : Window
 
         if (ImGui.Checkbox("Ignore non-Cosmic prompts", ref rejectUnknownYesNo))
         {
-            C.RejectUnknownYesno = rejectUnknownYesNo;
-            C.Save();
+            OldConfig.RejectUnknownYesno = rejectUnknownYesNo;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker(
             "Warning! This is a safety feature to avoid joining random parties!\n" +
@@ -160,8 +160,8 @@ internal class SettingsWindowV2 : Window
         );
         if (ImGui.Checkbox("Add delay to mission menu", ref delayGrabMission))
         {
-            C.DelayGrabMission = delayGrabMission;
-            C.Save();
+            OldConfig.DelayGrabMission = delayGrabMission;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker(
             "This is here for safety! If you want to decrease the delay between missions be my guest.\n" +
@@ -173,17 +173,17 @@ internal class SettingsWindowV2 : Window
             ImGui.SameLine();
             if (ImGui.SliderInt("ms###Mission", ref delayAmount, 0, 1000))
             {
-                if (C.DelayIncrease != delayAmount)
+                if (OldConfig.DelayIncrease != delayAmount)
                 {
-                    C.DelayIncrease = delayAmount;
-                    C.Save();
+                    OldConfig.DelayIncrease = delayAmount;
+                    OldConfig.Save();
                 }
             }
         }
         if (ImGui.Checkbox("Add delay to crafting menu", ref delayCraft))
         {
-            C.DelayCraft = delayCraft;
-            C.Save();
+            OldConfig.DelayCraft = delayCraft;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker(
             "This is here for safety! If you want to decrease the delay before turnin be my guest.\n" +
@@ -195,24 +195,24 @@ internal class SettingsWindowV2 : Window
             ImGui.SameLine();
             if (ImGui.SliderInt("ms###Crafting", ref delayCraftAmount, 0, 10000))
             {
-                if (C.DelayCraftIncrease != delayCraftAmount)
+                if (OldConfig.DelayCraftIncrease != delayCraftAmount)
                 {
-                    C.DelayCraftIncrease = delayCraftAmount;
-                    C.Save();
+                    OldConfig.DelayCraftIncrease = delayCraftAmount;
+                    OldConfig.Save();
                 }
             }
         }
     }
 
-    private bool SelfRepairGather = C.SelfRepairGather;
-    private float SelfRepairPercent = C.RepairPercent;
-    private bool SelfSpiritbondGather = C.SelfSpiritbondGather;
-    private bool AutoCordial = C.AutoCordial;
-    private bool InverseCordialPrio = C.inverseCordialPrio;
-    private bool UseOnFisher = C.UseOnFisher;
-    private bool PreventOvercap = C.PreventOvercap;
-    private int CordialMinGp = C.CordialMinGp;
-    private bool useOnlyInMission = C.UseOnlyInMission;
+    private bool SelfRepairGather = OldConfig.SelfRepairGather;
+    private float SelfRepairPercent = OldConfig.RepairPercent;
+    private bool SelfSpiritbondGather = OldConfig.SelfSpiritbondGather;
+    private bool AutoCordial = OldConfig.AutoCordial;
+    private bool InverseCordialPrio = OldConfig.inverseCordialPrio;
+    private bool UseOnFisher = OldConfig.UseOnFisher;
+    private bool PreventOvercap = OldConfig.PreventOvercap;
+    private int CordialMinGp = OldConfig.CordialMinGp;
+    private bool useOnlyInMission = OldConfig.UseOnlyInMission;
     private string newProfileName = "";
 
     private string[] MissionTypes = ["Limited Nodes", "Gather x Amount", "Time Attack", "Chained Scoring", "Boon Scoring", "Chain + Boon Scoring", "Dual Class"];
@@ -327,10 +327,10 @@ internal class SettingsWindowV2 : Window
 
         if (ImGui.Checkbox("Self Repair on Gather", ref SelfRepairGather))
         {
-            if (C.SelfRepairGather != SelfRepairGather)
+            if (OldConfig.SelfRepairGather != SelfRepairGather)
             {
-                C.SelfRepairGather = SelfRepairGather;
-                C.Save();
+                OldConfig.SelfRepairGather = SelfRepairGather;
+                OldConfig.Save();
             }
         }
         if (SelfRepairGather)
@@ -341,26 +341,26 @@ internal class SettingsWindowV2 : Window
             ImGui.SetNextItemWidth(150);
             if (ImGui.SliderFloat("###Repair %", ref SelfRepairPercent, 0f, 99f, "%.0f%%"))
             {
-                if (C.RepairPercent != SelfRepairPercent)
+                if (OldConfig.RepairPercent != SelfRepairPercent)
                 {
-                    C.RepairPercent = (int)SelfRepairPercent;
-                    C.Save();
+                    OldConfig.RepairPercent = (int)SelfRepairPercent;
+                    OldConfig.Save();
                 }
             }
             ImGui.Unindent(15);
         }
         if (ImGui.Checkbox("Extract Spiritbond on Gather", ref SelfSpiritbondGather))
         {
-            if (C.SelfSpiritbondGather != SelfSpiritbondGather)
+            if (OldConfig.SelfSpiritbondGather != SelfSpiritbondGather)
             {
-                C.SelfSpiritbondGather = SelfSpiritbondGather;
-                C.Save();
+                OldConfig.SelfSpiritbondGather = SelfSpiritbondGather;
+                OldConfig.Save();
             }
         }
         if (ImGui.Checkbox("Auto Cordial", ref AutoCordial))
         {
-            C.AutoCordial = AutoCordial;
-            C.Save();
+            OldConfig.AutoCordial = AutoCordial;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker("Will only work while using ICE and not manual mode\n" +
                            "Will also pause pandora cordial usage while on the moon");
@@ -370,29 +370,29 @@ internal class SettingsWindowV2 : Window
             {
                 if (ImGui.Checkbox("Inverse Priority (Watered -> Regular -> Hi)", ref InverseCordialPrio))
                 {
-                    C.inverseCordialPrio = InverseCordialPrio;
-                    C.Save();
+                    OldConfig.inverseCordialPrio = InverseCordialPrio;
+                    OldConfig.Save();
                 }
                 if (ImGui.Checkbox("Prevent Overcap", ref PreventOvercap))
                 {
-                    C.PreventOvercap = PreventOvercap;
-                    C.Save();
+                    OldConfig.PreventOvercap = PreventOvercap;
+                    OldConfig.Save();
                 }
                 if (ImGui.Checkbox("Use on Fisher", ref UseOnFisher))
                 {
-                    C.UseOnFisher = UseOnFisher;
-                    C.Save();
+                    OldConfig.UseOnFisher = UseOnFisher;
+                    OldConfig.Save();
                 }
                 if (ImGui.Checkbox("Only use in mission", ref useOnlyInMission))
                 {
-                    C.UseOnlyInMission = useOnlyInMission;
-                    C.Save();
+                    OldConfig.UseOnlyInMission = useOnlyInMission;
+                    OldConfig.Save();
                 }
                 ImGui.SetNextItemWidth(200);
                 if (ImGui.SliderInt("Gp Threshold", ref CordialMinGp, 0, maxGp))
                 {
-                    C.CordialMinGp = CordialMinGp;
-                    C.Save();
+                    OldConfig.CordialMinGp = CordialMinGp;
+                    OldConfig.Save();
                 }
 
                 ImGui.TreePop();
@@ -407,11 +407,11 @@ internal class SettingsWindowV2 : Window
         {
             if (ImGui.Button("Add Profile") && !string.IsNullOrWhiteSpace(newProfileName))
             {
-                if (!C.GatherSettings.Any(x => x.Name == newProfileName))
+                if (!OldConfig.GatherSettings.Any(x => x.Name == newProfileName))
                 {
-                    int newId = C.GatherSettings.Max(x => x.Id) + 1;
-                    C.GatherSettings.Add(new GatherBuffProfile { Id = newId, Name = newProfileName });
-                    C.Save();
+                    int newId = OldConfig.GatherSettings.Max(x => x.Id) + 1;
+                    OldConfig.GatherSettings.Add(new GatherBuffProfile { Id = newId, Name = newProfileName });
+                    OldConfig.Save();
                     newProfileName = ""; // Reset input
                 }
             }
@@ -426,41 +426,41 @@ internal class SettingsWindowV2 : Window
 
         ImGui.Text("Gather Profiles");
 
-        bool canDelete = C.GatherSettings.Count > 1 && C.SelectedGatherIndex != 0;
+        bool canDelete = OldConfig.GatherSettings.Count > 1 && OldConfig.SelectedGatherIndex != 0;
         using (ImRaii.Disabled(!canDelete))
         {
             if (ImGui.Button("Delete Selected Profile"))
             {
-                var deletedProfile = C.GatherSettings[C.SelectedGatherIndex];
+                var deletedProfile = OldConfig.GatherSettings[OldConfig.SelectedGatherIndex];
                 int deletedId = deletedProfile.Id;
 
                 // Remove the profile
-                C.GatherSettings.RemoveAt(C.SelectedGatherIndex);
+                OldConfig.GatherSettings.RemoveAt(OldConfig.SelectedGatherIndex);
 
                 // Update all missions using this GatherSettingId
-                foreach (var mission in C.Missions)
+                foreach (var mission in OldConfig.Missions)
                 {
                     if (mission.GatherSettingId == deletedId)
                     {
-                        mission.GatherSettingId = C.GatherSettings[0].Id; // fallback to default
+                        mission.GatherSettingId = OldConfig.GatherSettings[0].Id; // fallback to default
                     }
                 }
 
                 // Clamp the selected index and save
-                C.SelectedGatherIndex = Math.Clamp(C.SelectedGatherIndex, 0, C.GatherSettings.Count - 1);
-                C.Save();
+                OldConfig.SelectedGatherIndex = Math.Clamp(OldConfig.SelectedGatherIndex, 0, OldConfig.GatherSettings.Count - 1);
+                OldConfig.Save();
             }
         }
 
         ImGui.BeginChild("GatherProfileChild", new Vector2(300, ImGui.GetTextLineHeightWithSpacing() * 5 + 10), true);
-        for (int i = 0; i < C.GatherSettings.Count; i++)
+        for (int i = 0; i < OldConfig.GatherSettings.Count; i++)
         {
-            bool isSelected = (i == C.SelectedGatherIndex);
+            bool isSelected = (i == OldConfig.SelectedGatherIndex);
 
-            if (ImGui.Selectable(C.GatherSettings[i].Name, isSelected))
+            if (ImGui.Selectable(OldConfig.GatherSettings[i].Name, isSelected))
             {
-                C.SelectedGatherIndex = i;
-                C.Save();
+                OldConfig.SelectedGatherIndex = i;
+                OldConfig.Save();
             }
 
             if (isSelected)
@@ -468,12 +468,12 @@ internal class SettingsWindowV2 : Window
         }
         ImGui.EndChild();
 
-        GatherBuffProfile entry = C.GatherSettings[C.SelectedGatherIndex];
+        GatherBuffProfile entry = OldConfig.GatherSettings[OldConfig.SelectedGatherIndex];
 
         ImGui.Combo("Mission Type", ref MissionIndex, MissionTypes, MissionTypes.Length);
         if (ImGui.Button("Apply to Mission Types"))
         {
-            foreach (var mission in C.Missions)
+            foreach (var mission in OldConfig.Missions)
             {
                 var id = mission.Id;
 
@@ -516,7 +516,7 @@ internal class SettingsWindowV2 : Window
                 }
             }
 
-            C.Save();
+            OldConfig.Save();
         }
 
         // ---------------------------------
@@ -533,7 +533,7 @@ internal class SettingsWindowV2 : Window
         if (ImGui.Combo("Pathfinding mode", ref pathfinding, modes, modes.Length))
         {
             entry.Pathfinding = pathfinding;
-            C.Save();
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker("Simple - From 1st node in list until the last.\nNearest - Always go to Nearest node then find a path that minimises distance through all remaining nodes.\nCyclic - Find nodes that are close together and stick to those nodes only.");
         if (pathfinding == 2)
@@ -544,7 +544,7 @@ internal class SettingsWindowV2 : Window
             if (ImGui.InputInt("Cycle size", ref cycle, 1))
             {
                 entry.TSPCycleSize = cycle >= 2 ? cycle : 2;
-                C.Save();
+                OldConfig.Save();
             }
         }
 
@@ -554,7 +554,7 @@ internal class SettingsWindowV2 : Window
         if (ImGui.SliderInt("Minimum GP to start mission", ref minGP, -1, maxGp))
         {
             entry.MinimumGP = minGP;
-            C.Save();
+            OldConfig.Save();
         }
 
         // Multiply gathered items on FIRST gather loop only. Should only be used for Dual Class really.
@@ -563,7 +563,7 @@ internal class SettingsWindowV2 : Window
         if (ImGui.InputInt("Dual Class Craft Amount", ref gatherMult, 1))
         {
             entry.InitialGatheringItemMultiplier = gatherMult >= 1 ? gatherMult : 1;
-            C.Save();
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker("This increases how many items you gather before you are 'done' before switching to crafting.\nSet this to however many items you need to craft to reach your target score.\nOnly affects Dual Class missions.");
 
@@ -580,18 +580,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.BoonIncrease2 = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.BoonIncrease2Gp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.BoonIncrease2MaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.BoonIncrease2MaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -608,18 +608,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.BoonIncrease1 = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.BoonIncrease1Gp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.BoonIncrease1MaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.BoonIncrease1MaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -636,18 +636,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.TidingsBool = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.TidingsGp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.TidingsMaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.TidingsMaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -665,18 +665,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.YieldII = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.YieldIIGp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.YieldIIMaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.YieldIIMaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -694,18 +694,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.YieldI = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.YieldIGp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.YieldIMaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.YieldIMaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -723,18 +723,18 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.BonusIntegrity = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.BonusIntegrityGp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.BonusIntegrityMaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.BonusIntegrityMaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
@@ -752,41 +752,41 @@ internal class SettingsWindowV2 : Window
             onEnabledChange: newVal =>
             {
                 entry.Buffs.BountifulYieldII = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             onMinGpChange: newVal =>
             {
                 entry.Buffs.BountifulYieldIIGp = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             currentMaxUse: entry.Buffs.BountifulYieldIIMaxUse,
             onMaxUseChange: newVal =>
             {
                 entry.Buffs.BountifulYieldIIMaxUse = newVal;
-                C.Save();
+                OldConfig.Save();
             },
             entry.Buffs.BountifulMinItem,
             onMinItemMaxUseChange: newVal =>
             {
                 entry.Buffs.BountifulMinItem = newVal;
-                C.Save();
+                OldConfig.Save();
             }
         );
 
         ImGui.Columns(1);
     }
 
-    private bool gambaEnabled = C.GambaEnabled;
-    private int gambaDelay = C.GambaDelay;
-    private int gambaCreditsMinimum = C.GambaCreditsMinimum;
-    private bool gambaPreferSmallerWheel = C.GambaPreferSmallerWheel;
+    private bool gambaEnabled = OldConfig.GambaEnabled;
+    private int gambaDelay = OldConfig.GambaDelay;
+    private int gambaCreditsMinimum = OldConfig.GambaCreditsMinimum;
+    private bool gambaPreferSmallerWheel = OldConfig.GambaPreferSmallerWheel;
 
     private void GambaWheel()
     {
         if (ImGui.Checkbox("Enable Gamba", ref gambaEnabled))
         {
-            C.GambaEnabled = gambaEnabled;
-            C.Save();
+            OldConfig.GambaEnabled = gambaEnabled;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker("To run this, make sure you have the gamble wheels shown at Orbitingway, and press start. It will full auto from there.");
         if (gambaEnabled)
@@ -794,21 +794,21 @@ internal class SettingsWindowV2 : Window
             ImGui.SetNextItemWidth(150);
             if (ImGui.SliderInt("Gamba Delay", ref gambaDelay, 50, 2000))
             {
-                C.GambaDelay = gambaDelay;
-                C.Save();
+                OldConfig.GambaDelay = gambaDelay;
+                OldConfig.Save();
             }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(150);
             if (ImGui.SliderInt("Mininum credits to keep", ref gambaCreditsMinimum, 0, 10000))
             {
-                C.GambaCreditsMinimum = gambaCreditsMinimum;
-                C.Save();
+                OldConfig.GambaCreditsMinimum = gambaCreditsMinimum;
+                OldConfig.Save();
             }
         }
         if (ImGui.Checkbox("Prefer smaller wheel", ref gambaPreferSmallerWheel))
         {
-            C.GambaPreferSmallerWheel = gambaPreferSmallerWheel;
-            C.Save();
+            OldConfig.GambaPreferSmallerWheel = gambaPreferSmallerWheel;
+            OldConfig.Save();
         }
         ImGuiEx.HelpMarker("This will make the Gamba prefer wheels with less items.");
         ImGui.Separator();
@@ -816,7 +816,7 @@ internal class SettingsWindowV2 : Window
         ImGui.Spacing();
         foreach (GambaType type in Enum.GetValues(typeof(GambaType)))
         {
-            var itemsType = C.GambaItemWeights.Where(x => x.Type == type).OrderBy(x => x.ItemId).ToList();
+            var itemsType = OldConfig.GambaItemWeights.Where(x => x.Type == type).OrderBy(x => x.ItemId).ToList();
             if (itemsType.Count == 0) continue;
             if (ImGui.TreeNodeEx($"{type} ({itemsType.Count})##gamba_type_{type}", ImGuiTreeNodeFlags.DefaultOpen))
             {
@@ -829,7 +829,7 @@ internal class SettingsWindowV2 : Window
                     if (ImGui.InputInt($"[{gamba.ItemId}] {itemName}##gamba_weight", ref weight))
                     {
                         gamba.Weight = weight;
-                        C.Save();
+                        OldConfig.Save();
                     }
                 }
                 ImGui.Unindent();
@@ -842,32 +842,32 @@ internal class SettingsWindowV2 : Window
         }
     }
 
-    private bool showOverlay = C.ShowOverlay;
-    private bool ShowSeconds = C.ShowSeconds;
+    private bool showOverlay = OldConfig.ShowOverlay;
+    private bool ShowSeconds = OldConfig.ShowSeconds;
 
     private void Overlay()
     {
         if (ImGui.Checkbox("Show Overlay", ref showOverlay))
         {
-            C.ShowOverlay = showOverlay;
-            C.Save();
+            OldConfig.ShowOverlay = showOverlay;
+            OldConfig.Save();
         }
 
         if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
         {
-            C.ShowSeconds = ShowSeconds;
-            C.Save();
+            OldConfig.ShowSeconds = ShowSeconds;
+            OldConfig.Save();
         }
     }
 
-    private bool EnableAutoSprint = C.EnableAutoSprint;
+    private bool EnableAutoSprint = OldConfig.EnableAutoSprint;
 
     private void Misc()
     {
         if (ImGui.Checkbox("Enable Auto Sprint", ref EnableAutoSprint))
         {
-            C.EnableAutoSprint = EnableAutoSprint;
-            C.Save();
+            OldConfig.EnableAutoSprint = EnableAutoSprint;
+            OldConfig.Save();
         }
     }
 
@@ -877,13 +877,13 @@ internal class SettingsWindowV2 : Window
     {
         ImGui.Checkbox("Force OOM Main", ref SchedulerMain.DebugOOMMain);
         ImGui.Checkbox("Force OOM Sub", ref SchedulerMain.DebugOOMSub);
-        ImGui.Checkbox("Legacy Failsafe WKSRecipe Select", ref C.FailsafeRecipeSelect);
+        ImGui.Checkbox("Legacy Failsafe WKSRecipe Select", ref OldConfig.FailsafeRecipeSelect);
 
         var missionMap = new List<(string name, Func<byte> get, Action<byte> set)>
                 {
-                    ("Sequence Missions", new Func<byte>(() => C.SequenceMissionPriority), new Action<byte>(v => { C.SequenceMissionPriority = v; C.Save(); })),
-                    ("Timed Missions", new Func<byte>(() => C.TimedMissionPriority), new Action<byte>(v => { C.TimedMissionPriority = v; C.Save(); })),
-                    ("Weather Missions", new Func<byte>(() => C.WeatherMissionPriority), new Action<byte>(v => { C.WeatherMissionPriority = v; C.Save(); }))
+                    ("Sequence Missions", new Func<byte>(() => OldConfig.SequenceMissionPriority), new Action<byte>(v => { OldConfig.SequenceMissionPriority = v; OldConfig.Save(); })),
+                    ("Timed Missions", new Func<byte>(() => OldConfig.TimedMissionPriority), new Action<byte>(v => { OldConfig.TimedMissionPriority = v; OldConfig.Save(); })),
+                    ("Weather Missions", new Func<byte>(() => OldConfig.WeatherMissionPriority), new Action<byte>(v => { OldConfig.WeatherMissionPriority = v; OldConfig.Save(); }))
                 };
 
         var sorted = missionMap

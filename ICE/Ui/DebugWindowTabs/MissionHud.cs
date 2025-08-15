@@ -114,12 +114,14 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Text($"Best Relic Mission: {BestMission}");
                 if (ImGui.Button("Update Best Mission"))
                 {
+                    /*
                     BestMission = 0;
                     int? test = TaskMissionFind.FindRelicMission();
                     if (test != null)
                     {
                         BestMission = test.Value;
                     }
+                    */
                 }
 
 

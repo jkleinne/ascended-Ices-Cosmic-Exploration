@@ -78,37 +78,37 @@ namespace ICE.Ui
 
         private uint? currentJobId => PlayerHelper.GetClassJobId();
         private bool usingSupportedJob => jobOptions.Any(job => job.Id == currentJobId);
-        private uint selectedJob = C.SelectedJob;
+        private uint selectedJob = OldConfig.SelectedJob;
 
         // Left Column Settings
-        private bool onlyGrabMission = C.OnlyGrabMission;
-        private bool stopCosmic = C.StopOnceHitCosmoCredits;
-        private int cosmicCap = C.CosmoCreditsCap;
-        private bool stopLunar = C.StopOnceHitLunarCredits;
-        private int lunarCap = C.LunarCreditsCap;
-        private bool stopScore = C.StopOnceHitCosmicScore;
-        private int scoreCap = C.CosmicScoreCap;
-        private bool autoPickCurrentJob = C.AutoPickCurrentJob;
-        private bool stopWhenLevel = C.StopWhenLevel;
-        private int targetLevel = C.TargetLevel;
+        private bool onlyGrabMission = OldConfig.OnlyGrabMission;
+        private bool stopCosmic = OldConfig.StopOnceHitCosmoCredits;
+        private int cosmicCap = OldConfig.CosmoCreditsCap;
+        private bool stopLunar = OldConfig.StopOnceHitLunarCredits;
+        private int lunarCap = OldConfig.LunarCreditsCap;
+        private bool stopScore = OldConfig.StopOnceHitCosmicScore;
+        private int scoreCap = OldConfig.CosmicScoreCap;
+        private bool autoPickCurrentJob = OldConfig.AutoPickCurrentJob;
+        private bool stopWhenLevel = OldConfig.StopWhenLevel;
+        private int targetLevel = OldConfig.TargetLevel;
 
-        private bool showCritical = C.showCritical;
-        private bool showSequential = C.showSequential;
-        private bool showWeather = C.showWeather;
-        private bool showTimeRestricted = C.showTimeRestricted;
-        private bool showClassA = C.showClassA;
-        private bool showClassB = C.showClassB;
-        private bool showClassC = C.showClassC;
-        private bool showClassD = C.showClassD;
+        private bool showCritical = OldConfig.showCritical;
+        private bool showSequential = OldConfig.showSequential;
+        private bool showWeather = OldConfig.showWeather;
+        private bool showTimeRestricted = OldConfig.showTimeRestricted;
+        private bool showClassA = OldConfig.showClassA;
+        private bool showClassB = OldConfig.showClassB;
+        private bool showClassC = OldConfig.showClassC;
+        private bool showClassD = OldConfig.showClassD;
 
         // Middle Column stuff
         private Dictionary<string, bool> headerStates = new();
-        private int SortOption = C.TableSortOption;
-        private bool hideUnsupported = C.HideUnsupportedMissions;
-        private bool showCredits = C.ShowCreditsColumn;
-        private bool showExp = C.ShowExpColums;
-        private bool showNotes = C.ShowNotes;
-        private bool increaseMiddleColumn = C.IncreaseMiddleColumn;
+        private int SortOption = OldConfig.TableSortOption;
+        private bool hideUnsupported = OldConfig.HideUnsupportedMissions;
+        private bool showCredits = OldConfig.ShowCreditsColumn;
+        private bool showExp = OldConfig.ShowExpColums;
+        private bool showNotes = OldConfig.ShowNotes;
+        private bool increaseMiddleColumn = OldConfig.IncreaseMiddleColumn;
 
         private bool showTableSetting = false;
         private string[] modes = ["Gold", "Silver", "Bronze", "Manual"];
@@ -136,6 +136,7 @@ namespace ICE.Ui
 
         public override void Draw()
         {
+            /*
             // Calculate scaling factors based on current font size
             float fontScale = ImGui.GetIO().FontGlobalScale;
             float textLineHeight = ImGui.GetTextLineHeight();
@@ -184,8 +185,8 @@ namespace ICE.Ui
 
                 if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
                 {
-                    C.OnlyGrabMission = onlyGrabMission;
-                    C.Save();
+                    OldConfig.OnlyGrabMission = onlyGrabMission;
+                    OldConfig.Save();
                 }
 
                 ImGui.PopStyleVar();
@@ -199,8 +200,8 @@ namespace ICE.Ui
                 ImGui.Checkbox("Stop after current mission", ref SchedulerMain.StopBeforeGrab);
                 if (ImGui.Checkbox($"Stop at Cosmic Credits", ref stopCosmic))
                 {
-                    C.StopOnceHitCosmoCredits = stopCosmic;
-                    C.Save();
+                    OldConfig.StopOnceHitCosmoCredits = stopCosmic;
+                    OldConfig.Save();
                 }
                 if (stopCosmic)
                 {
@@ -208,16 +209,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##CosmicStop", ref cosmicCap, 0, 30000))
                     {
-                        C.CosmoCreditsCap = cosmicCap;
-                        C.Save();
+                        OldConfig.CosmoCreditsCap = cosmicCap;
+                        OldConfig.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Lunar Credits", ref stopLunar))
                 {
-                    C.StopOnceHitLunarCredits = stopLunar;
-                    C.Save();
+                    OldConfig.StopOnceHitLunarCredits = stopLunar;
+                    OldConfig.Save();
                 }
                 if (stopLunar)
                 {
@@ -225,16 +226,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##LunarStop", ref lunarCap, 0, 10000))
                     {
-                        C.LunarCreditsCap = lunarCap;
-                        C.Save();
+                        OldConfig.LunarCreditsCap = lunarCap;
+                        OldConfig.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Cosmic Score", ref stopScore))
                 {
-                    C.StopOnceHitCosmicScore = stopScore;
-                    C.Save();
+                    OldConfig.StopOnceHitCosmicScore = stopScore;
+                    OldConfig.Save();
                 }
                 if (stopScore)
                 {
@@ -242,16 +243,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputInt("###ScoreStop", ref scoreCap, 10000, 50000))
                     {
-                        C.CosmicScoreCap = scoreCap >= 0 ? scoreCap : 0;
-                        C.Save();
+                        OldConfig.CosmicScoreCap = scoreCap >= 0 ? scoreCap : 0;
+                        OldConfig.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Level", ref stopWhenLevel))
                 {
-                    C.StopWhenLevel = stopWhenLevel;
-                    C.Save();
+                    OldConfig.StopWhenLevel = stopWhenLevel;
+                    OldConfig.Save();
                 }
                 if (stopWhenLevel)
                 {
@@ -259,8 +260,8 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##Level", ref targetLevel, 10, 100))
                     {
-                        C.TargetLevel = targetLevel;
-                        C.Save();
+                        OldConfig.TargetLevel = targetLevel;
+                        OldConfig.Save();
                     }
                     ImGui.Unindent(15);
                 }
@@ -271,26 +272,26 @@ namespace ICE.Ui
 
                 ImGui.Dummy(new(0, 10));
 
-                bool EnableRelicXp = C.XPRelicGrind;
+                bool EnableRelicXp = OldConfig.XPRelicGrind;
                 if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
                 {
-                    C.XPRelicGrind = EnableRelicXp;
-                    C.Save();
+                    OldConfig.XPRelicGrind = EnableRelicXp;
+                    OldConfig.Save();
                 }
                 if (EnableRelicXp)
                 {
-                    bool IgnoreManual = C.XPRelicIgnoreManual;
+                    bool IgnoreManual = OldConfig.XPRelicIgnoreManual;
                     if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
                     {
-                        C.XPRelicIgnoreManual = IgnoreManual;
-                        C.Save();
+                        OldConfig.XPRelicIgnoreManual = IgnoreManual;
+                        OldConfig.Save();
                     }
 
-                    bool OnlySelected = C.XPRelicOnlyEnabled;
+                    bool OnlySelected = OldConfig.XPRelicOnlyEnabled;
                     if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                     {
-                        C.XPRelicOnlyEnabled = OnlySelected;
-                        C.Save();
+                        OldConfig.XPRelicOnlyEnabled = OnlySelected;
+                        OldConfig.Save();
                     }
                 }
 
@@ -301,8 +302,8 @@ namespace ICE.Ui
                 ImGui.Dummy(new(0, 10));
                 if (ImGui.Checkbox("Auto Pick Current Job", ref autoPickCurrentJob))
                 {
-                    C.AutoPickCurrentJob = autoPickCurrentJob;
-                    C.Save();
+                    OldConfig.AutoPickCurrentJob = autoPickCurrentJob;
+                    OldConfig.Save();
                 }
 
                 if (autoPickCurrentJob && usingSupportedJob)
@@ -310,8 +311,8 @@ namespace ICE.Ui
                     if (currentJobId != selectedJob)
                     {
                         selectedJob = currentJobId.Value;
-                        C.SelectedJob = selectedJob;
-                        C.Save();
+                        OldConfig.SelectedJob = selectedJob;
+                        OldConfig.Save();
                     }
                 }
 
@@ -401,8 +402,8 @@ namespace ICE.Ui
 
                 if (ImGui.Checkbox("Hide Unsupported Missions", ref hideUnsupported))
                 {
-                    C.HideUnsupportedMissions = hideUnsupported;
-                    C.Save();
+                    OldConfig.HideUnsupportedMissions = hideUnsupported;
+                    OldConfig.Save();
                 }
 
                 ImGui.SameLine();
@@ -419,23 +420,23 @@ namespace ICE.Ui
 
                     if (ImGui.Checkbox("Show Credit Column", ref showCredits))
                     {
-                        C.ShowCreditsColumn = showCredits;
-                        C.Save();
+                        OldConfig.ShowCreditsColumn = showCredits;
+                        OldConfig.Save();
                     }
                     if (ImGui.Checkbox("Show XP Amounts", ref showExp))
                     {
-                        C.ShowExpColums = showExp;
-                        C.Save();
+                        OldConfig.ShowExpColums = showExp;
+                        OldConfig.Save();
                     }
                     if (ImGui.Checkbox("Show Notes", ref showNotes))
                     {
-                        C.ShowNotes = showNotes;
-                        C.Save();
+                        OldConfig.ShowNotes = showNotes;
+                        OldConfig.Save();
                     }
                     if (ImGui.Checkbox("Increase Middle Column Size", ref increaseMiddleColumn))
                     {
-                        C.IncreaseMiddleColumn = increaseMiddleColumn;
-                        C.Save();
+                        OldConfig.IncreaseMiddleColumn = increaseMiddleColumn;
+                        OldConfig.Save();
                     }
 
                     ImGui.EndPopup();
@@ -457,10 +458,10 @@ namespace ICE.Ui
                         {
                             ImGui.SetItemDefaultFocus();
                         }
-                        if (SortOption != C.TableSortOption)
+                        if (SortOption != OldConfig.TableSortOption)
                         {
-                            C.TableSortOption = SortOption;
-                            C.Save();
+                            OldConfig.TableSortOption = SortOption;
+                            OldConfig.Save();
                         }
                     }
                     ImGui.EndCombo();
@@ -508,7 +509,7 @@ namespace ICE.Ui
 
                 if (showCritical)
                 {
-                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions - {criticalMissions.Count(x => C.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions - {criticalMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
                     if (headerStates.TryGetValue("Critical Missions", out var isOpen) && isOpen)
                     {
                         MissionInfo("Critical Missions", criticalMissions, criticalGather);
@@ -517,7 +518,7 @@ namespace ICE.Ui
 
                 if (showSequential)
                 {
-                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions - {sequentialMissions.Count(x => C.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions - {sequentialMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
                     if (headerStates.TryGetValue("Sequential Missions", out var isOpen) && isOpen)
                     {
                         MissionInfo("Sequential Missions", sequentialMissions, sequentialGather);
@@ -526,7 +527,7 @@ namespace ICE.Ui
 
                 if (showWeather)
                 {
-                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions - {weatherRestrictedMissions.Count(x => C.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions - {weatherRestrictedMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
                     if (headerStates.TryGetValue("Weather Missions", out var isOpen) && isOpen)
                     {
                         MissionInfo("Weather Missions", weatherRestrictedMissions, weatherGather);
@@ -535,7 +536,7 @@ namespace ICE.Ui
 
                 if (showTimeRestricted)
                 {
-                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions - {timeRestrictedMissions.Count(x => C.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions - {timeRestrictedMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
                     if (headerStates.TryGetValue("Time-Restricted Missions", out var isOpen) && isOpen)
                     {
                         MissionInfo("Sequential Missions", timeRestrictedMissions, timeGather);
@@ -555,7 +556,7 @@ namespace ICE.Ui
                     missions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(missions);
 
                     bool missionGather = missions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
-                    DrawCollapsibleHeader($"Class {rank.RankName}", $"Class {rank.RankName} - {missions.Count(x => C.Missions.Any(y => y.Id == x.Key && y.Enabled))} enabled");
+                    DrawCollapsibleHeader($"Class {rank.RankName}", $"Class {rank.RankName} - {missions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} enabled");
                     if (headerStates.TryGetValue($"Class {rank.RankName}", out var isOpen) && isOpen)
                     {
                         MissionInfo($"Class {rank.RankName} Missions", missions, missionGather);
@@ -658,7 +659,7 @@ namespace ICE.Ui
                                               .Where(f => f != MissionAttributes.None && flags.HasFlag(f))
                                               .ToList();
 
-                        var entry = C.Missions.Where(e => e.Id == selectedMission);
+                        var entry = OldConfig.Missions.Where(e => e.Id == selectedMission);
 
                         ImGui.Text("Notes:");
                         bool hasPreviousNotes = false;
@@ -750,9 +751,10 @@ namespace ICE.Ui
                 }
             }
             ImGui.EndChild();
-
+            */
         }
 
+        /*
         public void DrawJobSelection(uint jobId, string tooltip)
         {
             bool state = selectedJob == jobId;
@@ -801,11 +803,11 @@ namespace ICE.Ui
                 if (autoPickCurrentJob)
                 {
                     autoPickCurrentJob = false;
-                    C.AutoPickCurrentJob = autoPickCurrentJob;
+                    OldConfig.AutoPickCurrentJob = autoPickCurrentJob;
                 }
-                C.SelectedJob = jobId;
+                OldConfig.SelectedJob = jobId;
                 selectedJob = jobId;
-                C.Save();
+                OldConfig.Save();
             }
 
             // Pop style variables and colors
@@ -996,7 +998,7 @@ namespace ICE.Ui
 
                     ImGui.TableNextRow();
 
-                    var mission = C.Missions.Single(x => x.Id == entry.Key);
+                    var mission = OldConfig.Missions.Single(x => x.Id == entry.Key);
                     var isEnabled = mission.Enabled;
 
                     Utils.missionLength = Math.Max(Utils.missionLength, ImGui.CalcTextSize(mission.Name).X);
@@ -1022,7 +1024,7 @@ namespace ICE.Ui
                             var prevChainList = GetOnlyPreviousMissionsRecursive(mission.Id);
                             foreach (var missionId in prevChainList)
                             {
-                                chain = C.Missions.Single(x => x.Id == missionId);
+                                chain = OldConfig.Missions.Single(x => x.Id == missionId);
                                 chain.Enabled = isEnabled;
                             }
                         }
@@ -1031,12 +1033,12 @@ namespace ICE.Ui
                             var nextChainList = GetOnlyNextMissionsRecursive(mission.Id);
                             foreach (var missionId in nextChainList)
                             {
-                                chain = C.Missions.Single(x => x.Id == missionId);
+                                chain = OldConfig.Missions.Single(x => x.Id == missionId);
                                 chain.Enabled = isEnabled;
                             }
                         }
 
-                        C.Save();
+                        OldConfig.Save();
                     }
                     if (ImGui.IsItemClicked())
                     {
@@ -1174,7 +1176,7 @@ namespace ICE.Ui
                             mission.TurnInASAP = selectedModes[2];
                             mission.ManualMode = selectedModes[3];
                         }
-                        C.Save();
+                        OldConfig.Save();
                     }
 
                     // Column #9
@@ -1186,7 +1188,7 @@ namespace ICE.Ui
                             ImGui.SetNextItemWidth(-1);
                             if (ImGui.BeginCombo($"###GatherProfile{entry.Value.Name}_{entry.Key}", mission.GatherSetting.Name))
                             {
-                                foreach (var profile in C.GatherSettings)
+                                foreach (var profile in OldConfig.GatherSettings)
                                 {
                                     bool isSelected = mission.GatherSettingId == profile.Id;
                                     if (ImGui.Selectable(profile.Name, isSelected))
@@ -1272,7 +1274,7 @@ namespace ICE.Ui
             {
                 var currentJob = PlayerHelper.GetClassJobId();
 
-                foreach (var mission in C.Missions)
+                foreach (var mission in OldConfig.Missions)
                 {
                     var id = mission.Id;
 
@@ -1355,7 +1357,7 @@ namespace ICE.Ui
                     }
                 }
 
-                C.Save();
+                OldConfig.Save();
             }
         }
 
@@ -1583,6 +1585,7 @@ namespace ICE.Ui
         }
 
         #endregion
+        */
 
     }
 }

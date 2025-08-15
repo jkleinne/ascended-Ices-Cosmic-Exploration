@@ -7,6 +7,7 @@ namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskCrafting
     {
+        /*
         public static void TryEnqueueCrafts()
         {
             if (CosmicHelper.CurrentLunarMission != 0)
@@ -195,7 +196,7 @@ namespace ICE.Scheduler.Tasks.OldTask
                     }
                 }
 
-                if (P.TaskManager.NumQueuedTasks == 1 && C.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission).Type == MissionType.Critical)
+                if (P.TaskManager.NumQueuedTasks == 1 && OldConfig.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission).Type == MissionType.Critical)
                 {
                     P.TaskManager.Enqueue(() =>
                     {
@@ -208,8 +209,8 @@ namespace ICE.Scheduler.Tasks.OldTask
                     });
                 }
 
-                if (C.DelayCraft)
-                    P.TaskManager.EnqueueDelay(C.DelayCraftIncrease); // Post-craft delay between Synthesis and RecipeLog reopening
+                if (OldConfig.DelayCraft)
+                    P.TaskManager.EnqueueDelay(OldConfig.DelayCraftIncrease); // Post-craft delay between Synthesis and RecipeLog reopening
                 P.TaskManager.Enqueue(() => Svc.Condition[ConditionFlag.NormalConditions] || Svc.Condition[ConditionFlag.Crafting] && Svc.Condition[ConditionFlag.PreparingToCraft]);
                 P.TaskManager.Enqueue(() =>
                 {
@@ -239,7 +240,7 @@ namespace ICE.Scheduler.Tasks.OldTask
         internal static void Craft(ushort id, int craftAmount, Item item)
         {
 #if DEBUG
-            if (C.FailsafeRecipeSelect)
+            if (OldConfig.FailsafeRecipeSelect)
             {
                 if (GenericHelpers.TryGetAddonMaster<WKSRecipeNotebook>("WKSRecipeNotebook", out var m) && m.IsAddonReady)
                 {
@@ -286,7 +287,7 @@ namespace ICE.Scheduler.Tasks.OldTask
                         return false;
                 }
                 var (currentScore, bronzeScore, silverScore, goldScore) = MissionHandler.GetCurrentScores(); // some scoring checks
-                var currentMission = C.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission);
+                var currentMission = OldConfig.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission);
                 var enoughMain = MissionHandler.HaveEnoughMain();
                 if (enoughMain == null || currentMission == null)
                 {
@@ -338,5 +339,6 @@ namespace ICE.Scheduler.Tasks.OldTask
             }
             return false;
         }
+        */
     }
 }

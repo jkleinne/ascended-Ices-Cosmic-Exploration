@@ -5,6 +5,7 @@ namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskScoreCheckCraft
     {
+        /*
         public static void TryCheckScore()
         {
             if (SchedulerMain.AnimationLockAbandonState)
@@ -22,7 +23,7 @@ namespace ICE.Scheduler.Tasks.OldTask
             }
 
             IceLogging.Debug($"Current Scoring Mission Id: {CosmicHelper.CurrentLunarMission}");
-            var currentMission = C.Missions.Single(x => x.Id == CosmicHelper.CurrentLunarMission);
+            var currentMission = OldConfig.Missions.Single(x => x.Id == CosmicHelper.CurrentLunarMission);
             var (currentScore, bronzeScore, silverScore, goldScore) = MissionHandler.GetCurrentScores();
             bool enoughMain = MissionHandler.HaveEnoughMain().Value;
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var z) && z.IsAddonReady)
@@ -117,5 +118,6 @@ namespace ICE.Scheduler.Tasks.OldTask
                 CosmicHelper.OpenStellarMission();
             }
         }
+        */
     }
 }

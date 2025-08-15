@@ -6,6 +6,7 @@ namespace ICE.Scheduler.Tasks.OldTask
     {
         public static void Enqueue()
         {   
+            /*
             if (Svc.Condition[ConditionFlag.NormalConditions] || Svc.Condition[ConditionFlag.ExecutingCraftingAction] || AddonHelper.IsAddonActive("RecipeNote") || AddonHelper.IsAddonActive("WKSRecipeNotebook"))
             {
                 IceLogging.Info("We were in Animation Lock fix state and seem to be fixed. Reseting.");
@@ -18,6 +19,7 @@ namespace ICE.Scheduler.Tasks.OldTask
                 if (EzThrottler.Throttle("Open Recipe", 1000))
                     AddonHelper.OpenRecipeNote();
             }
+            */
         }
     }
 }

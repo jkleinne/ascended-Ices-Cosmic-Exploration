@@ -32,19 +32,31 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    /*
+
                     // Mission info window is now ready to be read, time to check out the current progress.
                     if (MissionHandler.IsMissionTimedOut())
                     {
                         // Mission time has reached 0, checking the score/aborting if necessary
-                        SchedulerMain.State |= IceState.AbortInProgress;
+                        SchedulerMain.State = IceState.AbortInProgress;
 
 
                     }
+                    */
 
                 }
             }
+            else if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lotto) && lotto.IsAddonReady)
+            {
+
+            }
 
             return true;
+        }
+
+        private static void UpdateMissionState()
+        {
+
         }
     }
 }

@@ -22,15 +22,18 @@ namespace ICE.Ui
 
         public override void Draw()
         {
+            /*
             ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
-#if DEBUG
+            #if DEBUG
+
             if (CosmicHelper.CurrentLunarMission != 0)
             {
                 ImGui.Text($"Current node: {SchedulerMain.CurrentIndex} / Visited: {SchedulerMain.NodesVisited}");
                 ImGui.Text($"NodeSet: {CosmicHelper.MissionInfoDict[CosmicHelper.CurrentLunarMission].NodeSet}");
                 ImGui.Text($"Attributes: {CosmicHelper.CurrentMissionInfo.Attributes}");
             }
-#endif
+
+            #endif
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();
@@ -123,8 +126,10 @@ namespace ICE.Ui
             //    //    Type = Dalamud.Game.Text.XivChatType.Debug,
             //    //});
             //}
+            */
         }
 
+        /*
         void DrawScore()
         {
             try
@@ -147,5 +152,6 @@ namespace ICE.Ui
                 // meh
             }
         }
+        */
     }
 }

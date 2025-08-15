@@ -25,6 +25,7 @@ namespace ICE.Scheduler.Tasks.OldTask
          * 
         */
 
+        /*
         public static void TryEnqueueGathering()
         {
             if (CosmicHelper.CurrentLunarMission != 0)
@@ -172,8 +173,8 @@ namespace ICE.Scheduler.Tasks.OldTask
                         if (!(Collectable || Reducable) && x.TotalIntegrity != 0)
                         {
                             var DictEntry = CosmicHelper.GatheringItemDict[currentMission].MinGatherItems;
-                            var profileId = C.Missions.Where(x => x.Id == currentMission).FirstOrDefault().GatherSettingId;
-                            var gBuffs = C.GatherSettings.Where(g => g.Id == profileId).First();
+                            var profileId = OldConfig.Missions.Where(x => x.Id == currentMission).FirstOrDefault().GatherSettingId;
+                            var gBuffs = OldConfig.GatherSettings.Where(g => g.Id == profileId).First();
 
                             bool hasAllItems = true;
                             uint itemToGather = 0;
@@ -445,5 +446,6 @@ namespace ICE.Scheduler.Tasks.OldTask
 
             return false;
         }
+        */
     }
 }

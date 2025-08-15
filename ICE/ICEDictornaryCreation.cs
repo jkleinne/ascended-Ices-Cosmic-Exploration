@@ -423,10 +423,10 @@ public sealed partial class ICE
             }
         }
 
-        if (C.Missions.Count == 0)
+        if (OldConfig.Missions.Count == 0)
         {
             // fresh install?
-            C.Missions = [.. MissionInfoDict.Select(x => new CosmicMission()
+            OldConfig.Missions = [.. MissionInfoDict.Select(x => new CosmicMission()
         {
             Id = x.Key,
             Name = x.Value.Name,
@@ -434,11 +434,11 @@ public sealed partial class ICE
             PreviousMissionId = x.Value.PreviousMissionID,
             JobId = x.Value.JobId,
         })];
-            C.Save();
+            OldConfig.Save();
         }
         else
         {
-            var newMissions = MissionInfoDict.Where(x => !C.Missions.Any(y => y.Id == x.Key)).Select(x => new CosmicMission()
+            var newMissions = MissionInfoDict.Where(x => !OldConfig.Missions.Any(y => y.Id == x.Key)).Select(x => new CosmicMission()
             {
                 Id = x.Key,
                 Name = x.Value.Name,
@@ -449,8 +449,8 @@ public sealed partial class ICE
 
             if (newMissions.Any())
             {
-                C.Missions.AddRange(newMissions);
-                C.Save();
+                OldConfig.Missions.AddRange(newMissions);
+                OldConfig.Save();
             }
         }
     }

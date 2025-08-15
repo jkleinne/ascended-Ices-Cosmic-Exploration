@@ -35,7 +35,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.Button("Find Mission"))
             {
-                TaskMissionFind.Enqueue();
+                // TaskMissionFind.Enqueue();
             }
             if (ImGui.Button("Clear Task"))
             {

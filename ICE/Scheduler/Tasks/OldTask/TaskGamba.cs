@@ -47,21 +47,21 @@ namespace ICE.Scheduler.Tasks.OldTask
         {
             bool changed = false;
             if (force)
-                C.GambaItemWeights.Clear();
+                OldConfig.GambaItemWeights.Clear();
             foreach (var item in DefaultGambaItems)
             {
-                if (C.GambaItemWeights.Any(x => x.ItemId == item.ItemId))
+                if (OldConfig.GambaItemWeights.Any(x => x.ItemId == item.ItemId))
                     continue;
-                C.GambaItemWeights.Add(new Gamba { ItemId = item.ItemId, Weight = item.Weight, Type = item.Type });
+                OldConfig.GambaItemWeights.Add(new Gamba { ItemId = item.ItemId, Weight = item.Weight, Type = item.Type });
                 changed = true;
             }
             if (changed)
-                C.Save();
+                OldConfig.Save();
         }
 
         public static void TryHandleGamba()
         {
-            if (EzThrottler.Throttle("Gamba", C.GambaDelay))
+            if (EzThrottler.Throttle("Gamba", OldConfig.GambaDelay))
             {
                 EnsureGambaWeightsInitialized();
                 if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
@@ -78,7 +78,7 @@ namespace ICE.Scheduler.Tasks.OldTask
 
                         if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
                         {
-                            if (credits >= 1000 + C.GambaCreditsMinimum)
+                            if (credits >= 1000 + OldConfig.GambaCreditsMinimum)
                                 select.Yes();
                             else
                                 select.No();
@@ -87,10 +87,10 @@ namespace ICE.Scheduler.Tasks.OldTask
                             gamba.ConfirmButton();
                         else if (leftWheelEnabled || rightWheelEnabled)
                         {
-                            float leftWeight = gamba.LeftWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
-                            float rightWeight = gamba.RightWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
+                            float leftWeight = gamba.LeftWheelItems.Sum(item => OldConfig.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
+                            float rightWeight = gamba.RightWheelItems.Sum(item => OldConfig.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
 
-                            if (C.GambaPreferSmallerWheel)
+                            if (OldConfig.GambaPreferSmallerWheel)
                             {
                                 leftWeight /= gamba.LeftWheelItems.Length;
                                 rightWeight /= gamba.RightWheelItems.Length;

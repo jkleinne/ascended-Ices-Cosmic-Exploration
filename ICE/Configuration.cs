@@ -19,7 +19,6 @@ namespace ICE
         public bool DelayCraft { get; set; } = true;
         public int DelayIncrease { get; set; } = 500;
         public int DelayCraftIncrease { get; set; } = 2500;
-        public int PossiblyStuck = 0;
         public bool AnimationLockAbandon { get; set; } = true;
 #if DEBUG
         public bool FailsafeRecipeSelect = false;
@@ -114,8 +113,8 @@ namespace ICE
         public bool ManualMode { get; set; } = false;
         public int GatherSettingId { get; set; } = 0;
         [JsonIgnore]
-        public GatherBuffProfile GatherSetting => C.GatherSettings.FirstOrDefault(x => x.Id == GatherSettingId)
-                                          ?? C.GatherSettings[0]; // fallback to default
+        public GatherBuffProfile GatherSetting => OldConfig.GatherSettings.FirstOrDefault(x => x.Id == GatherSettingId)
+                                          ?? OldConfig.GatherSettings[0]; // fallback to default
         public string TurnInMode;
     }
 

@@ -7,6 +7,7 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 internal static class MissionHandler
 {
+    /*
     internal static unsafe bool? HaveEnoughMain()
     {
         if (CosmicHelper.CurrentLunarMission == 0)
@@ -116,7 +117,6 @@ internal static class MissionHandler
 
         return (currentScore, bronzeScore, silverScore, goldScore);
     }
-
     internal unsafe static bool IsMissionTimedOut()
     {
         if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var z) && z.IsAddonReady)
@@ -176,18 +176,18 @@ internal static class MissionHandler
                 {
                     IceLogging.Error("[TurnIn] Unexpected error. Potential Crafting Animation Lock.");
 #if DEBUG
-                    IceLogging.Error($"[TurnIn] PossiblyStuck: {SchedulerMain.PossiblyStuck} | AnimationLockToggle {C.AnimationLockAbandon} | AnimationLockState {SchedulerMain.AnimationLockAbandonState}");
+                    IceLogging.Error($"[TurnIn] PossiblyStuck: {SchedulerMain.PossiblyStuck} | AnimationLockToggle {OldConfig.AnimationLockAbandon} | AnimationLockState {SchedulerMain.AnimationLockAbandonState}");
 #endif
                 }
-                if (SchedulerMain.PossiblyStuck < 2 && C.AnimationLockAbandon)
+                if (SchedulerMain.PossiblyStuck < 2 && OldConfig.AnimationLockAbandon)
                 {
                     SchedulerMain.PossiblyStuck += 1;
                 }
-                else if (SchedulerMain.PossiblyStuck >= 2 && C.AnimationLockAbandon)
+                else if (SchedulerMain.PossiblyStuck >= 2 && OldConfig.AnimationLockAbandon)
                 {
                     SchedulerMain.AnimationLockAbandonState = true;
                     DuoLog.Error($"Unexpected error. I might be Animation Locked. " +
-                        (C.AnimationLockAbandon ? "Attempting unstuck." : "Please enable Experimental unstuck to attempt unstuck."));
+                        (OldConfig.AnimationLockAbandon ? "Attempting unstuck." : "Please enable Experimental unstuck to attempt unstuck."));
                 }
             }
         }
@@ -195,11 +195,11 @@ internal static class MissionHandler
         IceLogging.Info("Attempting turnin");
         P.TaskManager.Enqueue(TurnInInternals, "Turning in", config);
 
-        if (abortIfNoReport && C.StopOnAbort && !SchedulerMain.AnimationLockAbandonState)
+        if (abortIfNoReport && OldConfig.StopOnAbort && !SchedulerMain.AnimationLockAbandonState)
         {
             SchedulerMain.StopBeforeGrab = true;
             DuoLog.Error("Unexpected error. Stopping. You failed to reach your Score Target.\n" +
-                $"If you expect Mission ID {CosmicHelper.CurrentLunarMission} to not reach " + (C.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission).TurnInSilver ? "Silver" : "Gold") +
+                $"If you expect Mission ID {CosmicHelper.CurrentLunarMission} to not reach " + (OldConfig.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission).TurnInSilver ? "Silver" : "Gold") +
                 " - please mark it as Silver/ASAP accordingly.\n" +
                 "If you were expecting it to reach the target, check your settings/gear.");
         }
@@ -290,4 +290,5 @@ internal static class MissionHandler
         }
         return true;
     }
+    */
 }

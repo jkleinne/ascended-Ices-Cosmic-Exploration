@@ -17,7 +17,7 @@ namespace ICE.Scheduler
         internal static bool DisablePlugin()
         {
             P.TaskManager.Abort();
-            StopBeforeGrab = false;
+            MissionInfo.StopBeforeGrab = false;
             State = Idle;
             StartClassJob = Job.ADV;
             if (P.Navmesh.IsRunning())
@@ -25,20 +25,6 @@ namespace ICE.Scheduler
             return true;
         }
 
-        internal static string MissionName = string.Empty;
-        internal static bool inMission = false;
-        internal static bool Abandon = false;
-        internal static bool AnimationLockAbandonState = false;
-        internal static uint PossiblyStuck = 0;
-        internal static bool StopBeforeGrab = false;
-        internal static uint PreviousNodeSetId = 0;
-        internal static List<GatheringUtil.GathNodeInfo> CurrentNodeSet = [];
-        internal static int CurrentIndex = 0;
-        internal static uint NodesVisited = 0;
-        internal static bool GatherNodeMissing = false;
-        internal static List<uint> GathererBuffsUsed = [];
-        internal static int InitialGatheringItemMultiplier = 1;
-        internal static Vector3? NearestCollectionPoint = null;
 #if DEBUG
         // Debug only settings
         internal static bool DebugOOMMain = false;
@@ -46,6 +32,7 @@ namespace ICE.Scheduler
 #endif
 
         internal static IceState State = Idle;
+        internal static MissionAttributes MissionState = MissionAttributes.None;
         internal static Job StartClassJob = Job.ADV;
 
         // <summary>
@@ -68,46 +55,20 @@ namespace ICE.Scheduler
             {
                 switch (State)
                 {
-                    case var s when s.HasFlag(Start):
-                        EnqueueResumeCheck();
+                    case Start:
+                        Task_CheckState.Enqueue();
                         break;
-                    case var s when s.HasFlag(Craft) && s.HasFlag(Waiting):
-                        TaskCrafting.WaitTillActuallyDone();
-                        break;
-                    case var s when s.HasFlag(ScoringMission) || s.HasFlag(AbortInProgress):
-                        TaskScoreCheckCraft.TryCheckScore();
-                        break;
-                    case var s when s.HasFlag(AnimationLock):
-                        TaskAnimationLock.Enqueue();
-                        break;
-                    case var s when s.HasFlag(Gambling):
-                        TaskGamba.TryHandleGamba();
-                        break;
-                    case var s when s.HasFlag(GrabMission) && s.HasFlag(Waiting):
-                        TaskMissionFind.WaitForNonStandard();
-                        break;
-                    case var s when s.HasFlag(GrabMission):
-                        TaskMissionFind.Enqueue();
-                        break;
-                    case var s when s.HasFlag(ManualMode) || s.HasFlag(Fish):
-                        TaskManualMode.ZenMode();
-                        break;
-                    case var s when s.HasFlag(Gather) && s.HasFlag(ExecutingMission):
-                        TaskGather.TryEnqueueGathering();
-                        break;
-                    case var s when s.HasFlag(Craft) && s.HasFlag(ExecutingMission):
-                        TaskCrafting.TryEnqueueCrafts();
+                    case AbortInProgress:
+
                         break;
                     default:
-                        if (C.StopOnAbort)
-                            throw new Exception("Invalid state");
-                        else
-                            EnqueueResumeCheck();
+                        DisablePlugin();
                         break;
                 }
             }
         }
 
+        /*
         public static void EnqueueResumeCheck()
         {
             // Start the check by making the state idle, this clears all flags.
@@ -141,5 +102,6 @@ namespace ICE.Scheduler
             if (AnimationLockAbandonState || (!(AddonHelper.IsAddonActive("WKSRecipeNotebook") || AddonHelper.IsAddonActive("RecipeNote")) && Svc.Condition[ConditionFlag.Crafting] && Svc.Condition[ConditionFlag.PreparingToCraft]))
                 State |= AnimationLock;
         }
+        */
     }
 }

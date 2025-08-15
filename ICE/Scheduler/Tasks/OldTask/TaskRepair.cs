@@ -11,7 +11,7 @@ namespace ICE.Scheduler.Tasks.OldTask
 
             if (CosmicHelper.GatheringJobList.Contains((int)currentJob))
             {
-                if (C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent))
+                if (OldConfig.SelfRepairGather && PlayerHelper.NeedsRepair(OldConfig.RepairPercent))
                 {
                     P.TaskManager.Enqueue(() => OpenSelfRepair(), "Opening repair menu");
                     P.TaskManager.Enqueue(() => SelfRepair(), "Repairing self");
@@ -34,7 +34,7 @@ namespace ICE.Scheduler.Tasks.OldTask
 
         internal unsafe static bool SelfRepair()
         {
-            if (!PlayerHelper.NeedsRepair(C.RepairPercent))
+            if (!PlayerHelper.NeedsRepair(OldConfig.RepairPercent))
             {
                 return true;
             }

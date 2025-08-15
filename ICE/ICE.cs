@@ -17,8 +17,10 @@ public sealed partial class ICE : IDalamudPlugin
     internal static ICE P = null!;
     private readonly Configuration Config;
     private static WaypointInfo? waypointInfo;
+    private static MissionConfigs missionConfigs;
 
-    public static Configuration C => P.Config;
+    public static Configuration OldConfig => P.Config;
+    public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
     public static WaypointInfo D => waypointInfo ??= LoadConfig<WaypointInfo>();
 
     // Yaml Config Loaders. For both loading a yaml in the config folder, and for embedded
@@ -120,6 +122,7 @@ public sealed partial class ICE : IDalamudPlugin
         };
         DictionaryCreation();
         TaskGamba.EnsureGambaWeightsInitialized();
+        ConfigMigrator.MigrateConfigv1();
     }
 
     private static void Init()
@@ -179,8 +182,8 @@ public sealed partial class ICE : IDalamudPlugin
         }
         else if (firstArg.ToLower() == "clear")
         {
-            C.Missions.ForEach(x => x.Enabled = false);
-            C.Save();
+            OldConfig.Missions.ForEach(x => x.Enabled = false);
+            OldConfig.Save();
         }
         else if (firstArg.ToLower() == "stop")
         {
@@ -196,10 +199,10 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            C.Missions.Where(item => idSet.Contains(item.Id))
+            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
                 .ToList()
                 .ForEach(item => item.Enabled = true);
-            C.Save();
+            OldConfig.Save();
         }
         else if (firstArg.ToLower() == "remove")
         {
@@ -207,10 +210,10 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            C.Missions.Where(item => idSet.Contains(item.Id))
+            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
                 .ToList()
                 .ForEach(item => item.Enabled = false);
-            C.Save();
+            OldConfig.Save();
         }
         else if (firstArg.ToLower() == "toggle")
         {
@@ -218,10 +221,10 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            C.Missions.Where(item => idSet.Contains(item.Id))
+            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
                 .ToList()
                 .ForEach(item => item.Enabled = !item.Enabled);
-            C.Save();
+            OldConfig.Save();
         }
         else if (firstArg.ToLower() == "only")
         {
@@ -229,8 +232,8 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            C.Missions.ForEach(item => item.Enabled = idSet.Contains(item.Id));
-            C.Save();
+            OldConfig.Missions.ForEach(item => item.Enabled = idSet.Contains(item.Id));
+            OldConfig.Save();
         }
         else if (firstArg.ToLower() == "flag")
         {
