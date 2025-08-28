@@ -161,6 +161,8 @@ namespace ICE.Config
         public bool TurninGold { get; set; } = false;
         public bool TurninSilver { get; set; } = false;
         public bool TurninBronze { get; set; } = false;
+        public bool Use_BuildinPreset { get; set; } = false;
+        public string AutoHookPresetName { get; set; } = string.Empty;
     }
 
     public class GatherProfile

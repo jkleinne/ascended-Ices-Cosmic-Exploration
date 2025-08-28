@@ -1154,8 +1154,40 @@ namespace ICE.Ui
                             ImGui.EndPopup();
                         }
                     }
+                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.Fish))
+                    {
+                        if (CenterButton($"Select Profile##Select_Fishing_Profile"))
+                        {
+                            ImGui.OpenPopup("Select Fishing Profile");
+                        }
+                        if (ImGui.BeginPopup("Select Fishing Profile"))
+                        {
+                            ImGui.Text($"Fishing profile: {missionInfo.Name}");
+                            ImGui.Separator();
+                            bool builtInPreset = missionConfig.Use_BuildinPreset;
+                            if (ImGui.Checkbox("Use Built In Preset", ref builtInPreset))
+                            {
+                                missionConfig.Use_BuildinPreset = builtInPreset;
+                                C.Save();
+                            }
+                            ImGuiEx.HelpMarker("Having this enabled means it will use the default preset that is included with the plugin for autohook. \n" +
+                                               "If you would like to use one that you already have in autohook, you can un-checkmark this and type the name of it below");
+                            using (ImRaii.Disabled(builtInPreset))
+                            {
+                                string presetName = missionConfig.AutoHookPresetName;
+                                ImGui.SetNextItemWidth(200);
+                                if (ImGui.InputText("Preset Name", ref presetName))
+                                {
+                                    missionConfig.AutoHookPresetName = presetName;
+                                    C.Save();
+                                }
+                            }
 
-                    ImGui.TableNextColumn();
+                            ImGui.EndPopup();
+                        }
+                    }
+
+                        ImGui.TableNextColumn();
                     int notesCount = 0;
 
                     ImGui.Dummy(new(2, 0));

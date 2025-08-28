@@ -31,6 +31,30 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.SetClipboardText(GenerateMissionScoreDictionaryCode());
             }
+            if (ImGui.Button("Export Fishing Missions"))
+            {
+                var fishingMissions = CosmicHelper.MissionInfoDict
+                    .Where(kvp => kvp.Value.Attributes.HasFlag(MissionAttributes.Fish)) // Adjust flag name as needed
+                    .OrderBy(kvp => kvp.Key) // Optional: sort by mission ID
+                    .Select(kvp => $"    [{kvp.Key}] = \"\",")
+                    .ToArray();
+
+                if (fishingMissions.Length > 0)
+                {
+                    var result = string.Join(Environment.NewLine, fishingMissions);
+
+                    // Copy to clipboard
+                    ImGui.SetClipboardText(result);
+
+                    // Optional: Show a tooltip or notification
+                    // You could also use a popup or status message here
+                    ImGui.SetTooltip($"Copied {fishingMissions.Length} fishing missions to clipboard!");
+                }
+                else
+                {
+                    ImGui.SetTooltip("No fishing missions found!");
+                }
+            }
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                             ImGuiTableFlags.Borders |
@@ -68,8 +92,6 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Score");
 
                 ImGui.TableHeadersRow();
-
-                var missionList = CosmicHelper.MissionInfoDict.Where(mission => mission.Value.Name.ToLower().Contains(CraftingTableSearchText.ToLower()));
 
                 foreach (var entry in CosmicHelper.MissionInfoDict)
                 {

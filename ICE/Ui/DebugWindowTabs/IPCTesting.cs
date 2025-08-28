@@ -15,6 +15,7 @@ namespace ICE.Ui.DebugWindowTabs
         private static int YLoc = 0;
         private static string importString = new string('\0', 2048); // Pre-allocate buffer
         private static string SwapToPreset = string.Empty;
+        private static uint missionId = 0;
 
         public static unsafe void Draw()
         {
@@ -53,6 +54,28 @@ namespace ICE.Ui.DebugWindowTabs
             if (ImGui.Button("Swap"))
             {
                 P.AutoHook.SetPreset(SwapToPreset);
+            }
+            if (ImGui.Button("Apply Temp"))
+            {
+                P.AutoHook.CreateAndSelectAnonymousPreset(importString);
+            }
+            ImGui.SetNextItemWidth(200);
+            ImGui.InputUInt("Select mission to import", ref missionId);
+            if (ImGui.Button("Apply Mission Presets"))
+            {
+                P.AutoHook.DeleteAllAnonymousPresets();
+                var mission = CosmicHelper.MissionInfoDict[missionId];
+                if (mission != null)
+                {
+                    if (mission.Attributes.HasFlag(MissionAttributes.Fish))
+                    {
+                        var fishingPresets = GatheringUtil.FishingPreset[missionId];
+                        foreach (var preset in fishingPresets)
+                        {
+                            P.AutoHook.CreateAndSelectAnonymousPreset(preset);
+                        }
+                    }
+                }
             }
         }
     }

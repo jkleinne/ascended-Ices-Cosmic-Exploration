@@ -46,6 +46,7 @@ namespace ICE.Scheduler.Tasks
         private static GatheringUtil.FisherSpotInfo fishingEntry = new();
 
         private static readonly Random _random = new Random();
+        private static uint missionToAbandon = 0;
 
         public static void Enqueue()
         {
@@ -613,9 +614,6 @@ namespace ICE.Scheduler.Tasks
                     MissionKeeper[rank].Add(mission.MissionId);
                 }
 
-                IceLogging.Debug("Setting reset mission to 0 for reset", "[Find Reroll]");
-                uint missionToAbandon = 0;
-
                 foreach (var rank in RankId)
                 {
                     var missionSet = MissionKeeper[rank];
@@ -664,23 +662,29 @@ namespace ICE.Scheduler.Tasks
                     (MissionKeeper[4].Count > 0 || MissionKeeper[5].Count > 0))
                 {
                     // If both A and A-EX ranks have missions, alternate between them
-                    if (MissionKeeper[4].Count > 0 && MissionKeeper[5].Count > 0)
+                    if (MissionKeeper[4].Count > 0 || MissionKeeper[5].Count > 0)
                     {
                         if (Mission_Settings.previouslyAbandoned == 5)
                         {
                             Mission_Settings.previouslyAbandoned = 4;
                             missionToAbandon = MissionKeeper[4].First();
+                            IceLogging.Info("Setting previous abandon to 4");
+                            IceLogging.Info($"Abandoning: {missionToAbandon}");
                         }
                         else if (Mission_Settings.previouslyAbandoned == 4)
                         {
                             Mission_Settings.previouslyAbandoned = 5;
                             missionToAbandon = MissionKeeper[5].First();
+                            IceLogging.Info("Setting previous abandon to 5", "[Abandoning Mission]");
+                            IceLogging.Info($"Abandoning: {missionToAbandon}", "[Abandoning Mission]");
                         }
                         else
                         {
                             // Default to A-EX rank first time
                             Mission_Settings.previouslyAbandoned = 5;
                             missionToAbandon = MissionKeeper[5].First();
+                            IceLogging.Info("No previous abandon was found, setting it to 5", "[Abandoning Mission]");
+                            IceLogging.Info($"Abandoning: {missionToAbandon}", "[Abandoning Mission]");
                         }
                     }
                     // If only A rank has missions
@@ -742,6 +746,7 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission != 0)
             {
                 // shouldn't really end up in this state, but as a failsafe of "we're in a mission", returning true to get out of here.
+                SchedulerMain.State = IceState.ExecutingMission;
                 return true;
             }
             else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
