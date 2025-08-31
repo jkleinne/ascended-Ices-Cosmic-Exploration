@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Lumina.Excel.Sheets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -26,7 +28,58 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? CheckScore()
         {
-            return true;
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo))
+            {
+                // Hud info should be available. Now time to check the mission status.
+                var id = CosmicHelper.CurrentLunarMission;
+                var missionEntry = CosmicHelper.MissionInfoDict[id];
+
+                if (missionEntry != null)
+                {
+                    // Should never be null, unless we somehow have a new mission that isn't in the plugin. 
+                    if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                    {
+                        // This can't really be dictated by score, it goes off of if you've met the threshold of
+                        // -> Gathered enough fish in the time 
+                        // -> Gathered enough "different" kinds of fish in the time 
+
+                        if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreVariety))
+                        {
+                            // Need to check all fish and see if you've met the threshold
+                        }
+                        else
+                        {
+                            // Just need a number count at this point.
+                            // Check to see how many fish you've gotten, and how many is required from the mission
+                        }
+                    }
+                    else if (missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        // Need to just generally check to see if you've gotten enough fish to turnin from here.
+                    }
+                    else
+                    {
+                        // This is just a general score check from here. Check to see if
+                        // -> You have met the minimul score t
+                        // -> 
+                    }
+                }
+
+            }
+            else
+            {
+                // Addon wasn't visiable/ready. Opening it up.
+                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
+                {
+                    if (EzThrottler.Throttle("Opening the moon hud", 1000))
+                    {
+                        moonHud.Mission();
+                        IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool? CheckCraft()

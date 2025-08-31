@@ -778,5 +778,19 @@ public static unsafe partial class CosmicHelper
         public int NeededXP { get; set; }
     }
 
+    public class FishingInfo
+    {
+        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
+        public uint BronzeScore { get; set; } = 0;
+        public uint SilverScore { get; set; } = 0;
+        public uint GoldScore { get; set; } = 0;
+        /// <summary>
+        /// 
+        /// </summary>
+        public uint FishCountRequired { get; set; } = 0;
+    }
+
+    public static Dictionary<>
+
     #endregion
 }

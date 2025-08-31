@@ -12,6 +12,7 @@ public static partial class CosmicHelper
     /// Gives the current mission that is active
     /// </summary>
     public static unsafe uint CurrentLunarMission => WKSManager.Instance()->CurrentMissionUnitRowId;
+    public static unsafe uint CurrentBait => WKSManager.Instance()->FishingBait;
     public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
 
     public static Dictionary<int, string> ExpDictionary = new()

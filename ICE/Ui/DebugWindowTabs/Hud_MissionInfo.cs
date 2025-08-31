@@ -99,6 +99,12 @@ namespace ICE.Ui.DebugWindowTabs
                         x.Abandon();
                     }
 
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Bait ID");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{CosmicHelper.CurrentBait}");
+
 
                     ImGui.EndTable();
                 }
