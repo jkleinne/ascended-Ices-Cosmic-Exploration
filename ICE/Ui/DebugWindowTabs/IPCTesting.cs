@@ -16,6 +16,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static string importString = new string('\0', 2048); // Pre-allocate buffer
         private static string SwapToPreset = string.Empty;
         private static uint missionId = 0;
+        private static uint baitId = 0;
+        private static bool baitSwapped = false;
 
         public static unsafe void Draw()
         {
@@ -77,6 +79,29 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                 }
             }
+            ImGui.InputUInt("Bait ID", ref baitId);
+            if (ImGui.Button("Swap to bait"))
+            {
+                 SwapBait(baitId);
+            }
+        }
+
+        private static void SwapBait(uint baitId)
+        {
+            _ = Task.Run(async () =>
+            {
+                baitSwapped = await TaskSwapBait(baitId);
+            });
+
+            _ = Task.Run(async () =>
+            {
+                await P.AutoHook.SwapBaitById(baitId);
+            });
+        }
+
+        private static async Task<bool> TaskSwapBait(uint bait)
+        {
+            return await P.AutoHook.SwapBaitById(bait);
         }
     }
 }

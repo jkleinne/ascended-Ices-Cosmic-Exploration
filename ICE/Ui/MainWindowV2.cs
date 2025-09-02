@@ -119,7 +119,7 @@ namespace ICE.Ui
             ["DRank"] = new List<(uint id, bool gather, bool enabled)> ()
         };
 
-        private string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Map Location"];
+        private string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Exp V", "Map Location"];
         private int missionSelectedOption = C.TableSortOption;
         private List<(uint id, bool gather, bool enabled)> SortMissionList(List<(uint id, bool gather, bool enabled)> missions)
         {
@@ -909,6 +909,7 @@ namespace ICE.Ui
                 ImGui.TableSetupColumn("II", ImGuiTableColumnFlags.WidthFixed, xpWidth);
                 ImGui.TableSetupColumn("III", ImGuiTableColumnFlags.WidthFixed, xpWidth);
                 ImGui.TableSetupColumn("IV", ImGuiTableColumnFlags.WidthFixed, xpWidth);
+                ImGui.TableSetupColumn("V", ImGuiTableColumnFlags.WidthFixed, xpWidth);
 
                 ImGui.TableSetupColumn("Turnin Mode", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Select Turnin").X + padding + 15);
                 ImGui.TableSetupColumn("Gathering Profile", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Gathering Profile").X + padding + 15);
@@ -1003,7 +1004,7 @@ namespace ICE.Ui
                     CenterTextInTableCell(missionInfo.missionScore.ToString());
 
                     // XP Columns
-                    for (int i = 1; i < 5; i++)
+                    for (int i = 1; i < 6; i++)
                     {
                         ImGui.TableNextColumn();
                         var expReward = missionInfo.ExperienceRewards.Where(exp => exp.Type == i).FirstOrDefault();

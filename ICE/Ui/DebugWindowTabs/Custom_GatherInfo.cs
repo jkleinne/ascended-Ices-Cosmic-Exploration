@@ -1,4 +1,7 @@
-﻿using Lumina.Excel.Sheets;
+﻿using Dalamud.Interface;
+using ECommons;
+using ICE.Enums;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,29 +24,25 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool isEditMode = false;
 
         // Temporary edit fields
-        private static uint tempAmount;
+        private static uint tempAmount = 0;
         private static Dictionary<int, int> tempXpTable = new();
-        private static uint tempBronzeScore;
-        private static uint tempSilverScore;
-        private static uint tempGoldScore;
-
-        // Additional temp fields for other properties
-        private static uint tempAttributes;
-        private static uint tempWeather;
-        private static uint tempClassScore;
-        private static uint tempCosmoCredit;
-        private static uint tempLunarCredit;
-        private static Vector2 tempMapPosition;
-        private static float tempRadius;
-        private static uint tempTerritoryId;
+        private static uint tempBronzeScore = 0;
+        private static uint tempSilverScore = 0;
+        private static uint tempGoldScore = 0;
+        private static MissionAttributes tempAttributes = MissionAttributes.None;
+        private static CosmicWeather tempWeather = CosmicWeather.FairSkies;
+        private static uint tempClassScore = 0;
+        private static uint tempCosmoCredit = 0;
+        private static uint tempLunarCredit = 0;
+        private static Vector2 tempMapPosition = Vector2.Zero;
+        private static float tempRadius = 0f;
+        private static uint tempTerritoryId = 0;
         private static HashSet<uint> tempJobs = new();
         private static HashSet<uint> tempPreviousMissions = new();
 
-        // For adding new XP entries
         private static int newXpType = 1;
         private static int newXpAmount = 0;
 
-        // For editing individual items in RequiredFish
         private static Dictionary<string, int> tempItemAmounts = new();
         private static string newFishItemName = "";
         private static uint newFishItemId = 0;
@@ -52,6 +51,20 @@ namespace ICE.Ui.DebugWindowTabs
         private static uint jobToAdd = 0;
         private static uint missionToAdd = 0;
         private static Dictionary<string, uint> newIds = new();
+
+        // For selective import
+        private static bool showImportPopup = false;
+        private static bool importAttributes = true;
+        private static bool importWeather = true;
+        private static bool importClassScore = true;
+        private static bool importCredits = true;
+        private static bool importPreviousMissions = true;
+        private static bool importScores = true;
+        private static bool importLocation = true;
+        private static bool importJobs = true;
+        private static bool importXpRewards = true;
+        private static bool importCrafting = true;
+        private static bool importGathering = true;
 
         public static void Draw()
         {
@@ -151,7 +164,7 @@ namespace ICE.Ui.DebugWindowTabs
                         selectedMission = id;
                         if (isEditMode)
                         {
-                            isEditMode = false;
+                            isEditMode = false; // Making sure to exit the editing mode... can't be in an edit mid mission selection.
                         }
                     }
                 }
@@ -203,6 +216,12 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.SetClipboardText(formattedCode);
             }
 
+            ImGui.SameLine();
+            if (ImGui.Button("Selective Import", new Vector2(120, 0)))
+            {
+                showImportPopup = true;
+            }
+
             ImGui.Separator();
 
             if (ImGui.BeginTabBar("MissionTabs"))
@@ -239,6 +258,88 @@ namespace ICE.Ui.DebugWindowTabs
 
                 ImGui.EndTabBar();
             }
+
+            // Handle selective import popup
+            if (showImportPopup)
+            {
+                ImGui.OpenPopup("Selective Import");
+                showImportPopup = false;
+            }
+
+            if (ImGui.BeginPopupModal("Selective Import", ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.Text($"Select which properties to import for Mission {selectedMission}:");
+                ImGui.Separator();
+
+                // Check if the mission exists in the old dictionary
+                bool canImport = CosmicHelper.SheetMissionDict.ContainsKey(selectedMission);
+
+                if (!canImport)
+                {
+                    ImGui.TextColored(new Vector4(1, 0, 0, 1), $"Mission {selectedMission} not found in old dictionary!");
+                }
+                else
+                {
+                    ImGui.Text("Basic Properties:");
+                    ImGui.Checkbox("Attributes", ref importAttributes);
+                    ImGui.Checkbox("Weather", ref importWeather);
+                    ImGui.Checkbox("Class Score", ref importClassScore);
+
+                    ImGui.Separator();
+                    ImGui.Text("Rewards:");
+                    ImGui.Checkbox("Credits (Cosmo/Lunar)", ref importCredits);
+                    ImGui.Checkbox("XP Rewards", ref importXpRewards);
+
+                    ImGui.Separator();
+                    ImGui.Text("Requirements:");
+                    ImGui.Checkbox("Scores (Bronze/Silver/Gold)", ref importScores);
+                    ImGui.Checkbox("Previous Missions", ref importPreviousMissions);
+                    ImGui.Checkbox("Jobs", ref importJobs);
+
+                    ImGui.Separator();
+                    ImGui.Text("Location & Content:");
+                    ImGui.Checkbox("Location (Territory/Position/Radius)", ref importLocation);
+                    ImGui.Checkbox("Crafting Info", ref importCrafting);
+                    ImGui.Checkbox("Gathering Info", ref importGathering);
+                }
+
+                ImGui.Separator();
+
+                if (canImport && ImGui.Button("Import Selected", new Vector2(120, 0)))
+                {
+                    SelectiveImportMission(selectedMission, missionInfo);
+                    if (isEditMode)
+                    {
+                        // Refreshes the edit mode with the new imported values
+                        StartEditMode(missionInfo);
+                    }
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Select All", new Vector2(80, 0)))
+                {
+                    importAttributes = importWeather = importClassScore = importCredits =
+                    importPreviousMissions = importScores = importLocation = importJobs =
+                    importXpRewards = importCrafting = importGathering = true;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Clear All", new Vector2(80, 0)))
+                {
+                    importAttributes = importWeather = importClassScore = importCredits =
+                    importPreviousMissions = importScores = importLocation = importJobs =
+                    importXpRewards = importCrafting = importGathering = false;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Cancel", new Vector2(80, 0)))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
         }
 
         private static void DrawBasicInfo(uint missionId)
@@ -253,8 +354,42 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.InputUInt("Territory ID", ref tempTerritoryId);
                 ImGui.InputFloat2("Map Position", ref tempMapPosition);
                 ImGui.InputFloat("Radius", ref tempRadius);
-                ImGui.InputUInt("Attributes", ref tempAttributes);
-                ImGui.InputUInt("Weather", ref tempWeather);
+
+                // Attributes as checkboxes
+                ImGui.Text("Attributes:");
+                ImGui.Indent();
+
+                // Get all defined enum values
+                var attributeValues = Enum.GetValues<MissionAttributes>()
+                    .Where(attr => attr != MissionAttributes.None)
+                    .ToArray();
+
+                foreach (var attribute in attributeValues)
+                {
+                    bool hasAttribute = tempAttributes.HasFlag(attribute);
+                    if (ImGui.Checkbox(attribute.ToString(), ref hasAttribute))
+                    {
+                        if (hasAttribute)
+                            tempAttributes |= attribute;
+                        else
+                            tempAttributes &= ~attribute;
+                    }
+                }
+
+                ImGui.Unindent();
+
+                // Weather as dropdown
+                ImGui.Text("Weather:");
+                ImGui.Indent();
+                var weatherValues = Enum.GetValues<CosmicWeather>();
+                int currentWeatherIndex = (int)tempWeather;
+
+                if (ImGui.Combo("##Weather", ref currentWeatherIndex, weatherValues.Select(w => w.ToString()).ToArray(), weatherValues.Length))
+                {
+                    tempWeather = weatherValues[currentWeatherIndex];
+                }
+                ImGui.Unindent();
+
                 ImGui.InputUInt("Class Score", ref tempClassScore);
 
                 ImGui.Text("Jobs:");
@@ -318,8 +453,26 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Text($"Territory ID: {missionInfo.TerritoryId}");
                 ImGui.Text($"Map Position: {missionInfo.MapPosition}");
                 ImGui.Text($"Radius: {missionInfo.Radius}");
-                ImGui.Text($"Attributes: {missionInfo.Attributes}");
-                ImGui.Text($"Weather: {missionInfo.Weather}");
+
+                // Display attributes in a readable format
+                if (missionInfo.Attributes != MissionAttributes.None)
+                {
+                    var attributes = (MissionAttributes)missionInfo.Attributes;
+                    var attributesList = Enum.GetValues<MissionAttributes>()
+                        .Where(attr => attr != MissionAttributes.None && attributes.HasFlag(attr))
+                        .Select(attr => attr.ToString())
+                        .ToList();
+
+                    ImGui.Text($"Attributes: {string.Join(", ", attributesList)}");
+                }
+                else
+                {
+                    ImGui.Text("Attributes: None");
+                }
+
+                var weather = missionInfo.Weather;
+                ImGui.Text($"Weather: {weather}");
+
                 ImGui.Text($"Class Score: {missionInfo.ClassScore}");
 
                 if (missionInfo.Jobs != null && missionInfo.Jobs.Count > 0)
@@ -481,14 +634,40 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Text("(Edit mode - You can modify item counts)");
             }
 
-            // Gathering minimum
-            if (missionInfo.Gathering_Min != null)
+            // Gathering minimum TODO: Make the add items specify which one to add to
+            if (missionInfo.Gathering_Min != null && missionInfo.Gathering_Min.Count > 0)
             {
-                ImGui.Text($"Minimum Gathering Items: {missionInfo.Gathering_Min}");
-                if (isEditMode)
+                List<uint> itemsToRemove = new();
+                foreach (var item in missionInfo.Gathering_Min)
                 {
-                    // TODO: Add Editing the Gathering info
+                    uint itemId = item.Key;
+                    var itemCount = item.Value;
+                    var itemName = Svc.Data.GetExcelSheet<Item>().GetRow(itemId).Name;
+
+                    ImGui.PushID(itemId);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text($"{itemName}");
+
+                    if (isEditMode)
+                    {
+                        ImGui.SameLine();
+
+                    }
+                    else
+                    {
+                        ImGui.SameLine();
+                        ImGui.Text($" | Id: {itemId} | Count: {itemCount}");
+                    }
+
+                    if (ImGui.Button($"Remove##Remove_{itemName}"))
+                    {
+                        itemsToRemove.Add(itemId);
+                    }
+
+                    ImGui.PopID();
                 }
+
+
             }
 
             ImGui.Separator();
@@ -504,26 +683,24 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.PushID(itemName);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text($"{itemName}");
+                    ImGui.Text($"{itemName} Ids:");
 
                     if (isEditMode)
                     {
-                        // Allow editing individual item IDs
-                        ImGui.SameLine();
-                        ImGui.Text("IDs:");
-
                         List<uint> idsToRemove = new();
                         List<uint> idsToAdd = new();
 
                         foreach (var id in itemIds)
                         {
-                            ImGui.SameLine();
                             ImGui.Text($"{id}");
                             ImGui.SameLine();
-                            if (ImGui.SmallButton($"X##remove{id}"))
+
+                            ImGui.PushFont(UiBuilder.IconFont);
+                            if (ImGui.SmallButton($"{FontAwesomeIcon.Trash.ToIconString()}##remove{id}"))
                             {
                                 idsToRemove.Add(id);
                             }
+                            ImGui.PopFont();
                         }
 
                         if (!newIds.ContainsKey(itemName))
@@ -550,7 +727,7 @@ namespace ICE.Ui.DebugWindowTabs
                     else
                     {
                         ImGui.SameLine();
-                        ImGui.Text($"| IDs: {string.Join(", ", itemIds)} | Count: {itemIds.Count}");
+                        ImGui.Text($" {string.Join(", ", itemIds)} | Count: {itemIds.Count}");
                     }
 
                     ImGui.SameLine();
@@ -674,30 +851,41 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static void StartEditMode(dynamic missionInfo)
         {
-            tempAmount = missionInfo.FishCountRequired;
-            tempBronzeScore = missionInfo.BronzeScore;
-            tempSilverScore = missionInfo.SilverScore;
-            tempGoldScore = missionInfo.GoldScore;
-            tempXpTable = new Dictionary<int, int>(missionInfo.RelicXpInfo ?? new Dictionary<int, int>());
+            // Initialize temp values with proper null checks and default values
+            tempAmount = missionInfo.FishCountRequired ?? 0;
+            tempBronzeScore = missionInfo.BronzeScore ?? 0;
+            tempSilverScore = missionInfo.SilverScore ?? 0;
+            tempGoldScore = missionInfo.GoldScore ?? 0;
 
-            tempAttributes = missionInfo.Attributes;
-            tempWeather = missionInfo.Weather;
-            tempClassScore = missionInfo.ClassScore;
-            tempCosmoCredit = missionInfo.CosmoCredit;
-            tempLunarCredit = missionInfo.LunarCredit;
-            tempMapPosition = missionInfo.MapPosition;
-            tempRadius = missionInfo.Radius;
-            tempTerritoryId = missionInfo.TerritoryId;
+            // Initialize XP table with null check
+            tempXpTable = missionInfo.RelicXpInfo != null
+                ? new Dictionary<int, int>(missionInfo.RelicXpInfo)
+                : new Dictionary<int, int>();
 
-            if (missionInfo.Jobs != null)
-                tempJobs = new HashSet<uint>(missionInfo.Jobs);
-            else
-                tempJobs = new HashSet<uint>();
+            // Handle MissionAttributes enum properly
+            tempAttributes = missionInfo.Attributes != null
+                ? (MissionAttributes)missionInfo.Attributes
+                : MissionAttributes.None;
 
-            if (missionInfo.PreviousMissions != null)
-                tempPreviousMissions = new HashSet<uint>(missionInfo.PreviousMissions);
-            else
-                tempPreviousMissions = new HashSet<uint>();
+            // Handle CosmicWeather enum properly  
+            tempWeather = missionInfo.Weather != null
+                ? (CosmicWeather)missionInfo.Weather
+                : CosmicWeather.FairSkies;
+            tempClassScore = missionInfo.ClassScore ?? 0;
+            tempCosmoCredit = missionInfo.CosmoCredit ?? 0;
+            tempLunarCredit = missionInfo.LunarCredit ?? 0;
+            tempMapPosition = missionInfo.MapPosition ?? Vector2.Zero;
+            tempRadius = missionInfo.Radius ?? 0f;
+            tempTerritoryId = missionInfo.TerritoryId ?? 0;
+
+            // Initialize collections with null checks
+            tempJobs = missionInfo.Jobs != null
+                ? new HashSet<uint>(missionInfo.Jobs)
+                : new HashSet<uint>();
+
+            tempPreviousMissions = missionInfo.PreviousMissions != null
+                ? new HashSet<uint>(missionInfo.PreviousMissions)
+                : new HashSet<uint>();
         }
 
         private static void SaveChanges(dynamic missionInfo)
@@ -973,6 +1161,94 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         newEntry.Gathering_Min = gatheringInfo.MinGatherItems;
                     }
+                }
+            }
+        }
+
+        private static void SelectiveImportMission(uint missionId, dynamic missionInfo)
+        {
+            if (!CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission))
+                return;
+
+            // Basic Properties
+            if (importAttributes)
+                missionInfo.Attributes = mission.Attributes;
+
+            if (importWeather)
+                missionInfo.Weather = mission.Weather;
+
+            if (importClassScore)
+                missionInfo.ClassScore = mission.missionScore;
+
+            // Rewards
+            if (importCredits)
+            {
+                missionInfo.CosmoCredit = mission.CosmoCredit;
+                missionInfo.LunarCredit = mission.LunarCredit;
+            }
+
+            if (importXpRewards)
+            {
+                if (missionInfo.RelicXpInfo == null)
+                    missionInfo.RelicXpInfo = new Dictionary<int, int>();
+
+                foreach (var xp in mission.ExperienceRewards)
+                {
+                    missionInfo.RelicXpInfo[xp.Type] = xp.Amount;
+                }
+            }
+
+            // Requirements
+            if (importScores)
+            {
+                missionInfo.BronzeScore = mission.BronzeRequirement;
+                missionInfo.SilverScore = mission.SilverRequirement;
+                missionInfo.GoldScore = mission.GoldRequirement;
+            }
+
+            if (importPreviousMissions)
+            {
+                if (missionInfo.PreviousMissions == null)
+                    missionInfo.PreviousMissions = new HashSet<uint>();
+
+                if (mission.PreviousMissionID != 0)
+                    missionInfo.PreviousMissions.Add(mission.PreviousMissionID);
+            }
+
+            if (importJobs)
+            {
+                if (missionInfo.Jobs == null)
+                    missionInfo.Jobs = new HashSet<uint>();
+
+                missionInfo.Jobs.Add(mission.JobId);
+                if (mission.JobId2 != 0) missionInfo.Jobs.Add(mission.JobId2);
+                if (mission.JobId3 != 0) missionInfo.Jobs.Add(mission.JobId3);
+            }
+
+            // Location & Content
+            if (importLocation)
+            {
+                missionInfo.TerritoryId = mission.TerritoryId;
+                missionInfo.MapPosition = mission.MapPosition;
+                missionInfo.Radius = mission.Radius;
+            }
+
+            if (importCrafting)
+            {
+                if (CosmicHelper.MoonRecipies.TryGetValue(missionId, out var craftingInfo))
+                {
+                    if (craftingInfo.MainCraftsDict.Count > 0)
+                        missionInfo.Crafts_Main = craftingInfo.MainCraftsDict;
+                    if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
+                        missionInfo.Crafts_Pre = craftingInfo.PreCraftDict;
+                }
+            }
+
+            if (importGathering)
+            {
+                if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatheringInfo))
+                {
+                    missionInfo.Gathering_Min = gatheringInfo.MinGatherItems;
                 }
             }
         }
