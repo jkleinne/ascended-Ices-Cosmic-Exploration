@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using static ICE.Utilities.CosmicHelper;
 using static ICE.Enums.MissionAttributes;
 using static ICE.Utilities.ExcelHelper;
+using Lumina.Excel.Sheets;
 
 namespace ICE;
 
@@ -41,11 +42,14 @@ public sealed partial class ICE
             uint previousMissionId = item.LockedBehind.RowId;
 
             uint timeAndWeather = item.WKSMissionLotterySpecialCond.RowId;
-            uint time = 0;
+            uint startTime = 0;
+            uint endTime = 0;
             CosmicWeather weather = CosmicWeather.FairSkies;
-            if (timeAndWeather <= 12)
+            if (!CosmicHelper.WeatherSelection.Contains(timeAndWeather))
             {
-                time = timeAndWeather;
+                var timeSheet = Svc.Data.GetExcelSheet<WKSMissionLotterySpecialCond>().GetRow(timeAndWeather);
+                startTime = timeSheet.Unknown1; // Start Time
+                endTime = timeSheet.Unknown2;
             }
             else
             {
@@ -97,7 +101,7 @@ public sealed partial class ICE
             };
             attributes |= isCritical ? Critical : None;
             attributes |= weather != CosmicWeather.FairSkies ? ProvisionalWeather : None;
-            attributes |= time != 0 ? ProvisionalTimed : None;
+            attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
             attributes |= previousMissionId != 0 ? ProvisionalSequential : None;
 
             uint bronze = todo.Unknown2; // Bronze score for Score missions
@@ -365,7 +369,8 @@ public sealed partial class ICE
                     Rank = rank,
                     Attributes = attributes,
                     TimeLimit = timeLimit,
-                    Time = time,
+                    StartTime = startTime,
+                    EndTime = endTime,
                     Weather = weather,
                     RecipeId = RecipeId,
                     BronzeRequirement = bronze,

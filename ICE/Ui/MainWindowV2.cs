@@ -690,11 +690,11 @@ namespace ICE.Ui
 
                             ImGui.TextWrapped(mission.Weather.ToString());
                         }
-                        else if (mission.Time != 0)
+                        else if (mission.StartTime != 0 && mission.EndTime != 0)
                         {
                             hasPreviousNotes = true;
 
-                            ImGui.TextWrapped($"{2 * (mission.Time - 1)}:00 - {2 * (mission.Time)}:00");
+                            ImGui.TextWrapped($"{mission.StartTime}:00 - {mission.EndTime}:00");
                         }
                         else if (mission.PreviousMissionID != 0)
                         {
@@ -1242,7 +1242,7 @@ namespace ICE.Ui
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"{2 * (missionInfo.Time - 1)}:00 - {2 * (missionInfo.Time)}:00");
+                            ImGui.Text($"{missionInfo.StartTime}:00 - {missionInfo.EndTime}:00");
                             ImGui.EndTooltip();
                         }
                         notesCount++;

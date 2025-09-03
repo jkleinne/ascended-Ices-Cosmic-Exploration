@@ -39,7 +39,7 @@ internal class DebugWindow : Window
                                    "Map Test", "Gather Editor",
                                    "Navmesh Testing", "Relic Info",
                                    "TaskManager Testing", "Table: Item List",
-                                   "Custom Item List"];
+                                   "Custom Item List", "Table: Special Missions"];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
 
@@ -87,6 +87,8 @@ internal class DebugWindow : Window
                 case 13: NewTask.Draw(); break;
                 case 14: Table_CustomItems.Draw(); break;
                 case 15: Custom_GatherInfo.Draw(); break;
+                case 16: Table_TimeWeather.Draw(); break;
+
                 default: ImGui.Text("Unknown Debug View"); break;
             }
 

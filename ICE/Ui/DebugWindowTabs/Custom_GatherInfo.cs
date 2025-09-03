@@ -31,11 +31,13 @@ namespace ICE.Ui.DebugWindowTabs
         private static uint tempGoldScore = 0;
         private static MissionAttributes tempAttributes = MissionAttributes.None;
         private static CosmicWeather tempWeather = CosmicWeather.FairSkies;
+        private static uint tempStartTime = 0;
+        private static uint tempEndTime = 0;
         private static uint tempClassScore = 0;
         private static uint tempCosmoCredit = 0;
         private static uint tempLunarCredit = 0;
         private static Vector2 tempMapPosition = Vector2.Zero;
-        private static float tempRadius = 0f;
+        private static int tempRadius = 0;
         private static uint tempTerritoryId = 0;
         private static HashSet<uint> tempJobs = new();
         private static HashSet<uint> tempPreviousMissions = new();
@@ -56,6 +58,7 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool showImportPopup = false;
         private static bool importAttributes = true;
         private static bool importWeather = true;
+        private static bool importStartEndTime = true;
         private static bool importClassScore = true;
         private static bool importCredits = true;
         private static bool importPreviousMissions = true;
@@ -65,6 +68,10 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool importXpRewards = true;
         private static bool importCrafting = true;
         private static bool importGathering = true;
+
+        // For importing items
+        private static bool ImportToFisher = true;
+        private static bool ImportToGathering = false;
 
         public static void Draw()
         {
@@ -94,6 +101,13 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     string formattedCode = CopyAllMissions();
                     ImGui.SetClipboardText(formattedCode);
+                }
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Import all missing missions"))
+                {
+                    ImportAllMissions();
                 }
 
                 if (ImGui.BeginPopupModal("Confirm Delete"))
@@ -144,7 +158,8 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (CosmicHelper.Dict_CosmicMissions.Count > 0)
             {
-                foreach (var entry in CosmicHelper.Dict_CosmicMissions)
+                // Easy way to just sort by key. Nice instead of having to 
+                foreach (var entry in CosmicHelper.Dict_CosmicMissions.OrderBy(x => x.Key))
                 {
                     var id = entry.Key;
                     string missionName = SheetMissionDict.ContainsKey(id)
@@ -283,6 +298,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Basic Properties:");
                     ImGui.Checkbox("Attributes", ref importAttributes);
                     ImGui.Checkbox("Weather", ref importWeather);
+                    ImGui.Checkbox("Start | End time", ref importStartEndTime);
                     ImGui.Checkbox("Class Score", ref importClassScore);
 
                     ImGui.Separator();
@@ -319,17 +335,25 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.SameLine();
                 if (ImGui.Button("Select All", new Vector2(80, 0)))
                 {
-                    importAttributes = importWeather = importClassScore = importCredits =
-                    importPreviousMissions = importScores = importLocation = importJobs =
-                    importXpRewards = importCrafting = importGathering = true;
+                    importAttributes = importWeather 
+                    = importStartEndTime = importClassScore 
+                    = importCredits = importPreviousMissions 
+                    = importScores = importLocation 
+                    = importJobs = importXpRewards 
+                    = importCrafting = importGathering 
+                    = true;
                 }
 
                 ImGui.SameLine();
                 if (ImGui.Button("Clear All", new Vector2(80, 0)))
                 {
-                    importAttributes = importWeather = importClassScore = importCredits =
-                    importPreviousMissions = importScores = importLocation = importJobs =
-                    importXpRewards = importCrafting = importGathering = false;
+                    importAttributes = importWeather 
+                    = importStartEndTime = importClassScore 
+                    = importCredits = importPreviousMissions 
+                    = importScores = importLocation 
+                    = importJobs = importXpRewards 
+                    = importCrafting = importGathering 
+                    = false;
                 }
 
                 ImGui.SameLine();
@@ -353,7 +377,9 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.InputUInt("Territory ID", ref tempTerritoryId);
                 ImGui.InputFloat2("Map Position", ref tempMapPosition);
-                ImGui.InputFloat("Radius", ref tempRadius);
+                ImGui.InputInt("Radius", ref tempRadius);
+                ImGui.InputUInt("Start Time", ref tempStartTime);
+                ImGui.InputUInt("End Time", ref tempEndTime);
 
                 // Attributes as checkboxes
                 ImGui.Text("Attributes:");
@@ -453,6 +479,8 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Text($"Territory ID: {missionInfo.TerritoryId}");
                 ImGui.Text($"Map Position: {missionInfo.MapPosition}");
                 ImGui.Text($"Radius: {missionInfo.Radius}");
+                ImGui.Text($"Start Time: {missionInfo.StartTime}:00");
+                ImGui.Text($"End Time: {missionInfo.EndTime}:00");
 
                 // Display attributes in a readable format
                 if (missionInfo.Attributes != MissionAttributes.None)
@@ -898,6 +926,8 @@ namespace ICE.Ui.DebugWindowTabs
 
             missionInfo.Attributes = tempAttributes;
             missionInfo.Weather = tempWeather;
+            missionInfo.StartTime = tempStartTime;
+            missionInfo.EndTime = tempEndTime;
             missionInfo.ClassScore = tempClassScore;
             missionInfo.CosmoCredit = tempCosmoCredit;
             missionInfo.LunarCredit = tempLunarCredit;
@@ -912,49 +942,53 @@ namespace ICE.Ui.DebugWindowTabs
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("public static Dictionary<uint, FishingInfo> FishingMission = new()");
+            sb.AppendLine("public static Dictionary<uint, CosmicInfo> Dict_CosmicMissions = new()");
             sb.AppendLine("{");
 
-            foreach (var mission in CosmicHelper.Dict_CosmicMissions)
+            // Sort by key to ensure numerical order
+            foreach (var mission in CosmicHelper.Dict_CosmicMissions.OrderBy(x => x.Key))
             {
                 uint missionId = mission.Key;
-                var fishingInfo = mission.Value;
+                var missionInfo = mission.Value;
 
-                sb.AppendLine($"    [{missionId}] = new FishingInfo");
+                sb.AppendLine($"    [{missionId}] = new CosmicInfo");
                 sb.AppendLine("    {");
 
-                // All properties
-                sb.AppendLine($"        FishCountRequired = {fishingInfo.FishCountRequired},");
-                sb.AppendLine($"        BronzeScore = {fishingInfo.BronzeScore},");
-                sb.AppendLine($"        SilverScore = {fishingInfo.SilverScore},");
-                sb.AppendLine($"        GoldScore = {fishingInfo.GoldScore},");
-                sb.AppendLine($"        Attributes = {fishingInfo.Attributes},");
-                sb.AppendLine($"        Weather = {fishingInfo.Weather},");
-                sb.AppendLine($"        ClassScore = {fishingInfo.ClassScore},");
-                sb.AppendLine($"        CosmoCredit = {fishingInfo.CosmoCredit},");
-                sb.AppendLine($"        LunarCredit = {fishingInfo.LunarCredit},");
-                sb.AppendLine($"        TerritoryId = {fishingInfo.TerritoryId},");
-                sb.AppendLine($"        Radius = {fishingInfo.Radius}f,");
-                sb.AppendLine($"        MapPosition = new Vector2({fishingInfo.MapPosition.X}f, {fishingInfo.MapPosition.Y}f),");
+                // All properties (rest of your existing code stays the same)
+                sb.AppendLine($"        FishCountRequired = {missionInfo.FishCountRequired},");
+                sb.AppendLine($"        BronzeScore = {missionInfo.BronzeScore},");
+                sb.AppendLine($"        SilverScore = {missionInfo.SilverScore},");
+                sb.AppendLine($"        GoldScore = {missionInfo.GoldScore},");
+                string attributesString = FormatMissionAttributes(missionInfo.Attributes);
+                sb.AppendLine($"        Attributes = {attributesString},");
+                sb.AppendLine($"        Weather = CosmicWeather.{missionInfo.Weather},");
+                sb.AppendLine($"        StartTime = {missionInfo.StartTime},");
+                sb.AppendLine($"        EndTime = {missionInfo.EndTime},");
+                sb.AppendLine($"        ClassScore = {missionInfo.ClassScore},");
+                sb.AppendLine($"        CosmoCredit = {missionInfo.CosmoCredit},");
+                sb.AppendLine($"        LunarCredit = {missionInfo.LunarCredit},");
+                sb.AppendLine($"        TerritoryId = {missionInfo.TerritoryId},");
+                sb.AppendLine($"        Radius = {missionInfo.Radius},");
+                sb.AppendLine($"        MapPosition = new Vector2({missionInfo.MapPosition.X}f, {missionInfo.MapPosition.Y}f),");
 
                 // Jobs
-                if (fishingInfo.Jobs != null && fishingInfo.Jobs.Count > 0)
+                if (missionInfo.Jobs != null && missionInfo.Jobs.Count > 0)
                 {
-                    sb.AppendLine($"        Jobs = new HashSet<uint> {{ {string.Join(", ", fishingInfo.Jobs)} }},");
+                    sb.AppendLine($"        Jobs = new HashSet<uint> {{ {string.Join(", ", missionInfo.Jobs)} }},");
                 }
 
                 // Previous Missions
-                if (fishingInfo.PreviousMissions != null && fishingInfo.PreviousMissions.Count > 0)
+                if (missionInfo.PreviousMissions != null && missionInfo.PreviousMissions.Count > 0)
                 {
-                    sb.AppendLine($"        PreviousMissions = new HashSet<uint> {{ {string.Join(", ", fishingInfo.PreviousMissions)} }},");
+                    sb.AppendLine($"        PreviousMissions = new HashSet<uint> {{ {string.Join(", ", missionInfo.PreviousMissions)} }},");
                 }
 
                 // RelicXpInfo
-                if (fishingInfo.RelicXpInfo != null && fishingInfo.RelicXpInfo.Count > 0)
+                if (missionInfo.RelicXpInfo != null && missionInfo.RelicXpInfo.Count > 0)
                 {
                     sb.AppendLine("        RelicXpInfo = new Dictionary<int, int>");
                     sb.AppendLine("        {");
-                    foreach (var xp in fishingInfo.RelicXpInfo)
+                    foreach (var xp in missionInfo.RelicXpInfo)
                     {
                         sb.AppendLine($"            [{xp.Key}] = {xp.Value},");
                     }
@@ -962,12 +996,12 @@ namespace ICE.Ui.DebugWindowTabs
                 }
 
                 // RequiredFish
-                if (fishingInfo.RequiredFish != null && fishingInfo.RequiredFish.Any())
+                if (missionInfo.RequiredFish != null && missionInfo.RequiredFish.Any())
                 {
                     sb.AppendLine("        RequiredFish = new Dictionary<string, HashSet<uint>>");
                     sb.AppendLine("        {");
 
-                    foreach (var fish in fishingInfo.RequiredFish)
+                    foreach (var fish in missionInfo.RequiredFish)
                     {
                         string fishName = fish.Key;
                         var itemIds = fish.Value;
@@ -981,11 +1015,11 @@ namespace ICE.Ui.DebugWindowTabs
                 }
 
                 // Crafts_Main
-                if (fishingInfo.Crafts_Main != null && fishingInfo.Crafts_Main.Count > 0)
+                if (missionInfo.Crafts_Main != null && missionInfo.Crafts_Main.Count > 0)
                 {
-                    sb.AppendLine("        Crafts_Main = new Dictionary<uint, int>");
+                    sb.AppendLine("        Crafts_Main = new Dictionary<ushort, int>");
                     sb.AppendLine("        {");
-                    foreach (var craft in fishingInfo.Crafts_Main)
+                    foreach (var craft in missionInfo.Crafts_Main)
                     {
                         sb.AppendLine($"            [{craft.Key}] = {craft.Value},");
                     }
@@ -993,13 +1027,28 @@ namespace ICE.Ui.DebugWindowTabs
                 }
 
                 // Crafts_Pre
-                if (fishingInfo.Crafts_Pre != null && fishingInfo.Crafts_Pre.Count > 0)
+                if (missionInfo.Crafts_Pre != null && missionInfo.Crafts_Pre.Count > 0)
                 {
-                    sb.AppendLine("        Crafts_Pre = new Dictionary<uint, int>");
+                    sb.AppendLine("        Crafts_Pre = new Dictionary<ushort, int>");
                     sb.AppendLine("        {");
-                    foreach (var craft in fishingInfo.Crafts_Pre)
+                    foreach (var craft in missionInfo.Crafts_Pre)
                     {
                         sb.AppendLine($"            [{craft.Key}] = {craft.Value},");
+                    }
+                    sb.AppendLine("        },");
+                }
+
+                // Gathering_Min
+                if (missionInfo.Gathering_Min != null && missionInfo.Gathering_Min.Count > 0)
+                {
+                    sb.AppendLine("        Gathering_Min = new Dictionary<uint, int>");
+                    sb.AppendLine("        {");
+                    foreach (var gatherItem in missionInfo.Gathering_Min)
+                    {
+                        var itemId = gatherItem.Key;
+                        var amount = gatherItem.Value;
+
+                        sb.AppendLine($"            [{itemId}] = {amount},");
                     }
                     sb.AppendLine("        },");
                 }
@@ -1029,13 +1078,16 @@ namespace ICE.Ui.DebugWindowTabs
             sb.AppendLine($"    BronzeScore = {missionInfo.BronzeScore},");
             sb.AppendLine($"    SilverScore = {missionInfo.SilverScore},");
             sb.AppendLine($"    GoldScore = {missionInfo.GoldScore},");
-            sb.AppendLine($"    Attributes = {missionInfo.Attributes},");
-            sb.AppendLine($"    Weather = {missionInfo.Weather},");
+            string attributesString = FormatMissionAttributes(missionInfo.Attributes);
+            sb.AppendLine($"    Attributes = {attributesString},");
+            sb.AppendLine($"    Weather = CosmicWeather.{missionInfo.Weather},");
+            sb.AppendLine($"    StartTime = {missionInfo.StartTime},");
+            sb.AppendLine($"    EndTime = {missionInfo.EndTime},");
             sb.AppendLine($"    ClassScore = {missionInfo.ClassScore},");
             sb.AppendLine($"    CosmoCredit = {missionInfo.CosmoCredit},");
             sb.AppendLine($"    LunarCredit = {missionInfo.LunarCredit},");
             sb.AppendLine($"    TerritoryId = {missionInfo.TerritoryId},");
-            sb.AppendLine($"    Radius = {missionInfo.Radius}f,");
+            sb.AppendLine($"    Radius = {missionInfo.Radius},");
             sb.AppendLine($"    MapPosition = new Vector2({missionInfo.MapPosition.X}f, {missionInfo.MapPosition.Y}f),");
 
             // Jobs
@@ -1084,7 +1136,7 @@ namespace ICE.Ui.DebugWindowTabs
             // Crafts_Main
             if (missionInfo.Crafts_Main != null && missionInfo.Crafts_Main.Count > 0)
             {
-                sb.AppendLine("    Crafts_Main = new Dictionary<uint, int>");
+                sb.AppendLine("    Crafts_Main = new Dictionary<ushort, int>");
                 sb.AppendLine("    {");
                 foreach (var craft in missionInfo.Crafts_Main)
                 {
@@ -1096,7 +1148,7 @@ namespace ICE.Ui.DebugWindowTabs
             // Crafts_Pre
             if (missionInfo.Crafts_Pre != null && missionInfo.Crafts_Pre.Count > 0)
             {
-                sb.AppendLine("    Crafts_Pre = new Dictionary<uint, int>");
+                sb.AppendLine("    Crafts_Pre = new Dictionary<ushort, int>");
                 sb.AppendLine("    {");
                 foreach (var craft in missionInfo.Crafts_Pre)
                 {
@@ -1106,9 +1158,18 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             // Gathering_Min
-            if (missionInfo.Gathering_Min != null)
+            if (missionInfo.Gathering_Min != null && missionInfo.Gathering_Min.Count > 0)
             {
-                sb.AppendLine($"    Gathering_Min = {missionInfo.Gathering_Min},");
+                sb.AppendLine($"    Gathering_Min = new Dictionary<uint, int>");
+                sb.AppendLine("     {");
+                foreach (var gatherItem in missionInfo.Gathering_Min)
+                {
+                    var itemId = gatherItem.Key;
+                    var amount = gatherItem.Value;
+
+                    sb.AppendLine($"        [{itemId}] = {amount}, ");
+                }
+                sb.AppendLine($"    }}");
             }
 
             sb.AppendLine("},");
@@ -1133,17 +1194,80 @@ namespace ICE.Ui.DebugWindowTabs
                         BronzeScore = mission.BronzeRequirement,
                         SilverScore = mission.SilverRequirement,
                         GoldScore = mission.GoldRequirement,
-                        MapPosition = mission.MapPosition,
                         Radius = mission.Radius,
                         TerritoryId = mission.TerritoryId,
                     };
 
                     var newEntry = CosmicHelper.Dict_CosmicMissions[missionId];
+                    if (mission.MapPosition == new Vector2(-1024, -1024))
+                        newEntry.MapPosition = new Vector2(0, 0);
+                    else
+                        newEntry.MapPosition = mission.MapPosition;
+
+                    newEntry.StartTime = mission.StartTime;
+                    newEntry.EndTime = mission.EndTime;
+
                     newEntry.Jobs.Add(mission.JobId);
                     if (mission.JobId2 != 0) newEntry.Jobs.Add(mission.JobId2);
-                    if (mission.JobId3 != 0) newEntry.Jobs.Add(mission.JobId3);
 
                     foreach (var xp in mission.ExperienceRewards)
+                    {
+                        newEntry.RelicXpInfo[xp.Type] = xp.Amount;
+                    }
+
+                    // General information is added. Time to check for crafting/gathering/fishing specifics
+                    if (CosmicHelper.MoonRecipies.TryGetValue(missionId, out var craftingInfo))
+                    {
+                        if (craftingInfo.MainCraftsDict.Count > 0)
+                            newEntry.Crafts_Main = craftingInfo.MainCraftsDict;
+                        if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
+                            newEntry.Crafts_Pre = craftingInfo.PreCraftDict;
+                    }
+
+                    if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatheringInfo))
+                    {
+                        newEntry.Gathering_Min = gatheringInfo.MinGatherItems;
+                    }
+                }
+            }
+        }
+
+        private static void ImportAllMissions()
+        {
+            foreach (var mission in CosmicHelper.SheetMissionDict)
+            {
+                var missionId = mission.Key;
+                if (!CosmicHelper.Dict_CosmicMissions.ContainsKey(missionId))
+                {
+                    CosmicHelper.Dict_CosmicMissions[missionId] = new()
+                    {
+                        Attributes = mission.Value.Attributes,
+                        Weather = mission.Value.Weather,
+                        ClassScore = mission.Value.missionScore,
+                        CosmoCredit = mission.Value.CosmoCredit,
+                        LunarCredit = mission.Value.LunarCredit,
+                        PreviousMissions = new() { mission.Value.PreviousMissionID },
+                        BronzeScore = mission.Value.BronzeRequirement,
+                        SilverScore = mission.Value.SilverRequirement,
+                        GoldScore = mission.Value.GoldRequirement,
+                        Radius = mission.Value.Radius,
+                        TerritoryId = mission.Value.TerritoryId,
+                    };
+
+                    var newEntry = CosmicHelper.Dict_CosmicMissions[missionId];
+                    if (mission.Value.MapPosition == new Vector2(-1024, -1024))
+                        newEntry.MapPosition = new Vector2(0, 0);
+                    else
+                        newEntry.MapPosition = mission.Value.MapPosition;
+
+                    newEntry.StartTime = mission.Value.StartTime;
+                    newEntry.EndTime = mission.Value.EndTime;
+
+
+                    newEntry.Jobs.Add(mission.Value.JobId);
+                    if (mission.Value.JobId2 != 0) newEntry.Jobs.Add(mission.Value.JobId2);
+
+                    foreach (var xp in mission.Value.ExperienceRewards)
                     {
                         newEntry.RelicXpInfo[xp.Type] = xp.Amount;
                     }
@@ -1179,6 +1303,12 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (importClassScore)
                 missionInfo.ClassScore = mission.missionScore;
+
+            if (importStartEndTime)
+            {
+                missionInfo.StartTime = mission.StartTime;
+                missionInfo.EndTime = mission.EndTime;
+            }
 
             // Rewards
             if (importCredits)
@@ -1251,6 +1381,25 @@ namespace ICE.Ui.DebugWindowTabs
                     missionInfo.Gathering_Min = gatheringInfo.MinGatherItems;
                 }
             }
+        }
+
+        private static string FormatMissionAttributes(MissionAttributes attributes)
+        {
+            if (attributes == MissionAttributes.None)
+                return "MissionAttributes.None";
+
+            // Get all the individual flags that are set
+            var setFlags = Enum.GetValues<MissionAttributes>()
+                .Where(flag => flag != MissionAttributes.None && attributes.HasFlag(flag))
+                .Select(flag => $"MissionAttributes.{flag}")
+                .ToList();
+
+            // If only one flag is set, return it directly
+            if (setFlags.Count == 1)
+                return setFlags[0];
+
+            // If multiple flags are set, join them with " | "
+            return string.Join(" | ", setFlags);
         }
 
         private static string XpKind(int type)
