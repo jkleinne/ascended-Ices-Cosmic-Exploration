@@ -1,4 +1,5 @@
 ﻿using ECommons.Automation.LegacyTaskManager;
+using ECommons.GameHelpers;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -34,8 +35,8 @@ namespace ICE.Scheduler.Handlers
             if (Svc.ClientState.LocalPlayer is null)
                 return false;
 
-            if ((!CosmicHelper.GatheringJobList.Contains((uint)PlayerHelper.GetClassJobId()))
-             || (PlayerHelper.GetClassJobId() == 18 && !OldConfig.UseOnFisher)
+            if ((!CosmicHelper.GatheringJobList.Contains(Player.JobId))
+             || (Player.JobId == 18 && !OldConfig.UseOnFisher)
              || (PlayerHelper.GetGp() >= OldConfig.CordialMinGp))
                 return false;
             else 
@@ -86,12 +87,12 @@ namespace ICE.Scheduler.Handlers
                         // IceLogging.Debug("Player was null");
                         useCordial = false;
                     }
-                    if (PlayerHelper.GetClassJobId() is not (16 or 17 or 18))
+                    if (Player.JobId is not (16 or 17 or 18))
                     {
                         // IceLogging.Debug("Player is not a gathering job");
                         useCordial = false;
                     }
-                    if (PlayerHelper.GetClassJobId() == 18 && !OldConfig.UseOnFisher)
+                    if (Player.JobId == 18 && !OldConfig.UseOnFisher)
                     {
                         // IceLogging.Debug("Player is a fisher, but fishing job not enabled");
                         useCordial = false;

@@ -68,16 +68,24 @@ public sealed partial class ICE
             var todo = ToDoSheet.GetRow(toDoValue);
             uint missionText = todo.WKSMissionText.Value.RowId;
             var marker = MarkerSheet.GetRow(todo.Unknown13);
-            uint territoryId = 1237; // TODO: Make this set the correct territoryId once new planets are added and we figure out where it is.
+            uint territoryId = 1237; 
+            if (keyId < 545)
+            {
+                territoryId = 1237;
+            }
+            else
+            {
+                territoryId = 1291;
+            }
+            // TODO: Make this set the correct territoryId once new planets are added and we figure out where it is.
 
-            int _x = marker.Unknown1 - 1024;
+                int _x = marker.Unknown1 - 1024;
             int _y = marker.Unknown2 - 1024;
             int radius = marker.Unknown3;
 
             MissionAttributes attributes = missionText switch
             {
-                99 or 101 or 145 or 149 => Craft | Limited,
-                100 or 102 or 146 or 147 or 148 or 235 or 237 => Craft | Limited | Collectables,
+                (>= 99 and <= 102) or 140 or (>= 145 and <= 149) or 235 or 237 => Craft,
                 103 => Gather | Limited,
                 104 => Gather | ScoreTimeRemaining,
                 105 => Gather,
@@ -98,7 +106,6 @@ public sealed partial class ICE
                 >= 123 and <= 134 => Craft | Gather, // Dual class
                 >= 135 and <= 138 => Craft | Fish,  // Dual class
                 139 => jobs.Contains(18) ? Fish : Gather, // Critical
-                140 or 149 => Craft,
                 _ => None
             };
             attributes |= isCritical ? Critical : None;
@@ -116,7 +123,8 @@ public sealed partial class ICE
                 var toDoRow = ToDoSheet.GetRow(toDoValue);
                 if (isCritical) // Criticals are sus
                 {
-                    UInt16 item1Amount = 1; // It's a pass/fail progress, you need to go till you are full on score
+                    UInt16 item1Amount = 3; // It's a pass/fail progress, you need to go till you are full on score
+                                            // Realistically need 3 items. So just going to hard code this as that for now. Until square decides to change the formula haha.
                     var item1RecipeRow = RecipeSheet.Where(e => e.RowId == MoonRecipeSheet.GetRow(entry.WKSMissionRecipe.RowId).Recipe[0].Value.RowId).First();
                     var item1Id = item1RecipeRow.ItemResult.RowId;
                     var item1Name = ItemSheet.GetRow(item1Id).Name.ToString();

@@ -1,3 +1,4 @@
+using ECommons.GameHelpers;
 using static ICE.Enums.IceState;
 
 namespace ICE.Scheduler
@@ -7,7 +8,7 @@ namespace ICE.Scheduler
         internal static bool EnablePlugin()
         {
             State = Start;
-            StartClassJob = (Job)PlayerHelper.GetClassJobId();
+            StartClassJob = Player.Job;
             return true;
         }
         internal static bool DisablePlugin()

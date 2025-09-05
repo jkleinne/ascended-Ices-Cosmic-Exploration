@@ -119,7 +119,7 @@ namespace ICE.Scheduler.Tasks
             SpecialMissionCount = 0;
             BasicMissionCount = 0;
 
-            uint? currentJobId = PlayerHelper.GetClassJobId();
+            uint currentJobId = Player.JobId;
 
             foreach (var mission in C.MissionConfig)
             {
@@ -137,7 +137,7 @@ namespace ICE.Scheduler.Tasks
                 var MissionDictionary = CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo);
                 HashSet<uint> missionJobs = new HashSet<uint>();
                 missionJobs = missionInfo.Jobs;
-                if (!missionJobs.Contains(currentJobId.Value))
+                if (!missionJobs.Contains(currentJobId))
                     continue;
 
                 // Alright, mission was double checked to make sure it was enabled
@@ -187,7 +187,7 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            IceLogging.Info($"Mission count has been updated to the following for JobId {currentJobId.Value}: \n" +
+            IceLogging.Info($"Mission count has been updated to the following for JobId {currentJobId}: \n" +
                 $"Critical Count: {CriticalMissions.Count}\n" +
                 $"Sequence Count: {SequenceMissions.Count}\n" +
                 $"Timed Count: {TimedMissions.Count}\n" +
@@ -463,7 +463,7 @@ namespace ICE.Scheduler.Tasks
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return null;
 
-                var job = PlayerHelper.GetClassJobId().Value;
+                var job = Player.JobId;
                 var toolClassId = (byte)(job - 7);
                 var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
                 var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
@@ -537,7 +537,7 @@ namespace ICE.Scheduler.Tasks
                                 break;
                         }
 
-                        bool properLevel = minLevel <= PlayerHelper.GetLevel();
+                        bool properLevel = minLevel <= Player.Level;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
 
@@ -866,7 +866,7 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
-            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish) || missionEntry.Attributes.HasFlag(MissionAttributes.LargeFish))
+            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
                 // Just a way to handle fishing missions specifically (that isn't under the critical unbrella).
                 // Need to generate a path to the pre-set spot per fishing hole

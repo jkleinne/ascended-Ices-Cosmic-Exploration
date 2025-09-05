@@ -1,13 +1,18 @@
-using System.Globalization;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using Lumina.Excel.Sheets;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace ICE.Ui
 {
     internal class OverlayWindow : Window
     {
+        private uint selectedJob = C.SelectedJob;
         public OverlayWindow() : base("ICE Overlay", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize)
         {
             P.windowSystem.AddWindow(this);
@@ -18,22 +23,11 @@ namespace ICE.Ui
             P.windowSystem.RemoveWindow(this);
         }
 
-        
+
 
         public override void Draw()
         {
-            /*
             ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
-            #if DEBUG
-
-            if (CosmicHelper.CurrentLunarMission != 0)
-            {
-                ImGui.Text($"Current node: {SchedulerMain.CurrentIndex} / Visited: {SchedulerMain.NodesVisited}");
-                ImGui.Text($"NodeSet: {CosmicHelper.MissionInfoDict[CosmicHelper.CurrentLunarMission].NodeSet}");
-                ImGui.Text($"Attributes: {CosmicHelper.CurrentMissionInfo.Attributes}");
-            }
-
-            #endif
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();
@@ -56,6 +50,7 @@ namespace ICE.Ui
                 ImGui.Text($"Timed Mission(s): {string.Join(", ", currentTimedBonus.Value)} -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
             }
 
+            /* Temporarily Disabling this until I can figure out wtf is causing it to crash on non-english clients *-sighs-*
             (string type, var locations) = AnnouncementHandlers.CheckForRedAlert();
             if (type != null && locations != null)
             {
@@ -88,6 +83,8 @@ namespace ICE.Ui
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();
+
+            */
             ImGuiHelpers.ScaledDummy(2);
 
             DrawScore();
@@ -122,19 +119,30 @@ namespace ICE.Ui
                 }
             }
             ImGui.SameLine();
-            ImGui.Checkbox("Stop after current mission", ref SchedulerMain.StopBeforeGrab);
-            //    //    Type = Dalamud.Game.Text.XivChatType.Debug,
-            //    //});
-            //}
-            */
+            // ImGui.Checkbox("Stop after current mission", ref SchedulerMain.StopBeforeGrab);
+
+            ImGuiHelpers.ScaledDummy(2);
+            ImGui.Separator();
+            ImGuiHelpers.ScaledDummy(2);
+
+            if (C.ShowExpBars)
+            {
+                var currentJobId = Player.JobId;
+
+                bool showExp = (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId));
+
+                if (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId))
+                {
+                    Relic_XP.DrawRelicXP((uint)currentJobId);
+                }
+            }
         }
 
-        /*
         void DrawScore()
         {
             try
             {
-                var (classScore, cappedClassScore, totalScores, classId) = MissionHandler.GetCosmicClassScores();
+                var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores();
 
                 ImGui.TextUnformatted(string.Create(CultureInfo.InvariantCulture,
                     $"{Svc.Data.GetExcelSheet<ClassJob>().GetRow(classId).Abbreviation}: {(float)cappedClassScore / 500_000:P} ({classScore:N0})"));
@@ -152,6 +160,5 @@ namespace ICE.Ui
                 // meh
             }
         }
-        */
     }
 }

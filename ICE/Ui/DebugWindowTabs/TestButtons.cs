@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Scheduler.Tasks.OldTask;
 using System;
 using System.Collections.Generic;
@@ -81,7 +82,7 @@ namespace ICE.Ui.DebugWindowTabs
                     var nodeId = gatheringPoint.DataId;
                     var position = gatheringPoint.Position;
                     var landZone = gatheringPoint.Position;
-                    var gatheringType = (Job)PlayerHelper.GetClassJobId() == Job.MIN ? 2 : 3;
+                    var gatheringType = Player.Job == Job.MIN ? 2 : 3;
                     var currentMission = CosmicHelper.CurrentMissionInfo;
                     var nodeSet = currentMission?.MapPosition ?? new Vector2(0, 0);
 

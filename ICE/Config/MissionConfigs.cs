@@ -41,6 +41,7 @@ namespace ICE.Config
 
         public bool ShowOverlay { get; set; } = false;
         public bool ShowSeconds { get; set; } = false;
+        public bool ShowExpBars { get; set; } = true;
 
         #endregion
 

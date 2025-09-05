@@ -10,15 +10,15 @@ namespace ICE.Utilities;
 
 public class PlayerHelper
 {
+    // A lot of these functions are dupes to what is in Ecommons: GameHelper.Player
+    // Which means that a lot of these can get depreciated becuase they are either:
+    // -> Safer in how they are grabbed
+    // -> Less Reduntant in code
+    // -> Just genereally better 
 
-    public static uint? GetClassJobId() => Svc.ClientState.LocalPlayer?.ClassJob.RowId ;
     public static bool UsingSupportedJob()
     {
-        var jobId = GetClassJobId();
-        if (jobId == null)
-        {
-            return false;
-        }
+        var jobId = Player.JobId;
         return jobId >= 8 || jobId <= 18;
     }
 
@@ -27,19 +27,11 @@ public class PlayerHelper
         if (expArrayIndex == -1) expArrayIndex = Svc.ClientState.LocalPlayer?.ClassJob.Value.ExpArrayIndex ?? 0;
         return UIState.Instance()->PlayerState.ClassJobLevels[expArrayIndex];
     }
-    internal static unsafe short GetCurrentLevelFromSheet(Job? job = null)
-    {
-        PlayerState* playerState = PlayerState.Instance();
-        return playerState->ClassJobLevels[ExcelHelper.ClassJobSheet.GetRowOrDefault((uint)(job ?? (Player.Available ? Player.Object.GetJob() : 0)))?.ExpArrayIndex ?? 0];
-    }
 
     public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna();
     public static bool IsInSinusArdorum() => IsInZone(1237);
     public static bool IsInPhaenna() => IsInZone(1291);
     public static bool IsInZone(uint zoneID) => Svc.ClientState.TerritoryType == zoneID;
-    public static unsafe uint CurrentTerritory() => GameMain.Instance()->CurrentTerritoryTypeId;
-
-    public static bool IsBetweenAreas => Svc.Condition[ConditionFlag.BetweenAreas] || Svc.Condition[ConditionFlag.BetweenAreas51];
 
     public static bool IsPlayerNotBusy()
     {
@@ -136,6 +128,4 @@ public class PlayerHelper
 
         return false;
     }
-
-    public static Vector3 NavDestination = Vector3.Zero;
 }

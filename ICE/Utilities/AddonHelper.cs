@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.UI;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ public static class AddonHelper
     public static unsafe void OpenRecipeNote()
     {
         int[] basicCrafts = [1008, 1, 170, 663, 302, 464, 1101, 901];
-        uint recipeId = (uint)basicCrafts[(int)PlayerHelper.GetClassJobId()-8];
+        uint recipeId = (uint)basicCrafts[(int)Player.JobId-8];
 
         AgentRecipeNote.Instance()->OpenRecipeByRecipeId(ExcelHelper.RecipeSheet.GetRow(recipeId).RowId);
     }

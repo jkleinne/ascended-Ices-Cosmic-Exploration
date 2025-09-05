@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommons.GameHelpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -103,6 +104,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetColumnIndex(0);
                     ImGui.Text("Bait ID");
                     ImGui.TableNextColumn();
+                    if (Player.JobId == 18)
                     ImGui.Text($"{CosmicHelper.CurrentBait}");
 
 

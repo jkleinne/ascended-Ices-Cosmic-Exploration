@@ -8,7 +8,7 @@ namespace ICE.Scheduler.Handlers
     {
         internal unsafe static void TaskClassChange(Job job)
         {
-            if (job == (Job)PlayerHelper.GetClassJobId() || !EzThrottler.Throttle("Gearset", 250) || Player.IsBusy)
+            if (job == Player.Job || !EzThrottler.Throttle("Gearset", 250) || Player.IsBusy)
                 return;
             var gearsets = RaptureGearsetModule.Instance();
             foreach (ref var gs in gearsets->Entries)

@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace ICE.Scheduler.Tasks.OldTask
@@ -7,7 +8,7 @@ namespace ICE.Scheduler.Tasks.OldTask
     {
         public static void GatherCheck()
         {
-            var currentJob = PlayerHelper.GetClassJobId().Value;
+            var currentJob = Player.JobId;
 
             if (CosmicHelper.GatheringJobList.Contains(currentJob))
             {

@@ -16,7 +16,6 @@ namespace ICE.Enums
         // --- Item/Focus Type ---
         Collectables = 16,         // Collectables
         ReducedItems = 32,         // Reduction
-        LargeFish = 64,           // Large Fish
 
         // --- Scoring Method ---
         ScoreTimeRemaining = 128,  // Time Attack (Speeeeeeed)

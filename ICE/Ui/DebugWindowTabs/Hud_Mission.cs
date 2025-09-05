@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -154,7 +155,7 @@ namespace ICE.Ui.DebugWindowTabs
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return 0;
 
-                var job = PlayerHelper.GetClassJobId().Value;
+                var job = Player.JobId;
                 var toolClassId = (byte)(job - 7);
                 var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
                 var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
@@ -228,7 +229,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 break;
                         }
 
-                        bool properLevel = minLevel <= PlayerHelper.GetLevel();
+                        bool properLevel = minLevel <= Player.Level;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
 

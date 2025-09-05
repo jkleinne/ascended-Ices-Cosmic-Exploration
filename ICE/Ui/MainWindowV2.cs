@@ -4,6 +4,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Utility.Table;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Enums;
@@ -76,7 +77,7 @@ namespace ICE.Ui
             (4, "A")
         };
 
-        private uint? currentJobId => PlayerHelper.GetClassJobId();
+        private uint currentJobId => Player.JobId;
         private bool usingSupportedJob => jobOptions.Any(job => job.Id == currentJobId);
         private uint selectedJob = C.SelectedJob;
 
@@ -345,7 +346,7 @@ namespace ICE.Ui
                 {
                     if (currentJobId != selectedJob)
                     {
-                        selectedJob = currentJobId.Value;
+                        selectedJob = currentJobId;
                         C.SelectedJob = selectedJob;
                         C.Save();
                     }
@@ -404,7 +405,7 @@ namespace ICE.Ui
 
                 ImGui.Dummy(new Vector2(0, 5));
 
-                RelicXP();
+                Relic_XP.DrawRelicXP(C.SelectedJob);
             }
 
             ImGui.EndChild();
@@ -1377,7 +1378,7 @@ namespace ICE.Ui
             ImGui.Text($"Selected Job: {C.SelectedJob}");
             if (ImGui.Button("Apply to selected profiles"))
             {
-                var currentJob = PlayerHelper.GetClassJobId();
+                var currentJob = Player.JobId;
 
                 foreach (var mission in C.MissionConfig)
                 {
@@ -1453,139 +1454,11 @@ namespace ICE.Ui
             }
         }
 
-        private float current = 25f;
-
         private class XPType
         {
             public uint CurrentXP { get; set; }
             public uint NeededXP { get; set; }
             public uint MaxXP { get; set; }
-        }
-
-        private unsafe void RelicXP()
-        {
-            var wksManager = WKSManager.Instance();
-            if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
-                return;
-
-            var job = selectedJob;
-            var toolClassId = (byte)(job - 7);
-            var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
-            var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
-
-            // Unsure... why this is here? 
-            if (Svc.Data.GetExcelSheet<WKSCosmoToolClass>().TryGetRow(toolClassId, out var row))
-            {
-
-            }
-
-            Dictionary<uint, XPType> XPTable = new Dictionary<uint, XPType>();
-
-            for (byte type = 1; type <= 4; type++)
-            {
-                if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
-                    break;
-
-                var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
-
-                var maxXP = wksManager->ResearchModule->GetMaxAnalysis(toolClassId, type);
-
-                var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
-                if (!XPTable.ContainsKey(type))
-                {
-                    XPTable[type] = new XPType()
-                    {
-                        CurrentXP = currentXp,
-                        NeededXP = neededXP,
-                        MaxXP = maxXP,
-                    };
-                }
-            }
-
-            ImGui.Text($"Stage: {stage}");
-
-            if (stage != 9)
-            {
-                foreach (var type in XPTable)
-                {
-                    uint current = type.Value.CurrentXP;
-                    uint needed = type.Value.NeededXP;
-                    uint max = type.Value.MaxXP;
-                    float windowSize = ImGui.GetWindowSize().X - 20;
-                    Vector2 size = new Vector2(windowSize, 10);
-
-                    string overlay = $"ID: {current} / {max}";
-                    string xpType = "";
-                    if (type.Key == 1)
-                        xpType = "I";
-                    else if (type.Key == 2)
-                        xpType = "II";
-                    else if (type.Key == 3)
-                        xpType = "III";
-                    else if (type.Key == 4)
-                        xpType = "IV";
-                    else
-                        xpType = "???";
-
-                    DrawXPBar($"Type: {xpType}", current, needed, size, max);
-                }
-            }
-            else
-            {
-                float windowSize = ImGui.GetWindowSize().X - 20;
-                Vector2 size = new Vector2(windowSize, 10);
-
-                var (classScore, cappedClassScore, totalScores, classId) = CosmicHandler.GetCosmicClassScores();
-
-                DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
-            }
-        }
-
-        void DrawXPBar(string label, uint currentXP, uint neededXP, Vector2 size, uint maxXP = 0)
-        {
-            // Handle capped and invalid data
-            float fraction;
-            if (neededXP == 0)
-            {
-                fraction = Math.Clamp((float)currentXP / (float)maxXP, 0f, 1f);
-            }
-            else
-            {
-                fraction = Math.Clamp((float)currentXP / (float)neededXP, 0f, 1f);
-            }
-
-            // Display correct text
-            string displayText = (neededXP == 0 && maxXP > 0)
-                ? $"{label}: {currentXP:N0} / {maxXP:N0}"
-                : $"{label}: {currentXP:N0} / {neededXP:N0}";
-
-            ImGui.Text(displayText);
-
-            // Draw bar
-            var pos = ImGui.GetCursorScreenPos();
-            var drawList = ImGui.GetWindowDrawList();
-
-            var barStart = pos;
-            var barEnd = new Vector2(pos.X + size.X, pos.Y + size.Y);
-
-            drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.15f, 1f)));
-
-            float filledWidth = size.X * fraction;
-            if (filledWidth > 0f)
-            {
-                var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + size.Y);
-
-                drawList.AddRectFilledMultiColor(
-                    barStart,
-                    filledEnd,
-                    ImGui.GetColorU32(new Vector4(0.2f, 0.6f, 1f, 1f)), // left
-                    ImGui.GetColorU32(new Vector4(0.6f, 1f, 0.8f, 1f)), // right
-                    ImGui.GetColorU32(new Vector4(0.6f, 1f, 0.8f, 1f)), // right
-                    ImGui.GetColorU32(new Vector4(0.2f, 0.6f, 1f, 1f))  // left
-                );
-            }
-
-            ImGui.Dummy(new Vector2(size.X, size.Y + 5));
         }
 
         #region Table Tools

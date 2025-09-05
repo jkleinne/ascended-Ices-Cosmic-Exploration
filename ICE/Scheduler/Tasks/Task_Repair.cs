@@ -13,7 +13,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (PlayerHelper.NeedsRepair(C.RepairPercent))
             {
-                var currentJob = PlayerHelper.GetClassJobId().Value;
+                var currentJob = Player.JobId;
 
                 if (C.RepairAtVendor)
                 {

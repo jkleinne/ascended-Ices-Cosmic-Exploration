@@ -1,4 +1,5 @@
 using ECommons.Automation;
+using ECommons.GameHelpers;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -42,10 +43,10 @@ namespace ICE.Scheduler.Tasks.OldTask
             if (!EzThrottler.Throttle("Extract", 250))
                 return false;
 
-            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !OldConfig.SelfSpiritbondGather || !((Job)PlayerHelper.GetClassJobId()).IsDol())
+            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !OldConfig.SelfSpiritbondGather || !(Player.Job).IsDol())
                 return true;
 
-            if (ECommons.GameHelpers.Player.IsBusy)
+            if (Player.IsBusy)
                 return false;
 
             if (GenericHelpers.TryGetAddonByName("MaterializeDialog", out AtkUnitBase* addonMaterializeDialog) && GenericHelpers.IsAddonReady(addonMaterializeDialog))

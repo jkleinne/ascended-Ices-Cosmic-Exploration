@@ -43,6 +43,7 @@ namespace ICE.Config
 
                 C.ShowOverlay = OldConfig.ShowOverlay;
                 C.ShowSeconds = OldConfig.ShowSeconds;
+                C.ShowExpBars = OldConfig.ShowExpBars;
 
                 Svc.Log.Information("Migration of the overlay settings complete");
 
