@@ -84,6 +84,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                  SwapBait(baitId);
             }
+            if (ImGui.Button("Swap Bait... simple"))
+            {
+                P.AutoHook.SwapBaitById(baitId);
+            }
         }
 
         private static void SwapBait(uint baitId)

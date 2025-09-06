@@ -24,6 +24,10 @@ namespace ICE.Scheduler.Tasks
             // if craft not required, fish
             // wait for fishing to be done
 
+            P.TaskManager.Enqueue(() => CheckScore());
+            P.TaskManager.Enqueue(() => CheckCraft());
+            P.TaskManager.Enqueue(() => IniateFishing());
+
         }
 
         private static bool? CheckScore()
@@ -51,7 +55,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 foreach (var fishId in requiredFish.Value)
                                 {
-                                    if (PlayerHelper.GetItemCount((int)fishId, out int count) && count > 0)
+                                    if (PlayerHelper.GetItemCount(fishId, out int count) && count > 0)
                                     {
                                         currentAmount += 1;
                                         break;
@@ -77,7 +81,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 foreach (var fishId in requiredFish.Value)
                                 {
-                                    if (PlayerHelper.GetItemCount((int)fishId, out var count))
+                                    if (PlayerHelper.GetItemCount(fishId, out var count))
                                     {
                                         currentAmount += (uint)count;
                                     }
@@ -115,7 +119,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 foreach(var fishId in fishEntry.Value)
                                 {
-                                    if (!PlayerHelper.GetItemCount((int)fishId, out var count))
+                                    if (!PlayerHelper.GetItemCount(fishId, out var count))
                                     {
                                         currentAmount += count;
                                     }
@@ -220,6 +224,37 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? IniateFishing()
         {
+            // Things to do here
+            // Check to see if you currently have bait / have it equipped.
+
+            if (CosmicHelper.CurrentBait == 0)
+            {
+                uint baitId = 0;
+                var missionId = CosmicHelper.CurrentLunarMission;
+                var mission = CosmicHelper.Dict_CosmicMissions[missionId];
+
+                foreach (var baitName in mission.FishingBait)
+                {
+                    foreach (var baitIds in baitName.Value)
+                    {
+                        PlayerHelper.GetItemCount(baitIds, out var count);
+                        if (count > 0)
+                        {
+                            baitId = baitIds;
+                            break;
+                        }
+                    }
+                }
+
+                if (EzThrottler.Throttle("Telling autohook to equip the bait by Id"))
+                    P.AutoHook.SwapBaitById(baitId);
+                return false;
+            }
+            else
+            {
+                // Ideally, we only tell it this once and then we never had to do it again. Problem is there's not *-really-* a good way of telling this. 
+            }
+
             return true;
         }
     }

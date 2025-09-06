@@ -127,7 +127,7 @@ namespace ICE.Scheduler.Handlers
                         foreach (var cordial in OldConfig.inverseCordialPrio ? cordials.Reverse() : cordials)
                         {
                             bool hq = cordial.Key >= 1_000_000;
-                            if (PlayerHelper.GetItemCount((int)cordial.Key, out var amount, hq, !hq) && amount > 0)
+                            if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                             {
                                 if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
                                 {

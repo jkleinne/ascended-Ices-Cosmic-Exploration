@@ -8,6 +8,7 @@ public static partial class CosmicHelper
 {
     public static CosmicInfo CurrentMissionInfo => SheetMissionDict[CurrentLunarMission];
     public static MoonRecipieInfo CurrentMoonRecipe => MoonRecipies[CurrentLunarMission];
+
     /// <summary>
     /// Gives the current mission that is active
     /// </summary>

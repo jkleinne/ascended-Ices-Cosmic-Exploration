@@ -70,17 +70,17 @@ public class PlayerHelper
 
     internal static unsafe float GetDistanceToPlayer(Vector3 v3) => Vector3.Distance(v3, Player.GameObject->Position);
     internal static unsafe float GetDistanceToPlayer(IGameObject gameObject) => GetDistanceToPlayer(gameObject.Position);
-    public static unsafe bool GetItemCount(int itemID, out int count, bool includeHq = true, bool includeNq = true)
+    public static unsafe bool GetItemCount(uint itemID, out int count, bool includeHq = true, bool includeNq = true)
     {
         try
         {
             itemID = itemID >= 1_000_000 ? itemID - 1_000_000 : itemID;
             count = 0;
             if (includeHq)
-                count += InventoryManager.Instance()->GetInventoryItemCount((uint)itemID, true);
+                count += InventoryManager.Instance()->GetInventoryItemCount(itemID, true);
             if (includeNq)
-                count += InventoryManager.Instance()->GetInventoryItemCount((uint)itemID, false);
-            count += InventoryManager.Instance()->GetInventoryItemCount((uint)itemID + 500_000);
+                count += InventoryManager.Instance()->GetInventoryItemCount(itemID, false);
+            count += InventoryManager.Instance()->GetInventoryItemCount(itemID + 500_000);
             return true;
         }
         catch

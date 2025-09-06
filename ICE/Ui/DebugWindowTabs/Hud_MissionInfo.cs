@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ICE.Ui.DebugWindowTabs
 {
     internal class Hud_MissionInfo
     {
-        public static void Draw()
+        public static unsafe void Draw()
         {
             uint currentScore = 0;
             uint silverScore = 0;
@@ -100,12 +101,33 @@ namespace ICE.Ui.DebugWindowTabs
                         x.Abandon();
                     }
 
+                    var wks = WKSManager.Instance();
+
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Bait ID");
+                    ImGui.Text("Score 1");
                     ImGui.TableNextColumn();
-                    if (Player.JobId == 18)
-                    ImGui.Text($"{CosmicHelper.CurrentBait}");
+                    ImGui.Text($"{wks->Scores.Length}");
+
+                    int score = 0;
+
+                    foreach (var item in wks->Scores)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Score: [{score}]");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{wks->Scores[score]}");
+                        score += 1;
+                    }
+
+                    var currentlyEquippped = wks->FishingBait | 0;
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Bait:");
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{currentlyEquippped}");
 
 
                     ImGui.EndTable();
