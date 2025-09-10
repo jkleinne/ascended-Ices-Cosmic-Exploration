@@ -1,4 +1,5 @@
-﻿using ECommons.GameHelpers;
+﻿using ECommons.Configuration;
+using ECommons.GameHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -251,109 +252,109 @@ namespace ICE.Scheduler.Tasks
                     var Id = CosmicHelper.CurrentLunarMission;
                     // var mission = CosmicHelper.Dict_CosmicMissions[Id];
                     var mission = CosmicHelper.SheetMissionDict[Id];
+                    bool shouldTurnin = false;
 
-                    // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
-                    foreach (var item in mission.Crafts_Main)
+                    if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        var itemId = item.Value.ItemId;
-                        var recipeEntry = item.Value;
-
-                        if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.RequiredAmount)
+                        if (missionInfo.CriticalScore == 1)
                         {
-                            IceLogging.Debug("Found an item that you didn't have the minumim amount of. Continuing on with our task", "[Task_CheckScore: Craft]");
-                            IceLogging.Debug($"RecipeId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
-                            SchedulerMain.State = IceState.Craft;
+                            shouldTurnin = true;
+                        }
+                    }
+                    else
+                    {
+                        // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
+                        foreach (var item in mission.Crafts_Main)
+                        {
+                            var itemId = item.Value.ItemId;
+                            var recipeEntry = item.Value;
+
+                            if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.RequiredAmount)
+                            {
+                                IceLogging.Debug("Found an item that you didn't have the minumim amount of. Continuing on with our task", "[Task_CheckScore: Craft]");
+                                IceLogging.Debug($"RecipeId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
+                                SchedulerMain.State = IceState.Craft;
+                                return true;
+                            }
+                        }
+
+                        if (mission.Crafts_Pre.Count > 0)
+                        {
+
+                        }
+
+                        // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
+
+                        if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
+                        {
+                            IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
+                                            $"Current Score: {missionInfo.CurrentScore}\n" +
+                                            $"Minimum Score: {mission.BronzeScore}\n" +
+                                            $"Continuing on with the crafting process");
                             return true;
+                        }
+                        else
+                        {
+                            var currentScore = missionInfo.CurrentScore;
+                            var bronzeScore = mission.BronzeScore;
+                            var silverScore = mission.SilverScore;
+                            var goldScore = mission.GoldScore;
+
+                            var config = C.MissionConfig[Id];
+                            bool AnyTurnin = config.AutoTurnin;
+                            bool GoldGoal = goldScore <= currentScore;
+                            bool SilverGoal = silverScore <= currentScore;
+                            bool TurninBronze = config.TurninBronze;
+
+                            if (config.AutoTurnin)
+                            {
+                                // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                                if (GoldGoal)
+                                {
+                                    IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                            }
+                            else
+                            {
+                                if (GoldGoal && config.TurninGold)
+                                {
+                                    IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                                else if (SilverGoal && config.TurninSilver)
+                                {
+                                    if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                                    {
+                                        IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", "[Craft Scoring]");
+                                        shouldTurnin = true;
+                                    }
+                                }
+                                else if (config.TurninBronze)
+                                {
+                                    if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                                    {
+                                        IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
+                                        shouldTurnin = true;
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    if (mission.Crafts_Pre.Count > 0)
+                    if (shouldTurnin)
                     {
+                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
 
-                    }
-
-                    // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
-
-                    if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
-                    {
-                        IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
-                                        $"Current Score: {missionInfo.CurrentScore}\n" +
-                                        $"Minimum Score: {mission.BronzeScore}\n" +
-                                        $"Continuing on with the crafting process");
+                        SchedulerMain.State = IceState.TurninMission;
+                        P.TaskManager.Tasks.Clear();
                         return true;
                     }
                     else
                     {
-                        bool shouldTurnin = false;
-                        var currentScore = missionInfo.CurrentScore;
-                        var bronzeScore = mission.BronzeScore;
-                        var silverScore = mission.SilverScore;
-                        var goldScore = mission.GoldScore;
+                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
 
-                        var config = C.MissionConfig[Id];
-                        bool AnyTurnin = config.AutoTurnin;
-                        bool GoldGoal = goldScore <= currentScore;
-                        bool SilverGoal = silverScore <= currentScore;
-                        bool TurninBronze = config.TurninBronze;
-
-                        if (config.AutoTurnin)
-                        {
-                            // AutoTurnin enabled, going to check for gold only since we have materials/time still
-                            if (GoldGoal)
-                            {
-                                IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
-                                shouldTurnin = true;
-                            }
-                        }
-                        else
-                        {
-                            if (GoldGoal && config.TurninGold)
-                            {
-                                IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
-                                shouldTurnin = true;
-                            }
-                            else if (SilverGoal && config.TurninSilver)
-                            {
-                                if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
-                                {
-                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", "[Craft Scoring]");
-                                    shouldTurnin = true;
-                                }
-                            }
-                            else if (config.TurninBronze)
-                            {
-                                if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
-                                {
-                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
-                                    shouldTurnin = true;
-                                }
-                            }
-                        }
-
-                        if (shouldTurnin)
-                        {
-                            IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
-
-                            SchedulerMain.State = IceState.TurninMission;
-                            P.TaskManager.Tasks.Clear();
-                            return true;
-                        }
-                        else
-                        {
-                            IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
-                            IceLogging.Debug($"Current settings:\n" +
-                                             $"Auto Turnin: {config.AutoTurnin}\n" +
-                                             $"Gold Turnin: {config.TurninGold}\n" +
-                                             $"Silver Turnin: {config.TurninSilver}\n" +
-                                             $"Bronze Turnin: {config.TurninBronze}\n" +
-                                             $"Current Score: {currentScore}\n" +
-                                             $"Gold Score: {goldScore}\n" +
-                                             $"Silver Score: {silverScore}\n" +
-                                             $"Bronze Score: {bronzeScore}\n");
-
-                            return true;
-                        }
-
+                        return true;
                     }
                 }
             }

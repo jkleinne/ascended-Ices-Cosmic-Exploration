@@ -13,12 +13,14 @@ namespace ICE.Scheduler.Tasks
     {
         public static void Enqueue()
         {
-            P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods");
+            P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
         }
 
         public static unsafe bool? TurninMission()
         {
-            if (CosmicHelper.CurrentLunarMission == 0)
+            var id = CosmicHelper.CurrentLunarMission;
+
+            if (id == 0)
             {
                 if (Mission_Settings.StopAfterCurrent)
                 {
@@ -33,14 +35,20 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
-            else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
-            {
-                if (EzThrottler.Throttle("Turning in mission"))
-                    missionInfo.Report();
-            }
             else
             {
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
+                var critical = CosmicHelper.SheetMissionDict[id].Attributes.HasFlag(MissionAttributes.Critical);
+
+                if (critical)
+                {
+                    // for now, just exiting here for turning in. Because still need to get round to coding this
+                }
+                else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Turning in mission"))
+                        missionInfo.Report();
+                }
+                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
                 {
                     if (EzThrottler.Throttle("Opening the moon hud", 1000))
                     {
