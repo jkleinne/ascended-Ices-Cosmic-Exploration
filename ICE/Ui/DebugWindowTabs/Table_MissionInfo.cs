@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Textures;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 28, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 33, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -73,6 +74,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("2nd Job");
                 ImGui.TableSetupColumn("Rank");
                 ImGui.TableSetupColumn("ToDo ID");
+                ImGui.TableSetupColumn("Bronze");
                 ImGui.TableSetupColumn("Silver");
                 ImGui.TableSetupColumn("Gold");
                 ImGui.TableSetupColumn("Attribute Flags");
@@ -99,7 +101,11 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Pre-Craft Item");
                 ImGui.TableSetupColumn("Pre-Craft Amount");
                 ImGui.TableSetupColumn("Export"); // New column for export button
-                ImGui.TableSetupColumn("Completed");
+                for (int i = 1; i < 4; i++)
+                {
+                    ImGui.TableSetupColumn($"Gather [{i}]");
+                    ImGui.TableSetupColumn($"Amount [G-{i}]");
+                }
 
                 ImGui.TableHeadersRow();
 
@@ -200,6 +206,9 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{entry.Value.ToDoId}");
 
                     ImGui.TableNextColumn();
+                    ImGui.Text($"{entry.Value.BronzeScore}");
+
+                    ImGui.TableNextColumn();
                     ImGui.Text($"{entry.Value.SilverScore}");
 
                     ImGui.TableNextColumn();
@@ -296,7 +305,7 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
 
-                    ImGui.TableSetColumnIndex(25);
+                    ImGui.TableSetColumnIndex(26);
                     if (entry.Value.Jobs.Contains(18)) // Check if it's a fishing mission
                     {
                         if (ImGui.Button($"Export##Export-{entry.Key}"))
@@ -310,6 +319,23 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text("Export this fishing mission entry");
                             ImGui.EndTooltip();
                         }
+                    }
+
+                    // 27-29
+                    foreach (var item in entry.Value.Gathering_Min)
+                    {
+                        ImGui.TableNextColumn();
+                        var itemName = Svc.Data.GetExcelSheet<Item>().GetRow(item.Key).Name;
+                        ImGui.Text($"{itemName}");
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"Id: {item.Key}");
+                            ImGui.EndTooltip();
+                        }
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{item.Value}");
                     }
 
                     // TODO: Check for mission completion state

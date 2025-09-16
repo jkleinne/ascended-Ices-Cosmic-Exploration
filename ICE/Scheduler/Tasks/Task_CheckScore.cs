@@ -3,6 +3,7 @@ using ECommons.GameHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
@@ -52,7 +53,7 @@ namespace ICE.Scheduler.Tasks
                 else
                 {
                     P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Gather);
-                    // P.TaskManager.Enqueue(() => )
+                    P.TaskManager.Enqueue(() => Gather(), "Checking the gathering score");
                 }
             }
         }
@@ -357,6 +358,144 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
                 }
+            }
+            else
+            {
+                // Addon wasn't visiable/ready. Opening it up.
+                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
+                {
+                    if (EzThrottler.Throttle("Opening the moon hud", 1000))
+                    {
+                        moonHud.Mission();
+                        IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool? Gather()
+        {
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+            {
+
+                // Hud info should be available. Now time to check the mission status.
+                var id = CosmicHelper.CurrentLunarMission;
+                var mission = CosmicHelper.SheetMissionDict[id];
+                if (mission.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                {
+                    // We're just checking to see if we have all the items for missions that have a score time remaining. 
+                    // These are typically missions that have 6 gather points, and also require a certain amount of items.
+                    foreach (var item in mission.Gathering_Min)
+                    {
+                        if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
+                        {
+                            // found an item that is less than what we need. Going back to continue on gathering.
+                            return true;
+                        }
+                    }
+
+                    // if we've gotten here, that means that we actually have all the items. Proceeding to turnin item
+                    SchedulerMain.State = IceState.TurninMission;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+                else
+                {
+                    var canTurnin = false;
+
+                    // Not retricted by time, but by either score or item's gathered.
+                    if (mission.BronzeScore == 0)
+                    {
+                        // This is a mission that requires a certain amount of each item. Checking that first.
+                        foreach (var item in mission.Gathering_Min)
+                        {
+                            if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
+                            {
+                                // you don't have enough items to meet the turnin here. 
+                                return true;
+                            }
+                        }
+
+                        // If we've gotten this far, than that means we've met the bronze threshold!
+                        canTurnin = true;
+                    }
+                    else
+                    {
+                        // a minimum threshold of bronze scoring is required. Time to check that.
+                        var currentScore = missionInfo.CurrentScore;
+                        if (currentScore >= mission.BronzeScore)
+                            canTurnin = true;
+                    }
+
+                    if (canTurnin)
+                    {
+                        // Turnin threshold has been met. Time to check to see if we're at the point where we want to turn in minimumly
+                        var currentScore = missionInfo.CurrentScore;
+                        var bronzeScore = mission.BronzeScore;
+                        var silverScore = mission.SilverScore;
+                        var goldScore = mission.GoldScore;
+
+                        var config = C.MissionConfig[id];
+                        bool AnyTurnin = config.AutoTurnin;
+                        bool GoldGoal = goldScore <= currentScore;
+                        bool SilverGoal = silverScore <= currentScore;
+                        bool TurninBronze = config.TurninBronze;
+
+                        bool shouldTurnin = false;
+
+                        if (config.AutoTurnin)
+                        {
+                            // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                            if (GoldGoal)
+                            {
+                                IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                shouldTurnin = true;
+                            }
+                        }
+                        else
+                        {
+                            if (GoldGoal && config.TurninGold)
+                            {
+                                IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                shouldTurnin = true;
+                            }
+                            else if (SilverGoal && config.TurninSilver)
+                            {
+                                if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                                {
+                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                            }
+                            else if (config.TurninBronze)
+                            {
+                                if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                                {
+                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                            }
+                        }
+
+                        if (shouldTurnin)
+                        {
+                            IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Gathering Scoring]");
+
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
+                        else
+                        {
+                            IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Gathering Scoring]");
+
+                            return true;
+                        }
+                    }
+                }
+
             }
             else
             {

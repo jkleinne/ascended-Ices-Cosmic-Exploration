@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class Ui_GatheringViewer
+    internal class Ui_GatherRoute_Editor
     {
         private static uint selectedZone = 0;
         private static Vector2 selectedFlag = Vector2.Zero;

@@ -795,7 +795,7 @@ namespace ICE.Scheduler.Tasks
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
 
-            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish) || missionEntry.Attributes.HasFlag(MissionAttributes.Gather))
+            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
                 // TODO: Remove the extra 2 here until I can fix pathfinding thing
                 // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...
@@ -811,49 +811,19 @@ namespace ICE.Scheduler.Tasks
                 var mapId = missionEntry.MapPosition;
                 var gatherInfo = GatheringUtil.MoonGatherLocations[missionTerritory][mapId];
 
-                float closestDistance = 999f;
-                Vector3 closestNode = Vector3.Zero;
-
-                foreach (var node in gatherInfo)
-                {
-                    var distance = Player.DistanceTo(node.Position);
-
-                    if (distance <= 5 )
-                    {
-                        if (Player.Mounted)
-                        {
-                            if (EzThrottler.Throttle("Somehow still mounted, getting off mount"))
-                                Utils.Dismount();
-                        }
-                        else if (!Player.IsJumping)
-                        {
-                            IceLogging.Info($"Pathing to node is complete, you are within range of {node.NodeId}");
-                            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hudMission) && hudMission.IsAddonReady)
-                            {
-                                return true;
-                            }
-                            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
-                            {
-                                if (EzThrottler.Throttle("Re-opening the mission addon info"))
-                                {
-                                    moonHud.Mission();
-                                }
-                            }
-                        }
-                    }
-                    else if (distance < closestDistance)
-                    {
-                        // Found a closer node to pathfind to if necessary
-                        closestDistance = distance;
-                        closestNode = node.LandZone;
-                    }
-                }
+                Vector3 closestNode = gatherInfo[0].LandZone;
 
                 if (!P.Navmesh.IsRunning())
                 {
-                    // If we're continuing here, then that means we're not within interacting range of a node. Time to kick over to telling navmesh to path to a node
                     if (!Svc.Condition[ConditionFlag.Unknown101])
                     {
+                        // Checking within this so we don't go flying over the gathering point and accidentally start it.
+                        if (Player.DistanceTo(mapId) < missionEntry.Radius + 10)
+                        {
+                            // we're within range to start it and we're not in the middle of pathfinding. Returning this to be true.
+                            return true;
+                        }
+
                         // We ideally don't want to be trying to try and pathfind while on this. Need to wait for us to get off the hoverboard
                         if (EzThrottler.Throttle("Inializing movement for pathfinding"))
                         {

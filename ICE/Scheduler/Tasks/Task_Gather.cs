@@ -15,7 +15,6 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-            P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
             if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady 
              || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
@@ -26,13 +25,10 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 IceLogging.Debug("Not currently gathering, starting fresh instead");
-                // Not in the middle of gathering items, so time to just do the good old path and moveto
-                // Check score first, see if we need to even gather
+                Task_CheckScore.Enqueue();
+                P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
                 P.TaskManager.Enqueue(() => NavmeshMovement());
-                //   -> Check to see if the node is targetable
-                //   -> If yes, then proceed to insert a task to target/interact with the node until the gathering window is up
-                //   -> If no, then add a counter to the nodeCounter, and +1 to the nodeVisited
             }
         }
 
@@ -46,6 +42,16 @@ namespace ICE.Scheduler.Tasks
             {
                 Mission_Settings.previousMap = missionFlag;
                 Mission_Settings.nodeCounter = 0;
+            }
+            else
+            {
+                var nodeId = gatherInfo[Mission_Settings.nodeCounter].NodeId;
+                var node = Svc.Objects.Where(x => x.DataId == nodeId).FirstOrDefault();
+                if (!node.IsTargetable)
+                {
+                    Mission_Settings.nodeCounter += 1;
+                    Mission_Settings.nodeTotal += 1;
+                }
             }
 
             return true;
@@ -101,12 +107,14 @@ namespace ICE.Scheduler.Tasks
                 if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
                 {
                     // Target was a valid target, going to add a task to try and interact w/ the node now and get the gathering window up
+                    IceLogging.Info("Targeting the target for gathering", "[Task_Gathering]");
                     P.TaskManager.Insert(() => OpenGatheringMenu(), "Opening the gathering menu");
                     return true;
                 }
                 else
                 {
                     // No valid target was found. Going to continue onward to the next node. 
+                    IceLogging.Info("No valid target was found for gathering, increasing counter", "[Task_Gathering]");
                     Mission_Settings.nodeCounter++;
                     return true;
                 }
@@ -144,8 +152,7 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
-            if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady 
-             || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
+            if (Svc.Condition[ConditionFlag.Gathering] && GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
                 P.TaskManager.Insert(() => GatheringInteraction(), "Gathering at the node", Utils.TaskConfig);
                 return true;
@@ -155,10 +162,18 @@ namespace ICE.Scheduler.Tasks
                 Utils.TryGetObjectByDataId(location.NodeId, out var node);
                 if (node != null && !Player.IsJumping)
                 {
-                    if (EzThrottler.Throttle("Target + Interacting w/ node"))
+                    if (node.IsTargetable)
                     {
-                        Utils.TargetgameObject(node);
-                        Utils.InteractWithObject(node);
+                        if (EzThrottler.Throttle("Target + Interacting w/ node"))
+                        {
+                            Utils.TargetgameObject(node);
+                            Utils.InteractWithObject(node);
+                        }
+                    }
+                    else
+                    {
+                        // Node doesn't exist/isn't targetable. 
+                        return true;
                     }
                 }
             }
@@ -235,7 +250,22 @@ namespace ICE.Scheduler.Tasks
                                     }
                                 }
 
-                                // foreach (var)
+                                foreach (var item in CosmicHelper.CurrentMissionInfo.Gathering_Min)
+                                {
+                                    if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
+                                    {
+                                        if (EzThrottler.Throttle("Gathering Item"))
+                                        {
+                                            gather.GatheredItems.Where(x => x.ItemID == item.Key).FirstOrDefault().Gather();  
+                                        }
+                                    }
+                                }
+
+                                if (EzThrottler.Throttle("Gathering item for score"))
+                                {
+                                    // if we're here, then we just need to gather for score. So... gathering for score lol
+                                    gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault().Gather();
+                                }
                             }
                         }
                         else
@@ -250,7 +280,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    return false;
+                    P.TaskManager.Insert(() => WaitToGather());
+                    return true;
                 }
             }
             else
@@ -264,6 +295,15 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+        private static bool? WaitToGather()
+        {
+            if (!Svc.Condition[ConditionFlag.ExecutingGatheringAction])
+                return true;
+            else
+            {
+                return false;
+            }
         }
 
         private static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int? boonChance = null, bool gather1More = true)

@@ -154,10 +154,10 @@ namespace ICE.Scheduler.Tasks
                         }
                         // In the middle of a dual mission. 
                         // First, checking to see if you're in the middle of a gathering or crafting action
-                        if (C.OnlyGrabMission || config.ManualMode || s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish))
+                        if (C.OnlyGrabMission || config.ManualMode || s.HasFlag(MissionAttributes.Fish))
                         {
                             // TODO: Remove this once properly coded
-                            if (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish))
+                            if (s.HasFlag(MissionAttributes.Fish))
                             {
                                 IceLogging.Info("Currently not built in/supported yet. Swapping to manual mode");
                             }

@@ -46,7 +46,7 @@ namespace ICE.Scheduler
         // </summary>
         internal static void Tick()
         {
-            if (Throttles.GenericThrottle && P.TaskManager.Tasks.Count == 0 && State != Idle)
+            if (Throttles.GenericThrottle && P.TaskManager.NumQueuedTasks == 0 && State != Idle)
             {
                 switch (State)
                 {
@@ -78,6 +78,8 @@ namespace ICE.Scheduler
                         Task_Craft.Enqueue();
                         break;
                     case Gather:
+                        Task_Gather.Enqueue();
+                        break;
                     case Fish:
                     case ManualMode:
                         Task_Manual.Enqueue();

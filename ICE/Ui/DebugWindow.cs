@@ -39,7 +39,7 @@ internal class DebugWindow : Window
                                    "Map Test", "Gather Editor",
                                    "Navmesh Testing", "Relic Info",
                                    "TaskManager Testing", "Table: Item List",
-                                   "Custom Item List", "Table: Special Missions",
+                                   "Table: Gathering Missions", "Table: Special Missions",
                                    "Table: Mission Text", "Table: Recipies"];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
@@ -82,12 +82,12 @@ internal class DebugWindow : Window
                 case 7: Ui_TestButtons.Draw(); break;
                 case 8: Ui_IPCTesting.Draw(); break;
                 case 9: Ui_MapTesting.Draw(); break;
-                case 10: Ui_GatheringViewer.Draw(); break;
+                case 10: Ui_GatherRoute_Editor.Draw(); break;
                 case 11: Ui_NavmeshTesting.Draw(); break;
                 case 12: Ui_RelicInfo.Draw(); break;
                 case 13: Ui_TaskManagerInfo.Draw(); break;
                 case 14: Table_CustomItems.Draw(); break;
-                case 15: Ui_Custom_GatherInfo.Draw(); break;
+                case 15: Table_GatheringInfo.Draw(); break;
                 case 16: Table_TimeWeather.Draw(); break;
                 case 17: Table_MissionText.Draw(); break;
                 case 18: Table_MoonRecipies.Draw(); break;
