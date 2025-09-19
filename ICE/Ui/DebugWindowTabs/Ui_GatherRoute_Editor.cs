@@ -170,13 +170,51 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             if (selectedFlag != Vector2.Zero)
                             {
-                                for (int i = 0; i < GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag].Count; i++)
+                                var nodeList = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag];
+
+                                for (int i = 0; i < nodeList.Count; i++)
                                 {
-                                    var nodeInfo = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag][i];
+                                    var nodeInfo = nodeList[i];
 
-                                    // Create a unique label for the selectable (you can customize this)
-                                    string label = $"Node: {nodeInfo.NodeId}";
+                                    ImGui.PushID($"node_{i}");
 
+                                    // Up button (disabled if first item)
+                                    using (ImRaii.Disabled(i == 0))
+                                    {
+                                        if (ImGui.ArrowButton("up", ImGuiDir.Up))
+                                        {
+                                            // Swap with previous item
+                                            (nodeList[i], nodeList[i - 1]) = (nodeList[i - 1], nodeList[i]);
+
+                                            // Adjust selected index if needed
+                                            if (selectedNodeIndex == i)
+                                                selectedNodeIndex = i - 1;
+                                            else if (selectedNodeIndex == i - 1)
+                                                selectedNodeIndex = i;
+                                        }
+                                    }
+
+                                    ImGui.SameLine();
+
+                                    // Down button (disabled if last item)
+                                    using (ImRaii.Disabled(i == nodeList.Count - 1))
+                                    {
+                                        if (ImGui.ArrowButton("down", ImGuiDir.Down))
+                                        {
+                                            // Swap with next item
+                                            (nodeList[i], nodeList[i + 1]) = (nodeList[i + 1], nodeList[i]);
+
+                                            // Adjust selected index if needed
+                                            if (selectedNodeIndex == i)
+                                                selectedNodeIndex = i + 1;
+                                            else if (selectedNodeIndex == i + 1)
+                                                selectedNodeIndex = i;
+                                        }
+                                    }
+
+                                    ImGui.SameLine();
+
+                                    // Validation check mark/cross
                                     if (IsNodeValid.TryGetValue(nodeInfo.NodeId, out var state))
                                     {
                                         if (state)
@@ -190,11 +228,15 @@ namespace ICE.Ui.DebugWindowTabs
                                             ImGui.SameLine();
                                         }
                                     }
+
+                                    // Node selectable
+                                    string label = $"Node: {nodeInfo.NodeId}";
                                     if (ImGui.Selectable(label, selectedNodeIndex == i))
                                     {
-                                        selectedNodeIndex = i; // Track which node is selected
-                                                               // Add any additional logic when a node is selected
+                                        selectedNodeIndex = i;
                                     }
+
+                                    ImGui.PopID();
                                 }
                             }
 
@@ -307,6 +349,20 @@ namespace ICE.Ui.DebugWindowTabs
                             Vector3 currentPos = Player.Position;
                             nodeInfo.LandZone = currentPos;
                         }
+                        if (ImGui.Button("Nav to node"))
+                        {
+                            P.Navmesh.PathfindAndMoveTo(nodeInfo.LandZone, false);
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Stop naving"))
+                        {
+                            P.Navmesh.Stop();
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Mount"))
+                        {
+                            Utils.MountAction();
+                        }
 
                         using (var drawList = PictoService.Draw())
                         {
@@ -315,11 +371,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                             if (PictoCircle)
                             {
-                                PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", nodeInfo.Position, 3f, Utils.FromUintABGR(2616716297));
+                                PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", nodeInfo.Position, 3f, Utils.FromUintABGR(C.PictoColor_Circle));
                             }
                             if (PictoDot)
                             {
-                                drawList.AddDot(nodeInfo.LandZone, 5f, 2616716297);
+                                drawList.AddDot(nodeInfo.LandZone, 5f, C.PictoColor_Dot);
                             }
                         }
                     }
@@ -446,7 +502,7 @@ namespace ICE.Ui.DebugWindowTabs
             foreach (var node in GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag])
             {
                 bool isClear = false;
-                if (Vector3.Distance(node.Position, node.LandZone) < 5)
+                if (Vector3.Distance(node.Position, node.LandZone) <= 3)
                 {
                     isClear = true;
                 }

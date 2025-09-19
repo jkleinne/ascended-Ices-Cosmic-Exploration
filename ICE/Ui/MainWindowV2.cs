@@ -82,8 +82,8 @@ namespace ICE.Ui
         private bool showClassC = C.ShowClassC;
         private bool showClassD = C.ShowClassD;
 
-        private string SinusAsset = "ICE.Moons.Sinus_Ardorum.png";
-        private string PhaennaAsset = "ICE.Moons.Phaenna.png";
+        private string SinusAsset = "ICE.Resources.Sinus_Ardorum.png";
+        private string PhaennaAsset = "ICE.Resources.Phaenna.png";
 
         // Middle Column stuff
         private Dictionary<string, bool> headerStates = new();
@@ -1003,7 +1003,7 @@ namespace ICE.Ui
         {
             uint selectedJob = C.SelectedJob;
             // Fixed column count - include ALL possible columns
-            int totalColumns = 15; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
+            int totalColumns = 16; // Enabled, Manual, ID, Completion Status, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                                         ImGuiTableFlags.Borders |
@@ -1020,6 +1020,7 @@ namespace ICE.Ui
                 ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Enabled").X + padding);
                 ImGui.TableSetupColumn("Manual", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Manual").X + padding);
                 ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("99999").X + padding);
+                ImGui.TableSetupColumn("✓", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("✓").X + padding);
                 ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, 250f);
                 ImGui.TableSetupColumn("Cosmo", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Cosmo").X + padding);
                 ImGui.TableSetupColumn("Lunar", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Lunar").X + padding);
@@ -1037,8 +1038,135 @@ namespace ICE.Ui
                 ImGui.TableSetupColumn("Gathering Profile", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Gathering Profile").X + padding + 15);
                 ImGui.TableSetupColumn("Mission Notes", ImGuiTableColumnFlags.WidthFixed, Math.Max(ImGui.CalcTextSize("Mission Notes").X + padding, 75));
 
-                // Render headers with right-click menu
-                ImGui.TableHeadersRow();
+                // Replace ImGui.TableHeadersRow() with this custom header implementation:
+
+                // Draw custom header row with tooltips
+                ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+
+                // Column 0: Enabled
+                ImGui.TableSetColumnIndex(0);
+                ImGui.TableHeader("Enabled");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Enable/disable mission for automation");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 1: Manual
+                ImGui.TableSetColumnIndex(1);
+                ImGui.TableHeader("Manual");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Manual mode - requires manual intervention");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 2: ID
+                ImGui.TableSetColumnIndex(2);
+                ImGui.TableHeader("ID");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Mission ID number");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 3: Completed (with Unicode checkmark)
+                ImGui.TableSetColumnIndex(3);
+                ImGui.TableHeader("✓");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Mission completion status");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 4: Mission Name
+                ImGui.TableSetColumnIndex(4);
+                ImGui.TableHeader("Mission Name");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Click mission name to view details");
+                    ImGui.EndTooltip();
+                }
+
+                // Continue this pattern for all your columns...
+                // Column 5: Cosmo
+                ImGui.TableSetColumnIndex(5);
+                ImGui.TableHeader("Cosmo");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Cosmic Credits reward");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 6: Lunar
+                ImGui.TableSetColumnIndex(6);
+                ImGui.TableHeader("Lunar");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Lunar Credits reward");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 7: Score
+                ImGui.TableSetColumnIndex(7);
+                ImGui.TableHeader("Score");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Class Score reward");
+                    ImGui.EndTooltip();
+                }
+
+                // XP Columns (8-12)
+                string[] xpLabels = { "I", "II", "III", "IV", "V" };
+                for (int i = 0; i < 5; i++)
+                {
+                    ImGui.TableSetColumnIndex(8 + i);
+                    ImGui.TableHeader(xpLabels[i]);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"Relic XP Type {xpLabels[i]} reward");
+                        ImGui.EndTooltip();
+                    }
+                }
+
+                // Column 13: Turnin Mode
+                ImGui.TableSetColumnIndex(13);
+                ImGui.TableHeader("Turnin Mode");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Configure mission turnin settings");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 14: Gathering Profile
+                ImGui.TableSetColumnIndex(14);
+                ImGui.TableHeader("Gathering Profile");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Select gathering profile for gather missions");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 15: Mission Notes
+                ImGui.TableSetColumnIndex(15);
+                ImGui.TableHeader("Mission Notes");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Additional mission information and requirements");
+                    ImGui.EndTooltip();
+                }
 
                 foreach (var entry in missions)
                 {
@@ -1102,6 +1230,10 @@ namespace ICE.Ui
                     // Mission ID
                     ImGui.TableNextColumn();
                     CenterTextInTableCell(Id.ToString());
+
+                    // Completion Status
+                    ImGui.TableNextColumn();
+                    CompletionStatus(Id);
 
                     // Mission Name
                     ImGui.TableNextColumn();
@@ -1258,12 +1390,24 @@ namespace ICE.Ui
                             ImGui.EndPopup();
                         }
                     }
+                    bool gatherProfile = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
+                    bool collectable = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables) || missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
                     // Gather Mission Profile Settings
                     ImGui.TableNextColumn();
-                    if (missionInfo.Attributes.HasFlag(MissionAttributes.Gather))
+                    if (gatherProfile && !collectable)
                     {
-                        string profileName = C.GatherSettings[missionConfig.GatherProfileId].Name;
+                        string profileName = "???";
+                        var profileSettings = C.GatherSettings.Where(x => x.Id == missionConfig.GatherProfileId).FirstOrDefault();
+
+                        if (profileSettings != null)
+                        {
+                            profileName = profileSettings.Name;
+                        }
+                        else
+                        {
+                            profileName = "???";
+                        }
 
                         if (CenterButton($"{profileName}##GatherProfile_{profileName}"))
                         {
@@ -1277,6 +1421,11 @@ namespace ICE.Ui
                         }
                         if (ImGui.BeginPopup("Selecting Gathering Profile"))
                         {
+                            if (missionConfig.GatherProfileId > C.GatherSettings.Count - 1)
+                            {
+                                missionConfig.GatherProfileId = 0;
+                            }
+
                             ImGui.Text($"Currently Selected: {profileName}");
                             ImGui.Separator();
                             for (int i = 0; i < C.GatherSettings.Count; i++)
@@ -1327,7 +1476,7 @@ namespace ICE.Ui
                         }
                     }
 
-                        ImGui.TableNextColumn();
+                    ImGui.TableNextColumn();
                     int notesCount = 0;
 
                     ImGui.Dummy(new(2, 0));
@@ -1644,6 +1793,60 @@ namespace ICE.Ui
             var chain = new List<uint> { nextMissionId.Value };
             chain.AddRange(GetOnlyNextMissionsRecursive(nextMissionId.Value));
             return chain;
+        }
+
+        private static unsafe void CompletionStatus(uint id)
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            var isCompleted = manager->IsMissionCompleted(id);
+            var isGold = manager->IsMissionGolded(id);
+
+            float availableWidth = ImGui.GetContentRegionAvail().X;
+
+            if (isCompleted)
+            {
+                if (isGold)
+                {
+                    // Center the image
+                    float imageWidth = 23f;
+                    float offsetX = (availableWidth - imageWidth) * 0.5f;
+
+                    if (offsetX > 0)
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
+
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                    {
+                        if (tex.TryGetWrap(out var wrap, out var exc))
+                        {
+                            ImGui.Image(wrap.Handle, new Vector2(23, 23), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                        }
+                    }
+                }
+                else
+                {
+                    // Center the font icon - you'll need to measure or estimate its width
+                    var iconText = FontAwesome.Check.ToString();
+                    var iconWidth = ImGui.CalcTextSize(iconText).X;
+                    float offsetX = (availableWidth - iconWidth) * 0.5f;
+
+                    if (offsetX > 0)
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
+
+                    FontAwesome.Print(EColor.Green, FontAwesome.Check);
+                }
+            }
+            else
+            {
+                // Center the cross icon
+                var iconText = FontAwesome.Cross.ToString();
+                var iconWidth = ImGui.CalcTextSize(iconText).X;
+                float offsetX = (availableWidth - iconWidth) * 0.5f;
+
+                if (offsetX > 0)
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
+
+                FontAwesome.Print(EColor.Red, FontAwesome.Cross);
+            }
         }
 
         #endregion

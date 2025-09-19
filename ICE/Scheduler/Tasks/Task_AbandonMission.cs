@@ -128,6 +128,10 @@ namespace ICE.Scheduler.Tasks
                         {
                             Continue = true;
                         }
+                        if (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList))
+                        {
+                            Continue = true;
+                        }
                     }
 
                     if (EzThrottler.Throttle("Attempt to turnin"))

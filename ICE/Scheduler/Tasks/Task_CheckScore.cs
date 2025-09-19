@@ -381,6 +381,21 @@ namespace ICE.Scheduler.Tasks
                     // Hud info should be available. Now time to check the mission status.
                     var id = CosmicHelper.CurrentLunarMission;
                     var mission = CosmicHelper.SheetMissionDict[id];
+
+                    if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        if (missionInfo.CriticalScore == 1)
+                        {
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
+                        else
+                        {
+                            // Still waiting for it to hit 1. So just returning true
+                            return true;
+                        }
+                    }
                     if (mission.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
                         // We're just checking to see if we have all the items for missions that have a score time remaining. 

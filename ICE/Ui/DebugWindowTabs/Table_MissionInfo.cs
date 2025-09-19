@@ -1,12 +1,15 @@
 ﻿using Dalamud.Interface.Textures;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static FFXIVClientStructs.FFXIV.Component.GUI.AtkTimer.Delegates;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -56,6 +59,10 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SetTooltip("No fishing missions found!");
                 }
             }
+            if (ImGui.Button("Export invalid gathering"))
+            {
+
+            }
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                             ImGuiTableFlags.Borders |
@@ -64,7 +71,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 33, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 34, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -106,6 +113,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn($"Gather [{i}]");
                     ImGui.TableSetupColumn($"Amount [G-{i}]");
                 }
+                ImGui.TableSetupColumn("Completion");
 
                 ImGui.TableHeadersRow();
 
@@ -338,8 +346,11 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{item.Value}");
                     }
 
-                    // TODO: Check for mission completion state
-                    // var test = WKSManager.Instance()->
+                    ImGui.TableSetColumnIndex(33);
+                    var manager = (WKSManagerCustom*)WKSManager.Instance();
+                    var isCompleted = manager->IsMissionCompleted(entry.Key);
+                    var isGold = manager->IsMissionGolded(entry.Key);
+                    Completion(entry.Key);
 
                     ImGui.PopID();
                 }
@@ -450,6 +461,33 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
             return result.ToString();
+        }
+
+        private static unsafe void Completion(uint id)
+        {
+            var manager = (WKSManagerCustom*)WKSManager.Instance();
+            var isCompleted = manager->IsMissionCompleted(id);
+            var isGold = manager->IsMissionGolded(id);
+
+            if (isCompleted)
+            {
+                if (isGold)
+                {
+                    var starTex = Svc.Texture.GetFromGame("ui/uld/linkshell_hr1.tex").GetWrapOrEmpty();
+                    Vector2 uvMin = new Vector2(0.027825013f, 0.04166667f);
+                    Vector2 uvMax = new Vector2(0.305575f, 0.4583333f);
+
+                    ImGui.Image(starTex.Handle, new Vector2(18, 18), uvMin, uvMax);
+                }
+                else
+                {
+                    FontAwesome.Print(EColor.Green, FontAwesome.Check);
+                }
+            }
+            else
+            {
+                FontAwesome.Print(EColor.Red, FontAwesome.Cross);
+            }
         }
     }
 }
