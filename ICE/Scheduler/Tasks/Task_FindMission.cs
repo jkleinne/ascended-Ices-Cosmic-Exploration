@@ -745,6 +745,7 @@ namespace ICE.Scheduler.Tasks
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => FrameDelay(8), "Waiting 8 frames before next action"),
                 new(() => GrabMission(missionId), "Selecting mission for grabbing"),
+                new(() => Mission_Settings.nodeTotal = 0, "Resetting total node counter"),
                 new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
         }
@@ -846,11 +847,12 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (!Svc.Condition[ConditionFlag.Unknown101])
                     {
-                        // Checking within this so we don't go flying over the gathering point and accidentally start it.
-                        if (Player.DistanceTo(mapId) < missionEntry.Radius + 10)
+                        foreach (var node in gatherInfo)
                         {
-                            // we're within range to start it and we're not in the middle of pathfinding. Returning this to be true.
-                            return true;
+                            if (Player.DistanceTo(node.Position) < 5)
+                            {
+                                return true;
+                            }
                         }
 
                         // We ideally don't want to be trying to try and pathfind while on this. Need to wait for us to get off the hoverboard

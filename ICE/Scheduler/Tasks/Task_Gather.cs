@@ -106,12 +106,13 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Debug($"Distance to node position: {Player.DistanceTo(location.Position)}");
             }
 
-            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 3)
+            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
             {
                 // Time to check to see if the node is targetable 
                 if (Svc.Condition[ConditionFlag.Gathering])
                 {
                     P.TaskManager.Insert(() => GatheringInteraction(), "Gathering mode", Utils.TaskConfig);
+                    return true;
                 }
                 else if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
                 {

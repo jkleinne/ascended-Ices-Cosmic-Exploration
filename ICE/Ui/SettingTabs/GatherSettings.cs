@@ -303,6 +303,9 @@ namespace ICE.Ui.SettingTabs
                         C.CordialMinGp = CordialMinGp;
                         C.Save();
                     }
+                    ImGui.SameLine();
+                    ImGuiEx.HelpMarker("What's the minimum gp you can have before it uses a cordial.\n" +
+                                       "If set to 0, it'll never use a cordial even with it enabled (because... you'll never have 0 gp)");
 
                     ImGui.TreePop();
                 }

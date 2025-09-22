@@ -367,7 +367,7 @@ namespace ICE.Ui
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text("Sinuc Ardorum");
+                    ImGui.Text("Sinus Ardorum");
                     ImGui.EndTooltip();
                 }
 
@@ -699,6 +699,7 @@ namespace ICE.Ui
                         ("Mission Name:", mission.Name),
                         ("Cosmocredits:", mission.CosmoCredit.ToString()),
                         ("Lunar Credits", mission.LunarCredit.ToString()),
+                        ("Bronze Requirement", mission.BronzeScore.ToString()),
                         ("Silver Requirements:", mission.SilverScore.ToString()),
                         ("Gold Requirements:", mission.GoldScore.ToString())
                     };
@@ -732,6 +733,7 @@ namespace ICE.Ui
                         foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
                         {
                             ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
                             string type = "";
                             switch (xp.Key)
                             {

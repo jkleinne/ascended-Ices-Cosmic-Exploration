@@ -46,6 +46,10 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     if (entry.Value.Jobs.Overlaps(CosmicHelper.CrafterJobList))
                     {
+                        if (!string.IsNullOrEmpty(RecipeTableSearchText) &&
+                            !entry.Value.Name.ToLower().Contains(RecipeTableSearchText.ToLower()))
+                            continue;
+
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
                         ImGui.Text($"{entry.Key}");

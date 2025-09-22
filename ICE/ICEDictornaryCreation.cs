@@ -192,15 +192,34 @@ public sealed partial class ICE
                         }
                         var requiredItem = recipeRow.Ingredient[0].RowId;
                         var requiredAmount = recipeRow.AmountIngredient[0];
-                        crafts_Main[recipeId] = new()
+                        var requiredItem2 = recipeRow.Ingredient[1].RowId;
+                        var requiredAmount2 = recipeRow.AmountIngredient[1];
+
+                        if (requiredItem2 != 0)
                         {
-                            ItemId = itemId,
-                            RequiredAmount = amountNeeded,
-                            RequiredItems = new()
+                            crafts_Main[recipeId] = new()
                             {
-                                [requiredItem] = requiredAmount
-                            }
-                        };
+                                ItemId = itemId,
+                                RequiredAmount = amountNeeded,
+                                RequiredItems = new()
+                                {
+                                    [requiredItem] = requiredAmount,
+                                    [requiredItem2] = requiredAmount2
+                                }
+                            };
+                        }
+                        else
+                        {
+                            crafts_Main[recipeId] = new()
+                            {
+                                ItemId = itemId,
+                                RequiredAmount = amountNeeded,
+                                RequiredItems = new()
+                                {
+                                    [requiredItem] = requiredAmount
+                                }
+                            };
+                        }
                     }
                     else if (recipeIds.Count == 2)
                     {

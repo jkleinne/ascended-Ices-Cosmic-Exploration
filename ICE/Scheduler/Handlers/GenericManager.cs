@@ -49,7 +49,7 @@ namespace ICE.Scheduler.Handlers
         {
             if (SchedulerMain.State != IceState.ManualMode)
             {
-                if (SchedulerMain.State == IceState.Gather)
+                if (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass)
                 {
                     var pandoraGatherEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);
 
@@ -77,7 +77,7 @@ namespace ICE.Scheduler.Handlers
                 if (C.AutoCordial && CosmicZone)
                 {
                     var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
-                    if (pandoraCordial && (C.UseOnlyInMission && SchedulerMain.State == IceState.Gather))
+                    if (pandoraCordial && (C.UseOnlyInMission && (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass)))
                     {
                         if (EzThrottler.Throttle("Disabling Pandora Cordial", 1000))
                         {

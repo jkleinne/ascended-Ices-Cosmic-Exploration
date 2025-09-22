@@ -442,30 +442,35 @@ namespace ICE.Ui.DebugWindowTabs
             sb.AppendLine("public static Dictionary<uint, Dictionary<Vector2, List<GathNodeInfo>>> MoonGatherLocations = new()");
             sb.AppendLine("{");
 
-            foreach (var zone in GatheringUtil.MoonGatherLocations)
+            // Sort zones by key
+            foreach (var zone in GatheringUtil.MoonGatherLocations.OrderBy(z => z.Key))
             {
-                sb.AppendLine($"    [{zone.Key}] = new()");
-                sb.AppendLine("    {");
+                sb.AppendLine($"\t[{zone.Key}] = new()");
+                sb.AppendLine("\t{");
 
-                foreach (var flag in zone.Value)
+                // Sort flags by job ID first, then by X coordinate (west to east)
+                var sortedFlags = zone.Value.OrderBy(flag => GetJobIdForFlag(zone.Key, flag.Key))
+                                            .ThenBy(flag => flag.Key.X);
+
+                foreach (var flag in sortedFlags)
                 {
-                    sb.AppendLine($"        [new Vector2({flag.Key.X}f, {flag.Key.Y}f)] = new()");
-                    sb.AppendLine("        {");
+                    sb.AppendLine($"\t\t[new Vector2({flag.Key.X}f, {flag.Key.Y}f)] = new()");
+                    sb.AppendLine("\t\t\t{");
 
                     foreach (var node in flag.Value)
                     {
-                        sb.AppendLine("            new GathNodeInfo()");
-                        sb.AppendLine("            {");
-                        sb.AppendLine($"                Position = new Vector3({node.Position.X:N2}f, {node.Position.Y:N2}f, {node.Position.Z:N2}f),");
-                        sb.AppendLine($"                LandZone = new Vector3({node.LandZone.X:N2}f, {node.LandZone.Y:N2}f, {node.LandZone.Z:N2}f),");
-                        sb.AppendLine($"                NodeId = {node.NodeId},");
-                        sb.AppendLine("            },");
+                        sb.AppendLine("\t\t\t\tnew GathNodeInfo()");
+                        sb.AppendLine("\t\t\t\t{");
+                        sb.AppendLine($"\t\t\t\t\tPosition = new Vector3({node.Position.X:N2}f, {node.Position.Y:N2}f, {node.Position.Z:N2}f),");
+                        sb.AppendLine($"\t\t\t\t\tLandZone = new Vector3({node.LandZone.X:N2}f, {node.LandZone.Y:N2}f, {node.LandZone.Z:N2}f),");
+                        sb.AppendLine($"\t\t\t\t\tNodeId = {node.NodeId},");
+                        sb.AppendLine("\t\t\t\t},");
                     }
 
-                    sb.AppendLine("        },");
+                    sb.AppendLine("\t\t\t},");
                 }
 
-                sb.AppendLine("    },");
+                sb.AppendLine("\t},");
             }
 
             sb.AppendLine("};");

@@ -17,17 +17,7 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             Task_CheckScore.Enqueue();
-            if (CosmicHelper.CurrentMissionInfo.Jobs.Contains(18))
-            {
-                // Need to insert the stuff for fishing dual class bullshit here
-            }
-            else
-            {
-                P.TaskManager.Enqueue(() => CheckMaterials(), "Checking dual class mission for enough items to craft");
-                P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking for next gather location to head to");
-                P.TaskManager.Enqueue(() => PathToNode(), "Pathing to the next node");
-                P.TaskManager.Enqueue(() => NavmeshMovement(), "Telling navmesh to move");
-            }
+            P.TaskManager.Enqueue(() => CheckMaterials(), "Checking status for dual craft missions");
         }
 
         private static unsafe bool? CheckMaterials()
@@ -37,125 +27,138 @@ namespace ICE.Scheduler.Tasks
             var crafterJobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
             var gatheringJobId = mission.Jobs.Where(x => CosmicHelper.GatheringJobList.Contains(x)).FirstOrDefault();
 
-            if (P.TaskManager.IsBusy)
-            {
-                if (Player.JobId != crafterJobId)
-                {
-                    if (EzThrottler.Throttle("Swapping to crafter job"))
-                        GearsetHandler.TaskClassChange((Job)crafterJobId);
-                    return false;
-                }
+            // Should only be one of these existing here for dual crafts.
+            var mainCraft = mission.Crafts_Main.Values.FirstOrDefault();
+            var recipeId = mission.Crafts_Main.Keys.FirstOrDefault();
+            var itemId = mainCraft.ItemId;
 
-                IceLogging.Info("Need to wait for artisan to not be busy before continuing onwards");
+            var gatherProfileId = C.MissionConfig[id].GatherProfileId;
+            var dualCraftAmount = C.GatherSettings[gatherProfileId].DualClassCraftAmount;
+
+            foreach (var requiredItem in mainCraft.RequiredItems)
+            {
+                uint crateId = 48233;
+
+                var materialItemId = requiredItem.Key;
+                var amountNeeded = requiredItem.Value;
+
+                if (materialItemId == crateId && PlayerHelper.GetItemCount(crateId, out var crateAmount) && crateAmount == 0)
+                {
+                    // This means we've ran out of crates. Going to just exit out and abandon
+                    SchedulerMain.State = IceState.AbandonMission;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+                else
+                {
+                    if (PlayerHelper.GetItemCount(itemId, out var mainItemCount) && mainItemCount < dualCraftAmount)
+                    {
+                        amountNeeded = amountNeeded * dualCraftAmount;
+                    }
+
+                    if (PlayerHelper.GetItemCount(materialItemId, out var gatherAmount) && gatherAmount < amountNeeded)
+                    {
+                        // We don't have enough to craft. So going to actually exit out and enter the gathering state.
+                        IceLogging.Info("We don't have enough to craft the dual class item, so proceeding to gather");
+                        P.TaskManager.Insert(() => CheckGatheringState(), "Checking the current state of gathering");
+                        return true;
+                    }
+                }
+            }
+
+            // If we've gotten this far. That means that we *-should-* be able to craft
+            // Order of operations will be:
+            // 1: If we're in the middle of a gathering node, need to exit out of it and wait for us to not be gathering/busy
+            // 2: Swap to the crafter (if we're not there already)
+            // 3: Tell Artisan to craft
+            // 4: Wait for Artisan to not be busy
+
+            if (Svc.Condition[ConditionFlag.Gathering])
+            {
+                if (GenericHelpers.TryGetAddonByName("Gathering", out AtkUnitBase* gather) && GenericHelpers.IsAddonReady(gather))
+                {
+                    if (EzThrottler.Throttle("Closing Gathering Window"))
+                        ECommons.Automation.Callback.Fire(gather, true, -1);
+                }
+                return false;
+            }
+
+            if (Player.JobId != crafterJobId)
+            {
+                if (EzThrottler.Throttle("Swapping to crafter job"))
+                    GearsetHandler.TaskClassChange((Job)crafterJobId);
+                return false;
+            }
+
+            if (PlayerHelper.GetItemCount(itemId, out var count) && count < dualCraftAmount)
+            {
+                // We have enough to craft. Telling it to craft the item... x amount of times
+                P.Artisan.CraftItem(recipeId, dualCraftAmount);
+                P.TaskManager.Tasks.Clear();
                 InsertArtisanWait();
                 return true;
             }
             else
             {
-                var mainCraft = mission.Crafts_Main.Values.FirstOrDefault();
-                var recipeId = mission.Crafts_Main.Keys.FirstOrDefault();
-                var itemId = mainCraft.ItemId;
-                var gatherEntry = mainCraft.RequiredItems.FirstOrDefault();
-                var gatheredItem = gatherEntry.Key;
-                var gatheredAmount = gatherEntry.Value;
+                // We have enough for atleast 1 more craft, telling artisan to craft. Uno mas.
+                P.Artisan.CraftItem(recipeId, 1);
+                P.TaskManager.Tasks.Clear();
+                InsertArtisanWait();
+                return true;
+            }
+        }
 
-                var gatherProfileId = C.MissionConfig[id].GatherProfileId;
-                var dualCraftAmount = C.GatherSettings[gatherProfileId].DualClassCraftAmount;
+        private static unsafe bool? CheckGatheringState()
+        {
+            var id = CosmicHelper.CurrentLunarMission;
+            var mission = CosmicHelper.SheetMissionDict[id];
+            var crafterJobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
+            var gatheringJobId = mission.Jobs.Where(x => CosmicHelper.GatheringJobList.Contains(x)).FirstOrDefault();
 
-                if (PlayerHelper.GetItemCount(itemId, out var count) && count < dualCraftAmount)
+            if (Svc.Condition[ConditionFlag.Crafting] || (Svc.Condition[ConditionFlag.PreparingToCraft]))
+            {
+                if (GenericHelpers.TryGetAddonByName("WKSRecipeNotebook", out AtkUnitBase* moonCraft) && GenericHelpers.IsAddonReady(moonCraft))
                 {
-                    // We're missing items set to what is configured to the gathering profile. 
-                    // So, going to check if we have enough for it. 
-                    if (PlayerHelper.GetItemCount(gatheredItem, out var gatherItem) && gatheredItem >= (gatheredAmount * dualCraftAmount))
-                    {
-                        if (Svc.Condition[ConditionFlag.Gathering])
-                        {
-                            if (GenericHelpers.TryGetAddonByName("Gathering", out AtkUnitBase* gather) && GenericHelpers.IsAddonReady(gather))
-                            {
-                                if (EzThrottler.Throttle("Closing Gathering Window"))
-                                    ECommons.Automation.Callback.Fire(gather, true, -1);
-                            }
-                        }
-                        else if (Player.JobId != crafterJobId)
-                        {
-                            if (EzThrottler.Throttle("Swapping to crafter job"))
-                                GearsetHandler.TaskClassChange((Job)crafterJobId);
-                        }
-                        else
-                        {
-                            // We have enough to craft. Telling it to craft the item... x amount of times
-                            P.Artisan.CraftItem(recipeId, dualCraftAmount);
-                            P.TaskManager.Tasks.Clear();
-                            InsertArtisanWait();
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        if (Player.JobId != gatheringJobId)
-                        {
-                            if (EzThrottler.Throttle("Swapping to crafter job"))
-                                GearsetHandler.TaskClassChange((Job)crafterJobId);
-                        }
-                        else
-                        {
-                            // We don't have enough for the inital crafting. 
-                            // Time to gather
-                            IceLogging.Info("WE SHOULD. BE ON A GATHERING CLASS | A");
-                            IceLogging.Info("We don't have enough to gather, so going to continue onto the next step");
-                            return true;
-                        }
-                    }
+                    if (EzThrottler.Throttle("Exiting out of the gathering state"))
+                        ECommons.Automation.Callback.Fire(moonCraft, true, -1);
                 }
-                else
+                return false;
+            }
+            else if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gatheringAddon))
+            {
+                P.TaskManager.Enqueue(() => GatheringInteraction(), "Interacting with the gathering node");
+                return true;
+            }
+            else if (Player.JobId != gatheringJobId)
+            {
+                if (EzThrottler.Throttle("Swapping to crafter job"))
+                    GearsetHandler.TaskClassChange((Job)gatheringJobId);
+                return false;
+            }
+            else if (Player.JobId == 16 || Player.JobId == 17)
+            {
+                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
+
+                if (selfRepairGather)
                 {
-                    // Initial dual craft amount has been met, but we still need to craft more to meet score. 
-                    if (PlayerHelper.GetItemCount(gatheredItem, out var gatherItem) && gatheredItem >= (gatheredAmount))
-                    {
-                        if (Svc.Condition[ConditionFlag.Gathering])
-                        {
-                            if (GenericHelpers.TryGetAddonByName("Gathering", out AtkUnitBase* gather) && GenericHelpers.IsAddonReady(gather))
-                            {
-                                if (EzThrottler.Throttle("Closing Gathering Window"))
-                                    ECommons.Automation.Callback.Fire(gather, true, -1);
-                            }
-                        }
-                        else if (Player.JobId != crafterJobId)
-                        {
-                            if (EzThrottler.Throttle("Swapping to crafter job"))
-                                GearsetHandler.TaskClassChange((Job)crafterJobId);
-                        }
-                        else
-                        {
-                            // We have enough to craft. Telling it to craft the item... x amount of times
-                            IceLogging.Info($"Have enough to get an extra item crafted! Telling artisan to craft: Recipe ID: {recipeId} | ItemId: {itemId}");
-                            P.Artisan.CraftItem(recipeId, 1);
-                            P.TaskManager.Tasks.Clear();
-                            InsertArtisanWait();
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        if (Player.JobId != gatheringJobId)
-                        {
-                            if (EzThrottler.Throttle("Swapping to crafter job"))
-                                GearsetHandler.TaskClassChange((Job)crafterJobId);
-                        }
-                        else
-                        {
-                            // We don't have enough for the inital crafting. 
-                            // Time to gather
-                            IceLogging.Info("WE SHOULD. BE ON A GATHERING CLASS");
-                            IceLogging.Info("We don't have enough to gather, so going to continue onto the next step");
-                            return true;
-                        }
-                    }
+                    P.TaskManager.EnqueueMulti
+                    (
+                        new(Task_Repair.OpenSelfRepair, "Opening the self repair window"),
+                        new(Task_Repair.SelfRepair, "Executing the self repair"),
+                        new(Task_Repair.CloseRepair, "Closing Self Repair")
+                    );
                 }
+
+                // Us getting here means that we're fresh into the node gathering. So just going to queue up the rest of the gathering process.
+                P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking Gathering Location Info");
+                P.TaskManager.Enqueue(() => PathToNode(), "Pathing to the gathering node");
+                P.TaskManager.Enqueue(() => NavmeshMovement(), "Navmesh moving to the node, then checking for targetability");
+                return true;
             }
 
             return false;
         }
+
         private static bool? WaitingForArtisan()
         {
             if (!P.Artisan.IsBusy())
@@ -252,7 +255,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? NavmeshMovement()
         {
             var zoneId = Player.Territory;
@@ -266,12 +268,13 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Debug($"Distance to node position: {Player.DistanceTo(location.Position)}");
             }
 
-            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 3)
+            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
             {
                 // Time to check to see if the node is targetable 
                 if (Svc.Condition[ConditionFlag.Gathering])
                 {
                     P.TaskManager.Insert(() => GatheringInteraction(), "Gathering mode", Utils.TaskConfig);
+                    return true;
                 }
                 else if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
                 {
@@ -314,7 +317,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? OpenGatheringMenu()
         {
             var zoneId = Player.Territory;
@@ -362,7 +364,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe bool? GatheringInteraction()
         {
             var missionInfo = CosmicHelper.CurrentMissionInfo;
@@ -450,7 +451,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? WaitToGather()
         {
             if (!Svc.Condition[ConditionFlag.ExecutingGatheringAction])
