@@ -162,22 +162,14 @@ namespace ICE.Ui
 
         public override void Draw()
         {
-            // Calculate scaling factors based on current font size
-            float textLineHeight = ImGui.GetTextLineHeight();
-            float scaledSpacing = ImGui.GetStyle().ItemSpacing.Y;
-            float headerPadding = textLineHeight * 1.2f;
-
-            float headerHeight = textLineHeight + headerPadding * 2;
-            float contentAreaHeight = ImGui.GetWindowHeight() - headerHeight - 4;
-            float labelHeight = ImGui.GetTextLineHeightWithSpacing();
             float childHeight = ImGui.GetContentRegionAvail().Y;
 
             // Get total available width
             float totalWidth = ImGui.GetContentRegionAvail().X;
 
             // Ensure minimum widths and validate stored widths
-            float minLeftWidth = Math.Max(220, textLineHeight * 14);
-            float minMiddleWidth = Math.Max(200, textLineHeight * 12);
+            float minLeftWidth = 220;
+            float minMiddleWidth = 200;
             float minRightWidth = 150;
 
             // Initialize column widths if not set
@@ -202,7 +194,7 @@ namespace ICE.Ui
 
                 using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob))
                 {
-                    if (ImGui.Button("Start", new Vector2(ImGui.GetContentRegionAvail().X, textLineHeight * 1.5f)))
+                    if (ImGui.Button("Start", new Vector2(ImGui.GetContentRegionAvail().X, 20)))
                     {
                         SchedulerMain.EnablePlugin();
                     }
@@ -210,13 +202,13 @@ namespace ICE.Ui
 
                 using (ImRaii.Disabled(SchedulerMain.State == IceState.Idle))
                 {
-                    if (ImGui.Button("Stop", new Vector2(ImGui.GetContentRegionAvail().X, textLineHeight * 1.5f)))
+                    if (ImGui.Button("Stop", new Vector2(ImGui.GetContentRegionAvail().X, 20)))
                     {
                         SchedulerMain.DisablePlugin();
                     }
                 }
 
-                if (ImGui.Button("Settings", new Vector2(ImGui.GetContentRegionAvail().X, textLineHeight * 1.5f)))
+                if (ImGui.Button("Settings", new Vector2(ImGui.GetContentRegionAvail().X, 20)))
                 {
                     P.settingsWindowV2.IsOpen = !P.settingsWindowV2.IsOpen;
                 }
