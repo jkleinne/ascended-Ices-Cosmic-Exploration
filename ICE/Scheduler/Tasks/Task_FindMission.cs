@@ -888,14 +888,6 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if (P.Navmesh.IsRunning())
                 {
-                    if (Svc.Condition[ConditionFlag.Unknown101])
-                    {
-                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
-                        if (EzThrottler.Throttle("Stopping navmesh temp"))
-                        {
-                            P.Navmesh.Stop();
-                        }
-                    }
                     if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
                     {
                         if (Player.DistanceTo(closestNode) > C.MountRadius)

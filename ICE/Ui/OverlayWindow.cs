@@ -32,6 +32,7 @@ namespace ICE.Ui
             ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
 #if DEBUG
             ImGui.Text($"Current Collectable State: {Mission_Settings.CollectableStep}");
+            ImGui.Text($"Current Node Count: {Mission_Settings.nodeTotal}");
 #endif
 
             ImGuiHelpers.ScaledDummy(2);

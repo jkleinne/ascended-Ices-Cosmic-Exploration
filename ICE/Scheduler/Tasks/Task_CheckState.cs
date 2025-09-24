@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Sounds;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.CosmicHelper;
@@ -31,7 +32,11 @@ namespace ICE.Scheduler.Tasks
                     SchedulerMain.State = IceState.Idle;
                     IceLogging.ChatInfo("Stop At Player Level is enabled. \n" +
                                        $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
-                    SoundAlert.PlaySoundAlert();
+                    if (C.PlaySoundAlert)
+                    {
+                        _ = SoundPlayer.PlaySoundAsync();
+                    }
+                    
                     return true;
                 }
                 if (C.StopOnceHitCosmicScore)
@@ -43,7 +48,10 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.ChatInfo("Stop At Cosmic Score is enabled. \n" +
                                            $"Your current level is: {scores.classScore} and Goal: {C.CosmicScoreCap}", "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
-                        SoundAlert.PlaySoundAlert();
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
                         return true;
                     }
                 }
@@ -60,7 +68,10 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.ChatInfo($"You've either hit the Lunar Credit threshold, or gone above it.\n" +
                                             $"Stopping I.C.E.", "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
-                        SoundAlert.PlaySoundAlert();
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
                         return true;
                     }
                 }
@@ -70,7 +81,10 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.ChatInfo($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.", "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
-                        SoundAlert.PlaySoundAlert();
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
                         return true;
                     }
                 }
@@ -122,7 +136,10 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
                         SchedulerMain.State = IceState.Idle;
-                        SoundAlert.PlaySoundAlert();
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
                         return true;
                     }
                     else

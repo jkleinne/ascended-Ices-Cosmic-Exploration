@@ -424,6 +424,8 @@ namespace ICE.Scheduler.Tasks
                                 // We've hit the node total, and can't gather anymore. Just going to try and turnin/abandon
                                 SchedulerMain.State = IceState.AbandonMission;
                                 Mission_Settings.nodeTotal = 0;
+                                P.TaskManager.Tasks.Clear();
+                                return true;
                             }
                         }
 

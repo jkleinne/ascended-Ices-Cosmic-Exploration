@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Utility.Raii;
+using ECommons.Automation;
 using ECommons.GameHelpers;
 using Pictomancy;
 using System;
@@ -116,6 +117,11 @@ namespace ICE.Ui.DebugWindowTabs
                                 var mission = missionEntry.Value;
                                 Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
                             }
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Move to Flag"))
+                        {
+                            Chat.SendMessage("/vnav moveflag");
                         }
                         ImGui.SameLine();
                         if (ImGui.Button("Stop naving"))

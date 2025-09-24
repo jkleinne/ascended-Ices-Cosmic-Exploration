@@ -13,7 +13,30 @@ public static partial class CosmicHelper
     /// <summary>
     /// Gives the current mission that is active
     /// </summary>
-    public static unsafe uint CurrentLunarMission => WKSManager.Instance()->CurrentMissionUnitRowId;
+    public static unsafe uint CurrentLunarMission
+    {
+        get
+        {
+            try
+            {
+                var manager = WKSManager.Instance();
+                if (manager == null)
+                    return 0; // or some default value
+
+                return manager->CurrentMissionUnitRowId;
+            }
+            catch (AccessViolationException)
+            {
+                IceLogging.Error("We're currently getting access violations with this, so returning 0");
+                return 0;
+            }
+            catch (Exception)
+            {
+                IceLogging.Error("Welp. Somehow not getting it still. Exception exit");
+                return 0;
+            }
+        }
+    }
     public static unsafe uint CurrentBait => WKSManager.Instance()->FishingBait;
     public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
 

@@ -19,7 +19,8 @@ namespace ICE.Utilities
 
         internal static HashSet<string> abandonStrings = ["Abandon mission?",            // English
                                                           "Aktuelle Mission abbrechen?", // German
-                                                          "Êtes-vous sûr de vouloir abandonner la mission en cours ?",
+                                                          "Êtes-vous sûr de vouloir abandonner la mission en cours ?", // french
+                                                          "Êtes-vous sûre de vouloir abandonner la mission en cours ?", // also french >.>
                                                           "受注中のミッションを破棄します。", // Japanese
                                                           "确定要放弃已领取的任务吗？",      // Chinese
                                                           "選択したミッションを開始します。よろしいですか？",

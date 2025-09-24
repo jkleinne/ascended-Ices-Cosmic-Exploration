@@ -1187,5 +1187,10 @@ public static unsafe partial class CosmicHelper
 
     };
 
+    private static Dictionary<uint, List<uint>> MissionUnlock = new()
+    {
+
+    };
+
     #endregion
 }
