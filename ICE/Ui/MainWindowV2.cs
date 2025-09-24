@@ -1614,6 +1614,33 @@ namespace ICE.Ui
                         }
                         notesCount++;
                     }
+                    if (CosmicHelper.MissionUnlock.TryGetValue(Id, out var unlock))
+                    {
+                        if (notesCount > 0)
+                            ImGui.SameLine();
+
+                        if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                        {
+                            if (tex.TryGetWrap(out var wrap, out var exc))
+                            {
+                                ImGui.Image(wrap.Handle, new Vector2(23, 23), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                            }
+                        }
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text("The following missions are required to have gold before you can do this one");
+                            foreach (var mission in unlock)
+                            {
+                                RequiredMissions(mission);
+                                ImGui.SameLine();
+                                ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
+                            }
+                            ImGui.EndTooltip();
+                        }
+                        notesCount++;
+
+                    }
                     if (missionInfo.Jobs.Count > 1)
                     {
                         if (notesCount > 0)
@@ -1930,6 +1957,38 @@ namespace ICE.Ui
                 if (offsetX > 0)
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
 
+                FontAwesome.Print(EColor.Red, FontAwesome.Cross);
+            }
+        }
+
+        private static unsafe void RequiredMissions(uint id)
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return;
+
+            var manager = (WKSManagerCustom*)managerPtr;
+            var isCompleted = manager->IsMissionCompleted(id);
+            var isGold = manager->IsMissionGolded(id);
+
+            if (isCompleted)
+            {
+                if (isGold)
+                {
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                    {
+                        if (tex.TryGetWrap(out var wrap, out var exc))
+                        {
+                            ImGui.Image(wrap.Handle, new Vector2(23, 23), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                        }
+                    }
+                }
+                else
+                {
+                    FontAwesome.Print(EColor.Green, FontAwesome.Check);
+                }
+            }
+            else
+            {
                 FontAwesome.Print(EColor.Red, FontAwesome.Cross);
             }
         }
