@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -25,6 +26,7 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
                 P.TaskManager.Enqueue(() => Mission_Settings.ResetCollectableState());
                 Task_CheckScore.Enqueue();
+                P.TaskManager.Enqueue(() => UseCordial(), "Checking to see if we should use cordial or not");
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
                 P.TaskManager.Enqueue(() => NavmeshMovement());
@@ -291,14 +293,15 @@ namespace ICE.Scheduler.Tasks
                                     }
                                 }
 
-                                foreach (var item in CosmicHelper.CurrentMissionInfo.Gathering_Min)
+                                foreach (var item in CosmicHelper.CurrentMissionInfo.Gathering_Min.OrderByDescending(x => x.Value))
                                 {
                                     if (PlayerHelper.GetItemCount(item.Key, out var count) && count < item.Value)
                                     {
                                         if (EzThrottler.Throttle("Gathering Item"))
                                         {
-                                            gather.GatheredItems.Where(x => x.ItemID == item.Key).FirstOrDefault().Gather();  
+                                            gather.GatheredItems.Where(x => x.ItemID == item.Key).FirstOrDefault().Gather();
                                         }
+                                        return false;
                                     }
                                 }
 
@@ -307,6 +310,7 @@ namespace ICE.Scheduler.Tasks
                                     // if we're here, then we just need to gather for score. So... gathering for score lol
                                     gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault().Gather();
                                 }
+                                return false;
                             }
                         }
                         else
@@ -697,6 +701,66 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        public static unsafe bool? UseCordial()
+        {
+            if (!Player.IsBusy)
+            {
+                IceLogging.Debug("Cordial Checkers");
+                if (C.AutoCordial)
+                {
+                    IceLogging.Debug($"Min GP: {C.CordialMinGp} <= {PlayerHelper.GetGp()}");
+
+                    if (PlayerHelper.GetGp() <= C.CordialMinGp)
+                    {
+                        Dictionary<uint, int> cordials = new()
+                            {
+                                { 12669, 400}, // Hi
+                                { 1006141, 350}, // HQ Regular
+                                { 6141, 300}, // NQ Regular
+                                { 1016911, 200}, // HQ Watered
+                                { 16911, 150} // HQ Watered
+                            };
+
+                        foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
+                        {
+                            IceLogging.Debug($"Checking Cordial: {cordial.Key}");
+                            bool hq = cordial.Key >= 1_000_000;
+                            if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
+                            {
+                                if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
+                                {
+                                    if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value)))
+                                    {
+                                        if (EzThrottler.Throttle("Using the cordial"))
+                                        {
+                                            ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
+                                        }
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+
+                IceLogging.Info("Cordial Check Complete");
+                return true;
+            }
+            else
+            {
+                IceLogging.Debug("Player is currently busy in the cordial check. Waiting");
+
+                return false;
+            }
+        }
+
+        private static bool WillOvercap(int recoveryGP)
+        {
+            return ((PlayerHelper.GetGp() + recoveryGP) > PlayerHelper.MaxGp());
         }
     }
 }

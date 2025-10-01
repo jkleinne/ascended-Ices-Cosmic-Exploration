@@ -236,6 +236,23 @@ namespace ICE.Config
                 C.ConfigVersion = 2;
                 C.Save();
             }
+
+            if (C.ConfigVersion == 2)
+            {
+                foreach (var mission in C.MissionConfig.Where(x => x.Key > 544 && CosmicHelper.SheetMissionDict[x.Key].Jobs.Contains(18)))
+                {
+                    var id = mission.Key;
+                    if (GatheringUtil.FishingPreset.TryGetValue(id, out var fishPreset) && fishPreset.FishingPreset.Count > 0)
+                    {
+                        if (C.MissionConfig.TryGetValue(id, out var config))
+                        {
+                            config.Use_BuildinPreset = true;
+                        }
+                    }
+                }
+                C.ConfigVersion = 3;
+                C.Save();
+            }
         }
 
         public static void UpdateConfigMissionList()

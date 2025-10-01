@@ -69,7 +69,6 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
                     {
-                        P.AutoHook.SwapBaitById(baitId);
                         IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
                         hasBait = true;
                         break;
