@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
+using NAudio.Gui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,7 +70,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
                     {
-                        IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
+                        IceLogging.Debug("We have the bait! Continuing onwards");
                         hasBait = true;
                         break;
                     }
@@ -89,6 +90,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     var facePos = Vector3.NegativeInfinity;
                     var currentPos = Player.Position;
+                    var rotation = Player.Rotation;
                     var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
                     var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
 
@@ -99,18 +101,21 @@ namespace ICE.Scheduler.Tasks
                         if (Player.DistanceTo(fishingSpot.FishingSpot) < 2)
                         {
                             facePos = fishingSpot.FacePosition;
-                            IceLogging.Debug($"Found! Telling it to face toward: {facePos}");
-                            break;
+                            var tolerance = fishingSpot.RotationTolerance;
+
+                            Vector3 direction = fishingSpot.FacePosition - currentPos;
+                            float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
+
+                            float angleDifference = GetShortestAngleDifference(rotation, targetRotation);
+
+                            if (rotation > angleDifference)
+                            {
+                                P.TaskManager.Tasks.Clear();
+                                P.TaskManager.Enqueue(() => FacePosition(fishingSpot.FacePosition, tolerance));
+                                return true;
+                            }
                         }
                     }
-
-                    if (facePos != Vector3.NegativeInfinity)
-                    {
-                        IceLogging.Debug($"Action! Telling it to face toward: {facePos}");
-                        ActionManager.Instance()->AutoFaceTargetPosition(&facePos);
-                    }
-
-                    return false;
                 }
                 else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
@@ -156,6 +161,45 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        public static unsafe bool? FacePosition(Vector3 pos, float tolerance = 0.1f)
+        {
+            float currentRotation = Player.Rotation;
+
+            // If rotation is still changing, wait for it to stabilize
+            if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
+            {
+                return false;
+            }
+
+            Vector3 direction = pos - Player.Position;
+            float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
+
+            float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
+
+            if (EzThrottler.Throttle("Testing position"))
+            {
+                if (Math.Abs(angleDifference) < tolerance)
+                {
+                    return true;
+                }
+            }
+
+            Vector3 temp = pos;
+            ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+
+            return false;
+        }
+        private static float GetShortestAngleDifference(float currentAngle, float targetAngle)
+        {
+            float difference = targetAngle - currentAngle;
+
+            // Normalize to [-π, π] for shortest path
+            while (difference > Math.PI) difference -= (float)(2 * Math.PI);
+            while (difference < -Math.PI) difference += (float)(2 * Math.PI);
+
+            return difference;
         }
     }
 }

@@ -1,15 +1,9 @@
 ﻿using Dalamud.Interface.Textures;
-using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using static FFXIVClientStructs.FFXIV.Component.GUI.AtkTimer.Delegates;
 
 namespace ICE.Ui.DebugWindowTabs
 {

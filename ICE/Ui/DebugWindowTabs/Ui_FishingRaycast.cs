@@ -1,8 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
+﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
-using System;
-using System.Numerics;
 
 namespace ICE.Ui.DebugWindowTabs
 {

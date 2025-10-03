@@ -3,11 +3,8 @@ using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Pictomancy;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using static ICE.Utilities.GatheringUtil;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -147,7 +144,32 @@ namespace ICE.Ui.DebugWindowTabs
                         }
 
                         ImGui.Checkbox("View Fishing Spots", ref viewAllFishingSpots);
+                        ImGui.SameLine();
+                        Vector4 circleColor = Utils.FromUintABGR(C.PictoColor_Circle);
+                        ImGui.SetNextItemWidth(200);
+                        if (ImGui.ColorEdit4("##CircleColorEditor", ref circleColor))
+                        {
+                            C.PictoColor_Circle = Utils.ToUintABGR(circleColor);
+                            C.Save();
+                        }
+
                         ImGui.Checkbox("View Nav Spots", ref viewNavSpot);
+                        ImGui.SameLine();
+                        Vector4 dotColor = Utils.FromUintABGR(C.PictoColor_Dot);
+                        ImGui.SetNextItemWidth(200);
+                        if (ImGui.ColorEdit4("##DotColorEditor", ref dotColor))
+                        {
+                            C.PictoColor_Dot = Utils.ToUintABGR(dotColor);
+                            C.Save();
+                        }
+
+                        Vector4 coneColor = Utils.FromUintABGR(C.PictoColor_Cone);
+                        ImGui.SetNextItemWidth(200);
+                        if (ImGui.ColorEdit4("Cone Color Editor##ConeColorEditor", ref coneColor))
+                        {
+                            C.PictoColor_Cone = Utils.ToUintABGR(coneColor);
+                            C.Save();
+                        }
 
                         var fishingHole = GatheringUtil.MoonFishingLocations[selectedZone][selectedFlag];
 
@@ -155,7 +177,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                         if (ImGui.Button("Add Fishing Spot"))
                         {
-                            fishingHole.Add(new FisherSpotInfo());
+                            fishingHole.Add(new FisherSpotInfo()
+                            {
+                                FishingSpot = Player.Position,
+                                FacePosition = GetPositionInFrontOfPlayer(Player.Position, Player.Rotation)
+                            });
                         }
 
                         ImGui.Separator();
@@ -221,18 +247,19 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                             ImGui.SameLine();
                             ImGui.Text($"{Player.Rotation}");
-
-                            if (ImGui.Button("Test Naving to [Old]"))
+                            ImGui.SetNextItemWidth(200);
+                            float toleranceDegrees = spot.RotationTolerance * (180f / (float)Math.PI);
+                            if (ImGui.SliderFloat("Rotation Tolerance (degrees)", ref toleranceDegrees, 1f, 45f))
                             {
-                                fishingPath.Clear();
-                                P.TaskManager.Enqueue(() => TestPath(spot.FacePosition, spot.FishingSpot));
+                                spot.RotationTolerance = toleranceDegrees * ((float)Math.PI / 180f);
                             }
+
                             if (ImGui.Button("Test Naving to [New]"))
                             {
                                 P.TaskManager.Enqueue(() => StartNavmesh(spot.FishingSpot));
                                 P.TaskManager.Enqueue(() => TestPathV2());
-                                P.TaskManager.EnqueueDelay(100);
-                                P.TaskManager.Enqueue(() => FacePosition(spot.FacePosition));
+                                P.TaskManager.EnqueueDelay(200);
+                                P.TaskManager.Enqueue(() => FacePosition(spot.FacePosition, spot.RotationTolerance));
                             }
                         }
 
@@ -258,6 +285,18 @@ namespace ICE.Ui.DebugWindowTabs
                                     drawList.AddDot(navPoint.FishingSpot, 5f, C.PictoColor_Dot);
                                     drawList.AddDot(navPoint.FacePosition, 5f, C.PictoColor_Dot);
                                     drawList.AddLine(navPoint.FishingSpot, navPoint.FacePosition, 0f, C.PictoColor_Circle);
+                                    Vector3 direction = navPoint.FacePosition - navPoint.FishingSpot;
+                                    float rotation = (float)Math.Atan2(direction.Z, direction.X) - (float)(Math.PI / 2);
+
+                                    float coneDistance = Vector3.Distance(navPoint.FishingSpot, navPoint.FacePosition);
+                                    drawList.AddConeFilled(
+                                        navPoint.FishingSpot,
+                                        coneDistance,
+                                        rotation,
+                                        navPoint.RotationTolerance * 2f,
+                                        C.PictoColor_Cone
+                                    );
+
                                 }
                             }
                         }
@@ -334,46 +373,6 @@ namespace ICE.Ui.DebugWindowTabs
             return sb.ToString();
         }
 
-        private static void UpdateFishingPath(Vector3 pathToArea)
-        {
-            Vector3 currentPos = Player.Position;
-
-            // Fire and forget - this will update pathTo when complete
-            _ = Task.Run(async () =>
-            {
-                fishingPath = await FindTask(currentPos, pathToArea);
-            });
-        }
-        private static async Task<List<Vector3>> FindTask(Vector3 currentPos, Vector3 pathToArea)
-        {
-            return await P.Navmesh.Pathfind(currentPos, pathToArea, false);
-        }
-
-        private static bool? TestPath(Vector3 pathToArea, Vector3 fishingHole)
-        {
-            if (P.Navmesh.IsRunning())
-            {
-                return true;
-            }
-            else
-            {
-                if (!P.Navmesh.PathfindInProgress() && fishingPath.Count == 0)
-                {
-                    if (EzThrottler.Throttle("Updating path"))
-                        UpdateFishingPath(pathToArea);
-                }
-                else
-                {
-                    if (EzThrottler.Throttle("Starting navmesh moveto"))
-                    {
-                        fishingPath.Add(fishingHole);
-                        P.Navmesh.MoveTo(new List<Vector3>(fishingPath), false);
-                    }
-                }
-            }
-
-            return false;
-        }
         public static Vector3 GetPositionInFrontOfPlayer(Vector3 currentPosition, float rotationRadians, float distance = 2f)
         {
             // No conversion needed - already in radians!
@@ -411,15 +410,14 @@ namespace ICE.Ui.DebugWindowTabs
                 return false;
             }
         }
-        private static unsafe bool? FacePosition(Vector3 pos)
+        private static unsafe bool? FacePosition(Vector3 pos, float tolerance = 0.1f)
         {
-            // Store current rotation
             float currentRotation = Player.Rotation;
 
             // If rotation is still changing, wait for it to stabilize
             if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
             {
-                return null; // Still moving, try again later
+                return false;
             }
 
             Vector3 direction = pos - Player.Position;
@@ -427,9 +425,12 @@ namespace ICE.Ui.DebugWindowTabs
 
             float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
 
-            if (Math.Abs(angleDifference) < 0.3f)
+            if (EzThrottler.Throttle("Testing position"))
             {
-                return true;
+                if (Math.Abs(angleDifference) < tolerance)
+                {
+                    return true;
+                }
             }
 
             Vector3 temp = pos;

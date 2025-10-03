@@ -1,10 +1,5 @@
-﻿using ICE.Scheduler.Tasks.OldTask;
-using Pictomancy;
-using System;
+﻿using Pictomancy;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {

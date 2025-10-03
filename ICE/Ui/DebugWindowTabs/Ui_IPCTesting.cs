@@ -1,10 +1,6 @@
 ﻿using ECommons.ExcelServices.TerritoryEnumeration;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using ICE.IPC;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs

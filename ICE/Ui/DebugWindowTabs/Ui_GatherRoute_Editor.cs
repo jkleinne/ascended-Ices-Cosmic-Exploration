@@ -2,13 +2,9 @@
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
-using InteropGenerator.Runtime.Attributes;
 using Pictomancy;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {

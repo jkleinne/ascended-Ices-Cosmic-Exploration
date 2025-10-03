@@ -675,7 +675,6 @@ namespace ICE.Scheduler.Tasks
         {
             if (EzThrottler.Throttle("Telling it to stop fishing"))
             {
-                P.AutoHook.SetPluginState(false);
                 ActionManager.Instance()->UseAction(ActionType.Action, 299);
             }
         }

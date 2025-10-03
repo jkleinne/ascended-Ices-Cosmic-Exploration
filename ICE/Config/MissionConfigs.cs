@@ -162,6 +162,7 @@ namespace ICE.Config
         };
         public uint PictoColor_Circle { get; set; } = 2616716297;
         public uint PictoColor_Dot { get; set; } = 2616716297;
+        public uint PictoColor_Cone { get; set; } = 0;
 
         #endregion
 

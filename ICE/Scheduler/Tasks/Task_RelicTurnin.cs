@@ -15,14 +15,50 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.EnqueueMulti
             (
+                new(Task_Repair.HubCheck, "Checking to see if we're in the hub area"),
+                new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
                 new(SelectRelicClass, "Selecting the class to turnin on")
             );
         }
 
-        private static bool? ReturnToBase()
+        private static bool? PathToRelicNPC()
         {
+            var zoneId = Player.Territory;
+            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault();
+
+            if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
+            {
+                if (P.Navmesh.IsRunning())
+                {
+                    if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
+                    {
+                        IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
+                        P.Navmesh.Stop();
+                        return true;
+                    }
+                }
+                else
+                {
+                    IceLogging.Debug($"Distance to the npc is correct, commending repair");
+                    return true;
+                }
+            }
+            else
+            {
+                if (!P.Navmesh.IsRunning())
+                {
+                    if (EzThrottler.Throttle("Pathing to repair NPC"))
+                    {
+                        IceLogging.Debug($"Pathing to: {npcEntry.Name}");
+
+                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.BoxCorner1.X, npcEntry.BoxCorner2.X, npcEntry.BoxCorner1.Y, npcEntry.BoxCorner2.Y, npcEntry.NpcLocation.Y);
+                        P.Navmesh.PathfindAndMoveTo(randomPoint, false);
+                    }
+                }
+            }
+
             return false;
         }
 

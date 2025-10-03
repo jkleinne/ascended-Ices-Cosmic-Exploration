@@ -1,9 +1,4 @@
 ﻿using ECommons.GameHelpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs

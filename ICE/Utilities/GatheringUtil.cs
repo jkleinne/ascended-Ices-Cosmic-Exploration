@@ -322,6 +322,7 @@ public static unsafe class GatheringUtil
     {
         public Vector3 FacePosition { get; set; }
         public Vector3 FishingSpot { get; set; }
+        public float RotationTolerance { get; set; } = 0.1f;
     }
 
     public static Dictionary<uint, Dictionary<Vector2, List<FisherSpotInfo>>> MoonFishingLocations = new()
@@ -1211,71 +1212,61 @@ public static unsafe class GatheringUtil
                     FishingSpot = new Vector3(386.65f, 29.25f, -85.66f),
                 },
             },
+            // Export for Fishing Zone 1291, Flag (526, 448)
             [new Vector2(526f, 448f)] = new()
             {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(522.33f, -255.60f, 453.09f),
+                    FishingSpot = new Vector3(521.07f, -255.60f, 454.64f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(511.24f, -255.60f, 429.31f),
+                    FishingSpot = new Vector3(509.94f, -255.60f, 430.82f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(528.40f, -255.60f, 415.81f),
+                    FishingSpot = new Vector3(526.90f, -255.60f, 417.13f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(518.11f, -255.60f, 405.44f),
+                    FishingSpot = new Vector3(519.26f, -255.60f, 407.08f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(534.20f, -255.60f, 397.19f),
+                    FishingSpot = new Vector3(534.44f, -255.60f, 395.21f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(546.96f, -255.60f, 405.64f),
+                    FishingSpot = new Vector3(548.01f, -255.60f, 403.94f),
+                },
             },
-            // Export for Fishing Zone 1291, Flag (562, 580)
             [new Vector2(562f, 580f)] = new()
             {
                 new FisherSpotInfo()
                 {
-                    FacePosition = new Vector3(564.91f, -255.60f, 443.09f),
-                    FishingSpot = new Vector3(566.70f, -255.60f, 443.12f),
+                    FacePosition = new Vector3(561.77f, -252.05f, 562.40f),
+                    FishingSpot = new Vector3(562.51f, -252.00f, 560.31f),
                 },
                 new FisherSpotInfo()
                 {
-                    FacePosition = new Vector3(556.96f, -255.60f, 422.71f),
-                    FishingSpot = new Vector3(558.72f, -255.60f, 422.97f),
+                    FacePosition = new Vector3(555.81f, -250.92f, 559.76f),
+                    FishingSpot = new Vector3(556.61f, -250.92f, 557.92f),
                 },
                 new FisherSpotInfo()
                 {
-                    FacePosition = new Vector3(560.26f, -255.60f, 395.70f),
-                    FishingSpot = new Vector3(561.69f, -255.60f, 394.55f),
+                    FacePosition = new Vector3(551.05f, -249.66f, 557.31f),
+                    FishingSpot = new Vector3(552.00f, -249.62f, 555.52f),
                 },
                 new FisherSpotInfo()
                 {
-                    FacePosition = new Vector3(543.99f, -255.60f, 384.37f),
-                    FishingSpot = new Vector3(543.87f, -255.60f, 382.61f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(522.84f, -255.60f, 386.26f),
-                    FishingSpot = new Vector3(521.64f, -255.60f, 384.93f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(498.77f, -255.60f, 397.69f),
-                    FishingSpot = new Vector3(497.47f, -255.60f, 396.45f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(493.25f, -255.60f, 419.27f),
-                    FishingSpot = new Vector3(491.50f, -255.60f, 418.84f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(503.69f, -255.60f, 441.17f),
-                    FishingSpot = new Vector3(501.92f, -255.60f, 441.30f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(511.95f, -255.60f, 468.77f),
-                    FishingSpot = new Vector3(510.07f, -255.60f, 469.08f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(523.33f, -255.60f, 488.47f),
-                    FishingSpot = new Vector3(523.15f, -255.60f, 490.31f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(555.16f, -255.60f, 509.09f),
-                    FishingSpot = new Vector3(554.02f, -255.60f, 510.50f),
-                },
-                new FisherSpotInfo()
-                {
-                    FacePosition = new Vector3(573.41f, -255.60f, 509.17f),
-                    FishingSpot = new Vector3(574.34f, -255.60f, 510.77f),
+                    FacePosition = new Vector3(567.62f, -254.23f, 564.65f),
+                    FishingSpot = new Vector3(568.43f, -254.23f, 562.83f),
                 },
             },
         },
@@ -5132,13 +5123,17 @@ public static unsafe class GatheringUtil
                 "AH4_H4sIAAAAAAAACu1XW0/jOBT+K5WfY5Q4cS59K12GYQUMorA8oNHKiU9aixB3HIehi/rfV86lTUpLoWKkeZg+pfY537nkO5e8oFGp5ZgVuhinUzR8QSc5izMYZRkaalWChczluchhfcnbqzOOhiSMLHSlhFRCL9DQsdBZcfKcZCUHvj428ssa60LKZGbAqgdiniocP7TQ6fxmpqCYyYyjoWPbPeS3oSuMKOhp2HudGc/Kx9YDz7G9PS60WjLLINEdRacrRvablYoLlu1IqUN8v5dUr1H7IorZyQKKjmG64TGlPY/9NunsASYzkepjJiq/zUHRHkw0Sx4KNKRNGv3wNW4XNWpQr5gWkCfQ8cff1PP7GSStqhL/wZjpmgqt1U1tspF/t9G+mbFMsIfiC3uSygD0DtpwXKt/fg2JfAKFho5J0jYu+6GhQMdgm79jMT1lj1Wgo3yagSpaI+ZlczR0A9t75X0PKlwuLXTyrBXrVdrKAfMibuTkJ5uf5boUWsj8lIm8TQ92LHReKriAomBTQEOELHRZ+YQuZQ6oQVjMAQ1NnrbgnctCH4x3paCA7R4ijHbc1xar+7U/kzkkWrFsXCoFuf6kKDdQPy3Wrd6+inir9Urq2giNZZlrULWGkW/fes2miZZzU9win040zKs2uo6sYdxIfU5AXbjKw9tc/CjB4CKHeWlAGcFxSAB7LnNw7IOPSRiz2KEuMI+gpYXORaG/pcZGgYb3L5U1E8CqEwR+RHb7eJyVMJhopnhZaIN3KdUjy75K+WAQ2r5yB6z6b84L0KuCSVlWQFvBzWU3qc1RHb7nBKZftZgTrWTeqb8d6jfiEdRGhV6IfHVlWtlRYHd/joUu2HNHgpAjtyfhvXLNdjuuncMUcs7U4hNiroBvC/hLlo18K1if7EltD434JoG13jp978ySf2Rb6FueLe5mkI8SLZ5gku1wu2voPcnYonxbwI0S837I9cmHQg4oMRmsNX9t0D1THw+7UTctZJRqUGNWTmf6XDyaQe/UF5u9pdrpSlVvEuahMzK3zEU3oNHr1eiNLcfsY+0IaIv6Gn6UQgGfaKZLs2yYhW9Hpe+p3I8WUU9wK//3Ef3dFO1KbaXdfn59gBm/iAKHvvPOIInB8b2UMJyEroc9zl0c2baHY3ApCeLUT2KKlt/bSdJ8FNyvDuphcv+C+lOFBm9MldtcC50BH9xJ9TC4lEeDwKe9Uei8laUzDrkWCctMaozJWmD0aGb3WmxLfXg02tz93P4eHhrDpUpZ0jSCJiAa0T0rL11a6Lf5ZFrvJAdvIkbZnFQbUZXQ7m6ChojlMv/3PooCbH8fjAZnZwM8+LqYg8IM9AyUTGTOy6qnDi6YBiVYVgwuzFpWo9d4a/xt7O8wFXw7cCMvxAlPEuy5noNjGsfYAy/1WRL4sQ1oaXX29aYNbzLzjUyM5vMMYiV/fjobD6bfdhr/YeMGG/FhpHJIRBwn9bHPA4q9yLZx5PoR5pwljkcZT92wItUGiUwOdwVgRBeDvyHLFqnR+m2o9Ic7LSlWRCnautrZ3MgHmts/TAmW6wE5kIxx5EPAKfYJUOyBTTFLSITDJIKEuDwgkV3N4hq3ibny0jnAS6f/SUm5DV4Y2tjlAcce5YAZSR2ccJIGLKQpjxK0/B+bdS33iRQAAA==",
                 "AH4_H4sIAAAAAAAACu1XS2/bOBD+KwbPZiBRJGX55nrTNoskDeJ0cwiKBSWNbCKK6FJUG2/g/76gHrZkK/bGyAI9NCdlOPPNg98Mxy9oUhg1FbnJp8kcjV/QeSbCFCZpisZGFzBE9vBSZrA9jJujixiNySgYohstlZZmhcbuEF3k589RWsQQb8VWf11hXSkVLSxY+UHsV4nDR0P0aXm30JAvVBqjses4HeTD0CVG4HcsnKPBTBfFUxMBdR16JITGSqUpRKZl6LbVyHG3SsdSpK+U1CWcd4pKa7OPMl+cryBvOWY7ETPWiZg3RRePMFvIxHwQsozbCvJGMDMieszRmNVl5KN93DZqUKPeCCMhi6AVD9+1490KksZUy39gKkxFhcbrrjXZqb9XW98tRCrFY/5R/FDaAnQETTresCu/hUj9AI3Gri1SH5f5yFKg5bCp3wc5/ySeykQn2TwFnTdO7GXHaOz5Dt2LvgM1Wq+H6PzZaNHptE0A9iLu1OynWF5kppBGquyTkFlTHuwO0WWh4QryXMwBjREaousyJnStMkA1wmoJaGzr1IN3qXJzMt6Nhhz6I0QYvXJeeSzPt/HMlhAZLdJpoTVk5p2y3EF9t1x7o93LuNd7qXVrlaaqyAzoysLqN7desWlm1NI2t8zmMwPLcoxuM6sZN9Hvk1Abrozwaya/F2BxETjgujTysHBYhGnsEByy0MVRKDweuiAcFqL1EF3K3HxJrI8cjR9eSm82gc0k8HlAXo/xQ1rAYGaEjovcWLxrpZ9E+lmpR4vQzJV7EOX/Vp6D2TRMItIcmg6uD9tFrUVV+tT17bxqMGdGq6zVf6+Y38kn0DsdeiWzzZEdZWe+0/5zh+hKPLc0CDnzOhp0LzTHa4V2CXPIYqFX75BzCfw1hz9UUes3ipXkSGk7aITbAlZ22/J9ydLV/QKySWTkD7iIITMysm9aTzxthP+SZY/xnZbLN4btM+JtLE8MvIPx9tBrc9vfk8SAnopivjCX8sm+wm51sNv45cJV6OqZtx+t96zn0fJ8FuzvLQdWELssNfO56bhb+F5IDfHMCFPYTcBuY6+04ZG2eivDO4q95DzEwjfR7CifDhPnjcz4nyhw6p23prxLXeISiHFEGGAaBiEOCQUcMIgEd8M48B20/taM+Xpjf9gIqkn/8IK6I5/5B0b+18xIk0I8uFf6cXCtzgY+Z513yj1UpU2b2tJYl5XC5Mk+rFu1nv6gLNhdzLzukjyyjgudiAhmqZ2odUIsYEf2UbYeol/m98x2YTh5TbDGVlKuK2VB24tDvS7Yz0q8VesjcYtwScA9h9AAcxITTD1K8MjnHLOEx5QzGjAOaD3cJ9SBBCbLZQqhVj/fnUQns6affb9JtGVM3tRmh1ciU9nfD0HgY/fbYDK4uBjgwefVEjQWYBagVaSyuCgf7MGVMKClSPPBX0JLkZmBexor/SAgJEgCPPJojKngFAc0SXAcMDYKBBv5XtDHSnspr1XEqq4Gf0KarhJr9ctw8zcZTyAjOYGM5MQR6YQ+Zx7HDkkopiEnOPASgVkQCjJibhgnXvkmV7h1zmWUzhuivLI/XzuOWUgc4iUjTBPuYkpihoVHAVPCgIOgwFiM1v8Cad3sWikUAAA=",
             },
-            AmountRequired = 0,
+            AmountRequired = 3,
             UniqueFish = false,
             Baits = new Dictionary<string, List<uint>>()
             {
             },
             RequiredFish = new Dictionary<string, List<uint>>()
             {
+                ["Untitled Work No. 765"] = new List<uint>()
+                {
+                    47572,
+                },
             },
         },
         // Export for Mission [999] - EX: Rare Aquatic Resources
