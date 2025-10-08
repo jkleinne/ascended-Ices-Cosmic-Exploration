@@ -148,7 +148,10 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
                             if (ImGui.Button("Face toward spot"))
                             {
-                                P.TaskManager.Enqueue(() => FacePosition(fishablePosition.Value));
+                                if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 64))
+                                {
+                                    P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePosition.Value));
+                                }
                             }
                         }
 
@@ -268,7 +271,10 @@ namespace ICE.Ui.DebugWindowTabs
                                 P.TaskManager.Enqueue(() => StartNavmesh(spot.FishingSpot));
                                 P.TaskManager.Enqueue(() => TestPathV2());
                                 P.TaskManager.EnqueueDelay(200);
-                                P.TaskManager.Enqueue(() => FacePosition(spot.FacePosition, spot.RotationTolerance));
+                                if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 64))
+                                {
+                                    P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePosition.Value));
+                                }
                             }
                         }
 
@@ -418,34 +424,6 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 return false;
             }
-        }
-        private static unsafe bool? FacePosition(Vector3 pos, float tolerance = 0.1f)
-        {
-            float currentRotation = Player.Rotation;
-
-            // If rotation is still changing, wait for it to stabilize
-            if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
-            {
-                return false;
-            }
-
-            Vector3 direction = pos - Player.Position;
-            float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
-
-            float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
-
-            if (EzThrottler.Throttle("Testing position"))
-            {
-                if (Math.Abs(angleDifference) < tolerance)
-                {
-                    return true;
-                }
-            }
-
-            Vector3 temp = pos;
-            ActionManager.Instance()->AutoFaceTargetPosition(&temp);
-
-            return false;
         }
 
         private static float GetShortestAngleDifference(float currentAngle, float targetAngle)

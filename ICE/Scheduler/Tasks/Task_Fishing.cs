@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ICE.Ui.DebugWindowTabs;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.GatheringUtil;
@@ -94,7 +95,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Info("We're not in a fishable angle, so going to face one", handle);
                         P.TaskManager.Tasks.Clear();
-                        P.TaskManager.Enqueue(() => FacePosition(fishablePos.Value, 0.05f));
+                        P.TaskManager.Enqueue(() => FacePosition(fishablePos.Value));
                         return true;
                     }
                     else
@@ -175,18 +176,25 @@ namespace ICE.Scheduler.Tasks
 
             float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
 
-            if (EzThrottler.Throttle("Testing position"))
+            if (Math.Abs(angleDifference) < tolerance)
             {
-                if (Math.Abs(angleDifference) < tolerance)
-                {
-                    return true;
-                }
+                return true;
             }
 
             if (EzThrottler.Throttle("Facing toward the fishing hole"))
             {
+                var fwk = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
+
+                var autoRotateConfig = fwk->SystemConfig.GetConfigOption((uint)ConfigOption.AutoFaceTargetOnAction);
+                var autoRotateOriginal = autoRotateConfig->Value.UInt;
+
+                autoRotateConfig->Value.UInt = 1;
+
+                IceLogging.Debug($"Telling the game to face you to: {pos}");
                 Vector3 temp = pos;
                 ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+
+                autoRotateConfig->Value.UInt = autoRotateOriginal;
             }
 
             return false;

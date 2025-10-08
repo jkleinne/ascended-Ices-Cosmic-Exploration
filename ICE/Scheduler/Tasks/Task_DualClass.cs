@@ -569,7 +569,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Info("We're not in a fishable spot, so going to face one", handle);
                         P.TaskManager.Tasks.Clear();
-                        P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePos.Value, 0.05f));
+                        P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePos.Value));
                         return true;
                     }
                     else

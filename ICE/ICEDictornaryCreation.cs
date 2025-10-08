@@ -447,12 +447,15 @@ public sealed partial class ICE
             }
         }
 
+        CosmicHelper.LoadMissionScores();
+
         foreach (var entry in SheetMissionDict)
         {
-            var id = entry.Key;
-            if (MissionScoreDict.TryGetValue(id, out var missionEntry))
+            var missionId = entry.Key;
+
+            if (MissionScoreDict.TryGetValue(missionId, out var score))
             {
-                entry.Value.ClassScore = MissionScoreDict[id];
+                entry.Value.ClassScore = score;
             }
             else
             {
@@ -537,28 +540,25 @@ public sealed partial class ICE
                 }
             }
         }
-
-        // UpdateSheetMissionDict();
     }
-    private static MissionType GetMissionType(CosmicInfo mission)
+    private static string GetClassAcronym(uint jobId)
     {
-        if (mission.Attributes.HasFlag(Critical))
+        // Map your job IDs to the acronyms used in the CSV
+        // You'll need to determine what these mappings are based on your game data
+        return jobId switch
         {
-            return MissionType.Critical;
-        }
-        else if (mission.Attributes.HasFlag(ProvisionalTimed))
-        {
-            return MissionType.Timed;
-        }
-        else if (mission.Attributes.HasFlag(ProvisionalWeather))
-        {
-            return MissionType.Weather;
-        }
-        else if (mission.Attributes.HasFlag(ProvisionalSequential))
-        {
-            return MissionType.Sequential;
-        }
-
-        return MissionType.Standard;
+            8 => "CRP",  // Carpenter
+            9 => "BSM",  // Blacksmith
+            10 => "ARM", // Armorer
+            11 => "GSM", // Goldsmith
+            12 => "LTW", // Leatherworker
+            13 => "WVR", // Weaver
+            14 => "ALC", // Alchemist
+            15 => "CUL", // Culinarian
+            16 => "MIN", // Miner
+            17 => "BTN", // Botanist
+            18 => "FSH", // Fisher
+            _ => ""
+        };
     }
 }

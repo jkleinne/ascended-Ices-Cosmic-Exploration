@@ -91,6 +91,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 if (C.StopOnceRelicFinished || C.TurninRelic)
                 {
+                    int maxStage = 14;
+
                     var wksManager = WKSManager.Instance();
                     if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                         return null;
@@ -133,26 +135,35 @@ namespace ICE.Scheduler.Tasks
                             allComplete = false;
                         }
                     }
-                    if (allComplete && C.TurninRelic)
+                    if (allComplete)
                     {
-                        IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
-                        SchedulerMain.State = IceState.RelicTurnin;
-                        P.TaskManager.Tasks.Clear();
-                        return true;
-                    }
-                    else if (allComplete && !C.StopOnceRelicFinished)
-                    {
-                        IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
-                        SchedulerMain.State = IceState.Idle;
-                        if (C.PlaySoundAlert)
+                        if (C.TurninRelic && stage != maxStage)
                         {
-                            _ = SoundPlayer.PlaySoundAsync();
+                            IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
+                            SchedulerMain.State = IceState.RelicTurnin;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
                         }
-                        return true;
-                    }
-                    else
-                    {
-                        IceLogging.Info($"We are in a relic checking progression, but we also haven't reached a completion point -> turnin, ", "[Task: CheckState]");
+                        else if (C.TurninRelic && stage == maxStage && C.StopOnceRelicFinished)
+                        {
+                            IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
+                            SchedulerMain.State = IceState.Idle;
+                            if (C.PlaySoundAlert)
+                            {
+                                _ = SoundPlayer.PlaySoundAsync();
+                            }
+                            return true;
+                        }
+                        else if (C.StopOnceRelicFinished)
+                        {
+                            IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
+                            SchedulerMain.State = IceState.Idle;
+                            if (C.PlaySoundAlert)
+                            {
+                                _ = SoundPlayer.PlaySoundAsync();
+                            }
+                            return true;
+                        }
                     }
                 }
                 if (currentMissionId != 0)
