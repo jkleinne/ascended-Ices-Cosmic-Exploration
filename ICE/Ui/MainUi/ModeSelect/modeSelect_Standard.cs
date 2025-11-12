@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 {
     internal class modeSelect_Standard
     {
-        private static string RankSelected = "Critical";
+        private string RankSelected = "Critical";
 
         public static void Draw()
         {
@@ -71,6 +72,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                         modeSelect_TableInfo.missionList["CRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                     else if (mission.Value.Rank == 1)
                         modeSelect_TableInfo.missionList["DRank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
+
+                    if (C.MissionConfig.ContainsKey(mission.Key) && C.MissionConfig[mission.Key].Enabled)
+                    {
+                        modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
+                    }
                 }
 
                 int criticalEnabled = modeSelect_TableInfo.missionList.ContainsKey("Critical") ? modeSelect_TableInfo.missionList["Critical"].Count(mission => mission.enabled) : 0;
@@ -81,15 +87,39 @@ namespace ICE.Ui.MainUi.ModeSelect
                 int bRankEnabled = modeSelect_TableInfo.missionList.ContainsKey("BRank") ? modeSelect_TableInfo.missionList["BRank"].Count(mission => mission.enabled) : 0;
                 int cRankEnabled = modeSelect_TableInfo.missionList.ContainsKey("CRank") ? modeSelect_TableInfo.missionList["CRank"].Count(mission => mission.enabled) : 0;
                 int dRankEnabled = modeSelect_TableInfo.missionList.ContainsKey("DRank") ? modeSelect_TableInfo.missionList["DRank"].Count(mission => mission.enabled) : 0;
+                int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
 
-                modeSelect_TableInfo.DrawCollapsibleSection("Critical Missions", "Critical Missions", criticalEnabled, modeSelect_TableInfo.missionList["Critical"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("Timed Missions", "Timed Missions", sequenceEnabled, modeSelect_TableInfo.missionList["Timed"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("Weather Missions", "Weather Missions", weatherEnabled, modeSelect_TableInfo.missionList["Weather"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("Sequence Missions", "Sequence Missions", timedEnabled, modeSelect_TableInfo.missionList["Sequence"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("A Rank Missions", "A Rank Missions", aRankEnabled, modeSelect_TableInfo.missionList["ARank"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("B Rank Missions", "B Rank Missions", bRankEnabled, modeSelect_TableInfo.missionList["BRank"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("C Rank Missions", "C Rank Missions", cRankEnabled, modeSelect_TableInfo.missionList["CRank"]);
-                modeSelect_TableInfo.DrawCollapsibleSection("D Rank Missions", "D Rank Missions", dRankEnabled, modeSelect_TableInfo.missionList["DRank"]);
+                modeSelect_TableInfo.DrawTabButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"Critical [{criticalEnabled}]", "main_Critical");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"Weather [{weatherEnabled}]", "main_Weather");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"Timed [{timedEnabled}]", "main_Timed");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"A Rank [{aRankEnabled}]", "main_ARank");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"B Rank [{bRankEnabled}]", "main_BRank");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"C Rank [{cRankEnabled}]", "main_CRank");
+                ImGui.SameLine(0, 5);
+                modeSelect_TableInfo.DrawTabButton($"D Rank [{dRankEnabled}]", "main_DRank");
+
+                ImGui.Separator();
+
+                var enabledTabs = modeSelect_TableInfo.selectedTabs;
+                if (enabledTabs.Contains("main_AllEnabled"))
+                    modeSelect_TableInfo.DrawMissionTable("All Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));
+                if (enabledTabs.Contains("main_Critical"))
+                    modeSelect_TableInfo.DrawMissionTable("Critical", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Critical"]));
+                if (enabledTabs.Contains("main_Sequence"))
+                    modeSelect_TableInfo.DrawMissionTable("Sequence", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Sequence"]));
+                if (enabledTabs.Contains("main_Weather"))
+                    modeSelect_TableInfo.DrawMissionTable("Weather", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Weather"]));
+                if (enabledTabs.Contains("main_Timed"))
+                    modeSelect_TableInfo.DrawMissionTable("Timed", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Timed"]));
             }
         }
     }
