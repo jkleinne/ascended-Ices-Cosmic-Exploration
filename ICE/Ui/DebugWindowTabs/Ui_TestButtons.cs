@@ -279,7 +279,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.Button("Print GatheringPoint Info"))
             {
-                var gatheringPoint = Svc.ClientState.LocalPlayer.TargetObject;
+                var gatheringPoint = PlayerHelper.LocalPlayer.TargetObject;
                 if (gatheringPoint is not null)
                 {
                     var nodeId = gatheringPoint.BaseId;

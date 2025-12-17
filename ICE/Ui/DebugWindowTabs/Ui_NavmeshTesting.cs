@@ -22,8 +22,8 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            if (Svc.ClientState.LocalPlayer != null)
-                currentPos = Svc.ClientState.LocalPlayer.Position;
+            if (PlayerHelper.LocalPlayer != null)
+                currentPos = PlayerHelper.LocalPlayer.Position;
             else
                 currentPos = new Vector3(0, 0, 0);
 
