@@ -99,74 +99,34 @@ public static partial class CosmicHelper
         }
     }
 
-    public static Dictionary<uint, List<LevelInfo>> QuickLevelDict = new()
+    public static List<uint> QuickLevelList = new()
     {
-        [8] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 3, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 8, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 19, }},
-        },
-        [9] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 48, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 53, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 64, }},
-        },
-        [10] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 93, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 98, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 109, }},
-        },
-        [11] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 138, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 143, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 154, }},
-        },
-        [12] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 183, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 188, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 199, }},
-        },
-        [13] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 228, }},
-            new LevelInfo() { Level = 50, MissionId = new() { 233, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 244, }},
-        },
-        [14] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 273, 797}},
-            new LevelInfo() { Level = 50, MissionId = new() { 278, }},
-            new LevelInfo() { Level = 90, MissionId = new() { 289, }},
-        },
-        [15] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 318, 839}},
-            new LevelInfo() { Level = 50, MissionId = new() { 323, 850}},
-            new LevelInfo() { Level = 90, MissionId = new() { 334, 855}},
-        },
-        [16] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 365, 883}},
-            new LevelInfo() { Level = 50, MissionId = new() { 369, 903}},
-            new LevelInfo() { Level = 90, MissionId = new() { 374, 886}},
-        },
-        [17] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 365, 925}},
-            new LevelInfo() { Level = 50, MissionId = new() { 369, 945}},
-            new LevelInfo() { Level = 90, MissionId = new() { 374, 928}},
-        },
-        [18] = new()
-        {
-            new LevelInfo() { Level = 10, MissionId = new() { 453, 967}},
-            new LevelInfo() { Level = 50, MissionId = new() { 458, 973}},
-            new LevelInfo() { Level = 90, MissionId = new() { 465, 979}},
-        }
+        // Sinus
+        3, 8, 19,      // CRP
+        48, 53, 64,    // ARM
+        93, 98, 109,   // BSM
+        138, 143, 154, // GSM
+        183, 188, 199, // LTW
+        228, 233, 244, // WVR
+        273, 278, 289, // ALC
+        318, 323, 334, // CUL
+        365, 369, 374, // MIN
+        410, 414, 419, // BTN
+        453, 458, 465, // FHS
+
+
+        // Phaenna // 1 2 2
+        545, 556, 561, // CRP
+        587, 598, 603, // BSM
+        629, 640, 645, // ARM
+        671, 682, 687, // GSM
+        713, 724, 729, // LTW
+        755, 766, 771, // WVR
+        797, 813, 819, // ALC
+        839, 850, 855, // CUL
+        883, 903, 886, // MIN
+        925, 945, 928, // BTN
+        967, 973, 979, // FSH
     };
 
     public class LevelInfo

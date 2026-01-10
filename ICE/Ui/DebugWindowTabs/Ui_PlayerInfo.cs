@@ -63,6 +63,18 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.TaskManager.Enqueue(() => Task_Gather.UseFood());
             }
+            if (ImGui.Button("Set all leveling missions"))
+            {
+                foreach (var mission in C.MissionConfig)
+                {
+                    if (!CosmicHelper.QuickLevelList.Contains(mission.Key))
+                        mission.Value.Enabled = false;
+                    else
+                        mission.Value.Enabled = true;
+                }
+                C.SaveDebounced();
+            }
+            
 
             ClassInfo();
         }

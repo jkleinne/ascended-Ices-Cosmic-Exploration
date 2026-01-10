@@ -140,6 +140,14 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.Artisan.AssignArtisanRecipe(48797, 46253);
             }
+            if (ImGui.Button("Set temp setting"))
+            {
+                P.Artisan.ChangeSolver(37084, "Progress Only Solver", true);
+            }
+            if (ImGui.Button("Set raphael solver"))
+            {
+                P.Artisan.ChangeSolver(37084, "Raphael Recipe Solver", true);
+            }
         }
 
         private static void SwapBait(uint baitId)

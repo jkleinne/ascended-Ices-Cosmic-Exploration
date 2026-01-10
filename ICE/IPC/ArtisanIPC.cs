@@ -17,6 +17,7 @@ namespace ICE.IPC
         [EzIPC] public Action<bool> SetStopRequest;
         [EzIPC] public Action<ushort, int> CraftItem;
         [EzIPC] public Action<ushort, uint, uint, uint, uint> AssignRecipie;
+        [EzIPC] public Action<uint, string, bool> ChangeSolver;
 
         public void AssignArtisanRecipe(ushort recipeId, uint reqFood, uint reqPotion = 0, uint reqManual = 0, uint reqSquadronManual = 0)
         {

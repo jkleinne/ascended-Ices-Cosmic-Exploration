@@ -72,6 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 ImGui.Separator();
                                 ImGui.Text($"Item ID: {mainCraft.Value.ItemId}");
                                 ImGui.Text($"Necessary Amount: {mainCraft.Value.RequiredAmount}");
+                                ImGui.Text($"Recipe ID: {mainCraft.Value.RecipeId}");
                                 ImGui.Separator();
                                 ImGui.Text($"Required Item");
                                 foreach (var item in mainCraft.Value.RequiredItems)
@@ -103,6 +104,7 @@ namespace ICE.Ui.DebugWindowTabs
                                     ImGui.Separator();
                                     ImGui.Text($"Item ID: {preCraft.Value.ItemId}");
                                     ImGui.Text($"Necessary Amount: {preCraft.Value.RequiredAmount}");
+                                    ImGui.Text($"Recipe ID: {preCraft.Value.RecipeId}");
                                     ImGui.Separator();
                                     ImGui.Text($"Required Item");
                                     foreach (var item in preCraft.Value.RequiredItems)

@@ -64,6 +64,16 @@ public sealed partial class ICE
             }
 
             uint rank = entry.LevelGroup;
+            uint level = 0;
+            if (rank == 1)
+                level = 10;
+            else if (rank == 2)
+                level = 50;
+            else if (rank == 3)
+                level = 90;
+            else if (rank >= 4)
+                level = 100;
+
             bool isCritical = entry.IsSpecialQuest;
 
             uint RecipeId = entry.WKSMissionRecipe.RowId;
@@ -168,6 +178,7 @@ public sealed partial class ICE
                     {
                         ItemId = itemId,
                         RequiredAmount = itemAmount,
+                        RecipeId = RecipeId
                     };
                 }
                 else
@@ -207,6 +218,7 @@ public sealed partial class ICE
                             {
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
+                                RecipeId = recipeId,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount,
@@ -220,6 +232,7 @@ public sealed partial class ICE
                             {
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
+                                RecipeId = recipeId,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
@@ -251,6 +264,7 @@ public sealed partial class ICE
                         {
                             ItemId = itemId,
                             RequiredAmount = amountNeeded,
+                            RecipeId = recipeId,
                             RequiredItems = new()
                             {
                                 [requiredItem] = requiredAmount
@@ -273,6 +287,7 @@ public sealed partial class ICE
                         {
                             ItemId = preItemId,
                             RequiredAmount = preAmountNeeded,
+                            RecipeId = preRecipeId,
                             RequiredItems = new()
                             {
                                 [crateId] = preAmountNeeded
@@ -302,6 +317,7 @@ public sealed partial class ICE
                             {
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
+                                RecipeId = recipeId,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
@@ -418,6 +434,7 @@ public sealed partial class ICE
                     Jobs = jobs,
                     ToDoId = toDoValue,
                     Rank = rank,
+                    Level = level,
                     Attributes = attributes,
                     Weather = weather,
                     StartTime = startTime,

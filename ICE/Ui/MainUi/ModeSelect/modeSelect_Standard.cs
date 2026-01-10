@@ -47,7 +47,9 @@ namespace ICE.Ui.MainUi.ModeSelect
                 FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
 
                 bool relicMode = C.XPRelicGrind;
-                bool standard = (!relicMode);
+                bool xpLeveling = C.LevelGrind;
+                bool standard = (!relicMode && !xpLeveling);
+
 
                 if (standard)
                     modeType = "Standard";
@@ -55,6 +57,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                 {
                     modeType = "Relic Grind";
                     modeIcon = FontAwesomeIcon.ArrowUpRightDots;
+                }
+                else if (xpLeveling)
+                {
+                    modeType = "Leveling Grind";
+                    modeIcon = FontAwesomeIcon.Leaf;
                 }
 
                 ImGuiEx.IconWithText(modeIcon, $"{modeType} Mode");
@@ -79,6 +86,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Standard", standard))
                     {
                         C.XPRelicGrind = false;
+                        C.LevelGrind = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Stand Mode \n" +
@@ -88,12 +96,27 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Relic Grind", relicMode))
                     {
                         C.XPRelicGrind = true;
+                        C.LevelGrind = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Relic Grind\n" +
                                        "-> Automatically select which missions that are best to finish up your relic\n" +
                                        "-> These are weighed based on what is needed to complete the tool to the next step\n" +
                                        "-> If you want to only do certain missions, enable the option and select which ones you want to do");
+
+                    if (ImGui.RadioButton("Leveling Grind", xpLeveling))
+                    {
+                        C.XPRelicGrind = false;
+                        C.LevelGrind = true;
+                        C.Save();
+                    }
+                    ImGuiEx.HelpMarker("Leveling Grind\n" +
+                                       "-> Will automatically select which mission is the best for leveling your current class based on what level bracket you're in\n" +
+                                       "-> These are hand picked by me, and determined by the time it takes to complete it\n" +
+                                       "-> For crafters it's whatever missions take the least amount of progress" +
+                                       "-> For gathering, it's whatever is the least pain to do w/ the minimum amount of skills\n" +
+                                       "**These will automatically set settings for using these modes temporarily**");
+
                     ImGui.EndPopup();
                 }
 

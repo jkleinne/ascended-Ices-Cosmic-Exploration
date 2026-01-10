@@ -230,7 +230,12 @@ namespace ICE.Scheduler.Tasks
                                 bool SilverGoal = silverScore <= currentScore;
                                 bool TurninBronze = config.TurninBronze;
 
-                                if (config.AutoTurnin)
+                                if (C.LevelGrind)
+                                {
+                                    IceLogging.Info("Minimum score has been met for leveling grinding, so turning in", handle);
+                                    shouldTurnin = true;
+                                }
+                                else if (config.AutoTurnin)
                                 {
                                     // AutoTurnin enabled, going to check for gold only since we have materials/time still
                                     if (GoldGoal)
@@ -386,7 +391,12 @@ namespace ICE.Scheduler.Tasks
                         bool SilverGoal = silverScore <= currentScore;
                         bool TurninBronze = config.TurninBronze;
 
-                        if (config.AutoTurnin)
+                        if (C.LevelGrind)
+                        {
+                            IceLogging.Info("Leveling mode is enabled, and you met the brone threshold, turning in", tag);
+                            shouldTurnin = true;
+                        }
+                        else if (config.AutoTurnin)
                         {
                             // AutoTurnin enabled, going to check for gold only since we have materials/time still
                             if (GoldGoal)
@@ -414,7 +424,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
                                 {
-                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
+                                    IceLogging.Info("Bronze Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
                                     shouldTurnin = true;
                                 }
                             }
@@ -605,7 +615,12 @@ namespace ICE.Scheduler.Tasks
 
                         bool shouldTurnin = false;
 
-                        if (config.AutoTurnin)
+                        if (C.LevelGrind)
+                        {
+                            IceLogging.Debug("Leveling mode is enabled, and we've hit the bronze threshold. So turning in", "[Gathering Score Check]");
+                            shouldTurnin = true;
+                        }
+                        else if (config.AutoTurnin)
                         {
                             // AutoTurnin enabled, going to check for gold only since we have materials/time still
                             if (GoldGoal)

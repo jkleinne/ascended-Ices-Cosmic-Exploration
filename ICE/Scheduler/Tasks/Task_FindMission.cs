@@ -64,31 +64,6 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(TabTasksCheck, "Checking which tabs to check for missions");
             }
         }
-        /*
-        public static bool? RefreshMissionUi()
-        {
-
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
-            {
-                IceLogging.Info("Mission Selection Hud is no longer visible and been refreshed. Continuing on");
-                return true;
-            }
-            else
-            {
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
-                {
-                    if (EzThrottler.Throttle("Closing the hud to make sure it's on the right class"))
-                    {
-                        IceLogging.Debug("Closing out the mission selection hud");
-                        moonHud.Mission();
-                    }
-                }
-
-            }
-
-            return false;
-        }
-        */
         public static bool? OpenMissionUi()
         {
             if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talkUi) && talkUi.IsAddonReady)
@@ -143,6 +118,11 @@ namespace ICE.Scheduler.Tasks
                     if (!enabled && C.XPRelicOnlyEnabled)
                         continue;
                 }
+                else if (C.LevelGrind)
+                {
+                    if (!CosmicHelper.QuickLevelList.Contains(mission.Key))
+                        continue;
+                }
                 else if (!enabled)
                     continue;
 
@@ -187,6 +167,19 @@ namespace ICE.Scheduler.Tasks
 
                         // Alright, mission was double checked to make sure it was enabled
                         // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
+
+                        if (C.LevelGrind)
+                        {
+                            var playerLevel = Player.Level;
+                            var missionLevel = missionInfo.Level;
+
+                            if (playerLevel >= 90 && missionLevel < 90)
+                                continue;
+                            else if (playerLevel >= 50 && playerLevel < 90 && missionLevel < 50)
+                                continue;
+                            else if (playerLevel >= 10 && playerLevel < 50 && missionLevel < 10)
+                                continue;
+                        }
 
                         if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
                             CriticalMissions.Add(missionId);
@@ -718,6 +711,71 @@ namespace ICE.Scheduler.Tasks
                 return null;
             }
         }
+        public static bool? FindBestExpMission()
+        {
+            uint bestMission_Id = 0;
+            CosmicInfo? bestMission = null;
+            var player_JobId = (uint)Player.Job;
+            var player_Level = Player.Level;
+            var player_Territory = Player.Territory.RowId;
+
+            if (EzThrottler.Throttle("Player Stat Info"))
+            {
+                IceLogging.Debug("Exp grind is enabled. This is what were looking for");
+                IceLogging.Debug($"Job ID: {player_JobId}");
+                IceLogging.Debug($"Level: {player_Level}");
+                IceLogging.Debug($"Territory: {player_Territory}");
+            }
+
+            foreach (var missionId in CosmicHelper.QuickLevelList)
+            {
+                if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
+                {
+                    if (!missionInfo.Jobs.Contains(player_JobId))
+                        continue;
+                    if (player_Level < missionInfo.Level)
+                        continue;
+                    if (missionInfo.TerritoryId != player_Territory)
+                        continue;
+
+                    // those 3 exist to make sure that we grab a valid mission that's in the area we are in.
+                    bestMission = missionInfo;
+                    bestMission_Id = missionId;
+                }
+            }
+
+            if (bestMission == null)
+            {
+                IceLogging.Debug("We've either entered a spot where it seems like we can't find a valid mission\n" +
+                                 "If this is a new moon, this might be why (because I haven't added them to the list yet)\n" +
+                                 "Otherwise, let me know");
+                P.TaskManager.Tasks.Clear();
+                SchedulerMain.State = IceState.Idle;
+                return true;
+            }
+            else
+            {
+                IceLogging.Debug("We found a mission to go for!");
+                IceLogging.Debug($"MissionID: {bestMission_Id}");
+                IceLogging.Debug($"Level: {bestMission.Level}");
+                if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
+                {
+                    var missionAvail = x.StellerMissions.Where(y => y.MissionId == bestMission_Id).FirstOrDefault();
+
+                    if (missionAvail != null)
+                    {
+                        InsertGrabMission(bestMission_Id);
+                        IceLogging.Debug("The mission is available, so inserting the task to grab it");
+                    }
+                    else
+                    {
+
+                    }
+                }
+
+                return true;
+            }
+        }
         public static unsafe bool? CheckAllProvisional()
         {
             List<uint> WeatherMissions = new();
@@ -1176,6 +1234,33 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
             }
+            else if (C.PersonalReturnSpot)
+            {
+                if (missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+                {
+                    IceLogging.Debug("We ideally don't want to return back to a spot if it's a critical. So we're going to stay put");
+                    return true;
+                }
+                else
+                {
+                    var territory = Player.Territory.RowId;
+                    if (C.CrafterLocations.TryGetValue(territory, out var location))
+                    {
+                        if (!Task_NavmeshMove.NavToDestination(location))
+                        {
+                            if (EzThrottler.Throttle("Log message", 1000))
+                                IceLogging.Debug("Moving to crafting spot");
+
+                            return false;
+                        }
+                        else
+                        {
+                            IceLogging.Debug("We're at the spot for crafter location!");
+                            return true;
+                        }
+                    }
+                }
+            }
             else
             {
                 IceLogging.Debug("Mission was not a gathering or critical mission. Navmesh moving was not necessary. Moving onto next step", "[Task_FindMission: Navmesh]");
@@ -1205,11 +1290,6 @@ namespace ICE.Scheduler.Tasks
             return true;
 
         }
-        public static bool? TimeDelay(int amount)
-        {
-            P.TaskManager.InsertDelay(amount);
-            return true;
-        }
         private static bool? ChangeJob(uint missionId)
         {
             IceLogging.Debug($"Starting to change job");
@@ -1226,14 +1306,6 @@ namespace ICE.Scheduler.Tasks
                 }
                 return false;
             }
-        }
-        private static string NormalizeWhitespace(string text)
-        {
-            return text.Trim()
-                       .Replace('\u00A0', ' ')  // Non-breaking space to regular space
-                       .Replace('\u2009', ' ')  // Thin space to regular space
-                       .Replace('\u202F', ' ')  // Narrow no-break space to regular space
-                       .Replace('\u3000', ' '); // Ideographic space to regular space
         }
         private static void ThrottleMessage(string s)
         {

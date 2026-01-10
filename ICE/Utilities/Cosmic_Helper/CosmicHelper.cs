@@ -49,6 +49,7 @@ public static unsafe partial class CosmicHelper
         public uint Quality { get; set; }
         public uint Progress { get; set; }
         public int RequiredAmount { get; set; } 
+        public uint RecipeId { get; set; }
         public Dictionary<uint, int> RequiredItems { get; set; } = new();
     }
 
@@ -91,6 +92,7 @@ public static unsafe partial class CosmicHelper
         public HashSet<uint> Jobs { get; set; }
         public uint ToDoId { get; set; } = 0;
         public uint Rank { get; set; } = 1;
+        public uint Level { get; set; } = 0;
         public MissionAttributes Attributes { get; set; }
         public CosmicWeather Weather { get; set; }
         public uint StartTime { get; set; }
