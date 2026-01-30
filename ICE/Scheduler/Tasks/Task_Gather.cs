@@ -388,7 +388,7 @@ namespace ICE.Scheduler.Tasks
                                    && (gatherProfile.GatherBuffs.Buffs["FieldMasteryIII"].MinGp <= PlayerHelper.GetGp())
                                    && (PlayerHelper.GetGp() >= GatheringUtil.GathActionDict["FieldMasteryIII"].RequiredGp)
                                    && (playerLevel >= GatheringUtil.GathActionDict["FieldMasteryIII"].RequiredLv)
-                                   && (gatherProfile.GatherBuffs.Buffs["FieldMasteryIII"].MaxUse == -1 
+                                   && (gatherProfile.GatherBuffs.Buffs["FieldMasteryIII"].MaxUse == -1
                                        || Mission_Settings.SkillUseAmount["FieldMasteryIII"] < gatherProfile.GatherBuffs.Buffs["FieldMasteryIII"].MaxUse);
                     bool MasteryII = gatherProfile.GatherBuffs.Buffs["FieldMasteryII"].Enabled
                                   && (gatherProfile.GatherBuffs.Buffs["FieldMasteryII"].MinGp <= PlayerHelper.GetGp())
@@ -477,7 +477,7 @@ namespace ICE.Scheduler.Tasks
             foreach (var buff in Mission_Settings.SkillUseAmount)
             {
                 string action = buff.Key;
-                if (CanUseGatheringAction(action, profileId, missingDur, boonChance))
+                if (CanUseGatheringAction(action, profileId, missingDur, maxDur, boonChance))
                 {
                     var actionInfo = GatheringUtil.GathActionDict[action];
                     if (EzThrottler.Throttle($"Using Gathering Action: {action}"))
@@ -502,7 +502,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int? boonChance = null)
+        public static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int maxDur, int? boonChance = null)
         {
             var actionInfo = GatheringUtil.GathActionDict[actionName];
             bool hasStatus = PlayerHelper.HasStatusId(actionInfo.StatusId);
@@ -519,54 +519,56 @@ namespace ICE.Scheduler.Tasks
 
             return actionName switch
             {
-                "BoonIncrease1" => gatherBuff.Enabled 
-                                && boonChance < 100 
+                "BoonIncrease1" => gatherBuff.Enabled
+                                && boonChance < 100
                                 && !hasStatus
-                                && !missingDur 
-                                && hasGp 
+                                && !missingDur
+                                && hasGp
                                 && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                 && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                                 && properLvl,
-                "BoonIncrease2" => gatherBuff.Enabled 
-                                && boonChance < 100 
-                                && !hasStatus 
-                                && !missingDur 
-                                && hasGp 
+                "BoonIncrease2" => gatherBuff.Enabled
+                                && boonChance < 100
+                                && !hasStatus
+                                && !missingDur
+                                && hasGp
                                 && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                 && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                                 && properLvl,
-                "Tidings" => gatherBuff.Enabled 
-                          && !hasStatus 
-                          && !missingDur 
-                          && hasGp 
+                "Tidings" => gatherBuff.Enabled
+                          && !hasStatus
+                          && !missingDur
+                          && hasGp
                           && PlayerHelper.GetGp() >= gatherBuff.MinGp
                           && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                           && properLvl,
-                "YieldI" => gatherBuff.Enabled 
-                          && !hasStatus 
-                          && !missingDur 
-                          && hasGp 
+                "YieldI" => gatherBuff.Enabled
+                          && !hasStatus
+                          && !missingDur
+                          && hasGp
                           && PlayerHelper.GetGp() >= gatherBuff.MinGp
                           && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                          && (maxDur >= gatherBuff.MinUsableDurability)
                           && properLvl,
-                "YieldII" => gatherBuff.Enabled 
-                         && !hasStatus 
-                         && !missingDur 
-                         && hasGp 
+                "YieldII" => gatherBuff.Enabled
+                         && !hasStatus
+                         && !missingDur
+                         && hasGp
                          && PlayerHelper.GetGp() >= gatherBuff.MinGp
+                         && (maxDur >= gatherBuff.MinUsableDurability)
                          && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                          && properLvl,
-                "BonusIntegrity" => gatherBuff.Enabled 
-                                    && missingDur 
-                                    && hasGp 
-                                    && PlayerHelper.GetGp() >= gatherBuff.MinGp 
+                "BonusIntegrity" => gatherBuff.Enabled
+                                    && missingDur
+                                    && hasGp
+                                    && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                     && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                                     && properLvl,
-                "BountifulYieldII" => gatherBuff.Enabled 
-                                   && !hasStatus 
-                                   && hasGp 
+                "BountifulYieldII" => gatherBuff.Enabled
+                                   && !hasStatus
+                                   && hasGp
                                    && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                                   && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used) 
+                                   && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
                                    && properLvl,
                 _ => false,
             };
@@ -583,7 +585,7 @@ namespace ICE.Scheduler.Tasks
                            && hasGp,
                 "Focus" => !hasStatus
                         && hasGp,
-                "Priming" => !hasStatus 
+                "Priming" => !hasStatus
                           && hasGp,
                 "CollectorsHigh" => !hasStatus
                                  && hasGp,

@@ -165,6 +165,90 @@ internal static unsafe class PlayerHandlers
         }
     };
 
+    public static readonly Dictionary<int, List<TimedInfo>> OizysMapV2 = new()
+    {
+        [0] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 1065 },
+            new TimedInfo { ClassId = 10, MissionId = 1091 },
+
+        },
+        [2] = new()
+        {
+            new TimedInfo { ClassId = 10, MissionId = 1091 }, // Continues from 00:00
+            new TimedInfo { ClassId = 15, MissionId = 1261 },
+            new TimedInfo { ClassId = 16, MissionId = 1289 },
+
+        },
+        [4] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 1119 },
+            new TimedInfo { ClassId = 11, MissionId = 1147 },
+            new TimedInfo { ClassId = 18, MissionId = 1343 },
+
+        },
+        [6] = new()
+        {
+            new TimedInfo { ClassId = 11, MissionId = 1147 }, // Continues from 04:00
+            new TimedInfo { ClassId = 14, MissionId = 1233 },
+            new TimedInfo { ClassId = 18, MissionId = 1343 }, // Continues from 04:00
+
+        },
+        [8] = new()
+        {
+            new TimedInfo { ClassId = 10, MissionId = 1121 },
+            new TimedInfo { ClassId = 12, MissionId = 1175 },
+
+        },
+        [10] = new()
+        {
+            new TimedInfo { ClassId = 12, MissionId = 1175 }, //Continues from 08:00
+            new TimedInfo { ClassId = 17, MissionId = 1317 },
+
+        },
+        [12] = new()
+        {
+            new TimedInfo { ClassId = 11, MissionId = 1149 },
+            new TimedInfo { ClassId = 13, MissionId = 1203 },
+            new TimedInfo { ClassId = 16, MissionId = 1288 },
+
+        },
+        [14] = new()
+        {
+            new TimedInfo { ClassId = 13, MissionId = 1203 }, // Continues from 12:00
+            new TimedInfo { ClassId = 16, MissionId = 1288 }, // Continues from 12:00
+
+        },
+        [16] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 1063 },
+            new TimedInfo { ClassId = 12, MissionId = 1177 },
+
+        },
+        [18] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 1063 }, // Continues from 16:00
+            new TimedInfo { ClassId = 14, MissionId = 1231 },
+            new TimedInfo { ClassId = 18, MissionId = 1345 },
+
+        },
+        [20] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 1091 },
+            new TimedInfo { ClassId = 13, MissionId = 1205 },
+            new TimedInfo { ClassId = 14, MissionId = 1231 }, // Continues from 18:00
+            new TimedInfo { ClassId = 15, MissionId = 1259 },
+            new TimedInfo { ClassId = 17, MissionId = 1316 },
+
+        },
+        [22] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 1091 }, // Continues from 20:00
+            new TimedInfo { ClassId = 15, MissionId = 1259 }, // Continues from 20:00
+            new TimedInfo { ClassId = 17, MissionId = 1316 }, // Continues from 20:00
+        }
+    };
+
     private static readonly uint stellarSprintID = 4398;
 
     public static float Distance(this Vector3 v, Vector3 v2)
@@ -182,11 +266,11 @@ internal static unsafe class PlayerHandlers
         if (!P.overlayWindow.IsOpen && PlayerHelper.IsInCosmicZone() && C.ShowOverlay)
             P.overlayWindow.IsOpen = true;
 
-        if (C.MoonSprint 
-         && PlayerHelper.IsInCosmicZone() 
-         && !PlayerHelper.HasStatusId(stellarSprintID) 
-         && Svc.Condition[ConditionFlag.NormalConditions] 
-         && IsMoving()) 
+        if (C.MoonSprint
+         && PlayerHelper.IsInCosmicZone()
+         && !PlayerHelper.HasStatusId(stellarSprintID)
+         && Svc.Condition[ConditionFlag.NormalConditions]
+         && IsMoving())
             UseSprint();
 
         if ((!PlayerHelper.IsInCosmicZone() || !PlayerHelper.UsingSupportedJob()) && SchedulerMain.State != IceState.Idle)
@@ -273,6 +357,7 @@ internal static unsafe class PlayerHandlers
         Dictionary<int, List<TimedInfo>> selectedMap = territoryId.RowId switch
         {
             // Add your actual territory IDs here
+            1310 => OizysMapV2,
             1291 => PhaennaMapV2,
             1237 => SinusMapV2,
             _ => SinusMapV2       // Default to Phaenna

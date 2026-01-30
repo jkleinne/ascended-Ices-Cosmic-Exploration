@@ -44,6 +44,7 @@ public partial class Config
         public bool Enabled { get; set; } = false;
         public int MinGp { get; set; }
         public int MaxUse { get; set; } = -1;
+        public int MinUsableDurability { get; set; } = 0;
     }
 
     public class GatherBuffs

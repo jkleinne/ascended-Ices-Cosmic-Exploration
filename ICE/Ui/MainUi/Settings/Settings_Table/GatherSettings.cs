@@ -623,6 +623,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                     bool currentlyEnabled = entry.GatherBuffs.Buffs[buffName].Enabled;
                     int minUseGp = entry.GatherBuffs.Buffs[buffName].MinGp;
+                    int minUsableDurability = entry.GatherBuffs.Buffs[buffName].MinUsableDurability;
                     int minActionGp = GatheringUtil.GathActionDict[buffName].RequiredGp;
                     int maxActionUsage = entry.GatherBuffs.Buffs[buffName].MaxUse;
                     string ActionInfo = "Increases the number of items obtained when gathering by 2\n" +
@@ -641,6 +642,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     if (ImGui.SliderInt("Minimum Gp for Usage", ref minUseGp, minActionGp, maxGp))
                     {
                         entry.GatherBuffs.Buffs[buffName].MinGp = minUseGp;
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.SetNextItemWidth(200);
+                    if (ImGui.SliderInt("Minimum Node Durability for Usage", ref minUsableDurability, 0, 8))
+                    {
+                        entry.GatherBuffs.Buffs[buffName].MinUsableDurability = minUsableDurability;
                         C.SaveDebounced();
                     }
 
@@ -668,6 +676,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                     bool currentlyEnabled = entry.GatherBuffs.Buffs[buffName].Enabled;
                     int minUseGp = entry.GatherBuffs.Buffs[buffName].MinGp;
+                    int minUsableDurability = entry.GatherBuffs.Buffs[buffName].MinUsableDurability;
                     int minActionGp = GatheringUtil.GathActionDict[buffName].RequiredGp;
                     int maxActionUsage = entry.GatherBuffs.Buffs[buffName].MaxUse;
                     string ActionInfo = "Increases the number of items obtained when gathering by 1\n" +
@@ -686,6 +695,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     if (ImGui.SliderInt("Minimum Gp for Usage", ref minUseGp, minActionGp, maxGp))
                     {
                         entry.GatherBuffs.Buffs[buffName].MinGp = minUseGp;
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.SetNextItemWidth(200);
+                    if (ImGui.SliderInt("Minimum Node Durability for Usage", ref minUsableDurability, 0, 8))
+                    {
+                        entry.GatherBuffs.Buffs[buffName].MinUsableDurability = minUsableDurability;
                         C.SaveDebounced();
                     }
 
@@ -713,6 +729,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                     bool currentlyEnabled = entry.GatherBuffs.Buffs[buffName].Enabled;
                     int minUseGp = entry.GatherBuffs.Buffs[buffName].MinGp;
+                    int minUsableDurability = entry.GatherBuffs.Buffs[buffName].MinUsableDurability;
                     int minActionGp = GatheringUtil.GathActionDict[buffName].RequiredGp;
                     int maxActionUsage = entry.GatherBuffs.Buffs[buffName].MaxUse;
                     string ActionInfo = "Increase the Integrity by 1\n" +
@@ -731,6 +748,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     if (ImGui.SliderInt("Minimum Gp for Usage", ref minUseGp, minActionGp, maxGp))
                     {
                         entry.GatherBuffs.Buffs[buffName].MinGp = minUseGp;
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.SetNextItemWidth(200);
+                    if (ImGui.SliderInt("Minimum Node Durability for Usage", ref minUsableDurability, 0, 8))
+                    {
+                        entry.GatherBuffs.Buffs[buffName].MinUsableDurability = minUsableDurability;
                         C.SaveDebounced();
                     }
 
