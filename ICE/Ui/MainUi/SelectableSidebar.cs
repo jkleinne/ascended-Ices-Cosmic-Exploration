@@ -78,6 +78,7 @@ namespace ICE.Ui.MainUi
                     {
                         DrawSelectableWithImage(65112, "Credit Shopping", "hubActivities_CreditShopping");
                         DrawSelectableWithImage(65127, "Gambling Settings", "hubActivites_GambaSetting");
+                        DrawSelectableWithImage(65138, "Dronebit Settings", "hubActivies_DroneSetting");
                     }
                 }
                 var currentJob = C.SelectedJob;
