@@ -66,9 +66,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 string modeType = string.Empty;
                 FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
 
-                bool relicMode = C.XPRelicGrind;
-                bool xpLeveling = C.XPLeveling_Mode;
-                bool standard = (!relicMode && !xpLeveling);
+                bool standard = C.SelectedMode == ModeSelect.Standard;
+                bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
+                bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
 
 
                 if (standard)
@@ -105,8 +105,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     if (ImGui.RadioButton("Standard", standard))
                     {
-                        C.XPRelicGrind = false;
-                        C.XPLeveling_Mode = false;
+                        C.SelectedMode = ModeSelect.Standard;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Stand Mode \n" +
@@ -115,8 +114,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                        "-> Select which missions you want to do, and go at it.");
                     if (ImGui.RadioButton("Relic Grind", relicMode))
                     {
-                        C.XPRelicGrind = true;
-                        C.XPLeveling_Mode = false;
+                        C.SelectedMode = ModeSelect.RelicMode;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Relic Grind\n" +
@@ -126,8 +124,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     if (ImGui.RadioButton("Leveling Grind", xpLeveling))
                     {
-                        C.XPRelicGrind = false;
-                        C.XPLeveling_Mode = true;
+                        C.SelectedMode = ModeSelect.LevelMode;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Leveling Grind\n" +
@@ -247,21 +244,21 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 bool missionSettingExpanded = ImGui_Ice.DrawCompactCategoryHeader("Mission Settings", FontAwesomeIcon.UserCog);
 
                 bool relicGrindExpanded = false;
-                if (C.XPRelicGrind)
+                if (C.SelectedMode == ModeSelect.RelicMode)
                 {
                     ImGui.TableNextColumn();
                     relicGrindExpanded = ImGui_Ice.DrawCompactCategoryHeader("Relic Grind Settings", FontAwesomeIcon.ArrowUpRightDots);
                 }
 
                 bool completionExpanded = false;
-                if (C.ShowCompletionWindow)
+                if (completionExpanded)
                 {
                     ImGui.TableNextColumn();
                     completionExpanded = ImGui_Ice.DrawCompactCategoryHeader("Completion Table Settings", FontAwesomeIcon.Trophy);
                 }
 
                 bool showPlaylistExpanded = false;
-                bool standard = !(C.XPRelicGrind || C.XPLeveling_Mode || C.ShowCompletionWindow);
+                bool standard = C.SelectedMode == ModeSelect.Standard;
                 if (standard)
                 {
                     ImGui.TableNextColumn();
@@ -277,7 +274,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     showJobSwapExpanded = ImGui_Ice.DrawCompactCategoryHeader("Relic Job Swap", FontAwesomeIcon.Hammer);
                 }
 
-                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.XPRelicGrind) || (completionExpanded && C.ShowCompletionWindow) || showPlaylistExpanded || showJobSwapExpanded;
+                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.SelectedMode == ModeSelect.RelicMode) || showPlaylistExpanded || showJobSwapExpanded;
 
                 if (showNextColumn)
                 {
@@ -294,7 +291,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         Settings_TableColumns.GeneralMissionSettings();
                     }
 
-                    if (C.XPRelicGrind)
+                    if (C.SelectedMode == ModeSelect.RelicMode)
                     {
                         ImGui.TableNextColumn();
                         if (relicGrindExpanded)
@@ -352,7 +349,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
 
-                    if (C.ShowCompletionWindow)
+                    if (false)
                     {
                         ImGui.TableNextColumn();
                         if (completionExpanded)
@@ -375,7 +372,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
 
-                    if (standard)
+                    if (C.SelectedMode == ModeSelect.Standard)
                     {
                         ImGui.TableNextColumn();
 

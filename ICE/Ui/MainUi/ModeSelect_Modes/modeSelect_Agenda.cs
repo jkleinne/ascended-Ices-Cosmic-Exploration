@@ -64,14 +64,14 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
 
             ImGui.SameLine();
-            var optionName = PlaylistOptionString(SelectedOption);
+            var optionName = CosmicHelper.PlaylistOptionString(SelectedOption);
 
             ImGui.SetNextItemWidth(200);
             if (ImGui.BeginCombo("##Playlist Options", optionName))
             {
                 foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
                 {
-                    var displayName = PlaylistOptionString(option);
+                    var displayName = CosmicHelper.PlaylistOptionString(option);
                     bool isSelected = SelectedOption == option;
 
                     if (ImGui.Selectable($"{displayName}##{option}", isSelected))
@@ -105,25 +105,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             }
 
             CosmicAgendaTable();
-        }
-
-        private static string PlaylistOptionString(PlaylistOptions option)
-        {
-            return option switch
-            {
-                PlaylistOptions.None => "None",
-                PlaylistOptions.SinusMax => "Max Sinus Relic [Lv. 9]",
-                PlaylistOptions.PhaennaMax => "Max Phaenna Relic [Lv. 14]",
-                PlaylistOptions.OizysMax => "Max Oizys Relic [Lv. 17]",
-                PlaylistOptions.SelectedRelicLv => "Selected Relic Level",
-                PlaylistOptions.CreditAmount => "Credit Amount",
-                PlaylistOptions.PlanetAmount => "Planetary Credit Amount",
-                PlaylistOptions.DronebitAmount => "Planetary Dronebit Amount",
-                PlaylistOptions.ClassLevel => "Class Level",
-                PlaylistOptions.ClassScore => "Class Score",
-                PlaylistOptions.GoldClassMissions => "All Missions Golded",
-                _ => "???"
-            };
         }
 
         private static string ModeSelectString(ModeSelect mode)
@@ -221,12 +202,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(200);
-                    var optionName = PlaylistOptionString(selectedOption);
+                    var optionName = CosmicHelper.PlaylistOptionString(selectedOption);
                     if (ImGui.BeginCombo("##Playlist Options", optionName))
                     {
                         foreach (PlaylistOptions option in Enum.GetValues<PlaylistOptions>())
                         {
-                            var displayName = PlaylistOptionString(option);
+                            var displayName = CosmicHelper.PlaylistOptionString(option);
                             bool isSelected = agendaInfo.SelectedOption == option;
 
                             if (ImGui.Selectable($"{displayName}##{option}", isSelected))
@@ -258,7 +239,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     else if (selectedOption == PlaylistOptions.CreditAmount)
                     {
                         var creditAmount = agendaInfo.CreditAmount;
-                        if (ImGui.SliderInt("##Credit Amount", ref creditAmount, 0, 30_000))
+                        if (ImGui.SliderInt("##Credit Amount", ref creditAmount, 0, 30_000, format: $"{creditAmount:N0}"))
                         {
                             agendaInfo.CreditAmount = creditAmount;
                             C.SaveDebounced();
@@ -267,7 +248,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     else if (selectedOption == PlaylistOptions.PlanetAmount)
                     {
                         var planetCredit = agendaInfo.PlanetAmount;
-                        if (ImGui.SliderInt("##Planet Amount", ref planetCredit, 0, 10_000))
+                        if (ImGui.SliderInt("##Planet Amount", ref planetCredit, 0, 10_000, format: $"{planetCredit:N0}"))
                         {
                             agendaInfo.PlanetAmount = planetCredit;
                             C.SaveDebounced();
@@ -276,7 +257,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     else if (selectedOption == PlaylistOptions.DronebitAmount)
                     {
                         var dronebitAmount = agendaInfo.DronebitAmount;
-                        if (ImGui.SliderInt("##Dronebit Amount", ref dronebitAmount, 0, 5_000))
+                        if (ImGui.SliderInt("##Dronebit Amount", ref dronebitAmount, 0, 5_000, format: $"{dronebitAmount:N2}"))
                         {
                             agendaInfo.DronebitAmount = dronebitAmount;
                             C.SaveDebounced();
@@ -285,7 +266,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     else if (selectedOption == PlaylistOptions.ClassLevel)
                     {
                         var classLevel = agendaInfo.ClassLevel;
-                        if (ImGui.InputInt("##ClassLevel", ref classLevel))
+                        if (ImGui.InputInt("##ClassLevel", ref classLevel, format: $"{classLevel:N0}"))
                         {
                             agendaInfo.ClassLevel = classLevel;
                             C.SaveDebounced();
@@ -294,10 +275,22 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     else if (selectedOption == PlaylistOptions.ClassScore)
                     {
                         var score = agendaInfo.ClassScore;
-                        if (ImGui.SliderInt("##ClassScore", ref score, 0, 500_000))
+                        if (ImGui.SliderInt("##ClassScore", ref score, 0, 500_000, $"{score:N0}"))
                         {
                             agendaInfo.ClassScore = score;
                             C.SaveDebounced();
+                        }
+                        if (ImGui.IsItemHovered())
+                        {
+                            var classScore = CosmicHelper.Cosmic_ClassInfo();
+                            if (classScore.TryGetValue(agendaInfo.SelectedJob, out var job))
+                            {
+                                ImGui.SetTooltip($"Current Score: {job.Score:N0}");
+                            }
+                            else
+                            {
+                                ImGui.SetTooltip($"No score can be loaded");
+                            }
                         }
                     }
 

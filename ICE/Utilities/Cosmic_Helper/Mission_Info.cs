@@ -60,6 +60,22 @@ public static partial class CosmicHelper
         // [] = 48148, // moon 4
     };
 
+    public class Dronebit
+    {
+        public uint creditId { get; set; } = 0;
+        public uint boxId { get; set; } = 0;
+    }
+
+    public static readonly Dictionary<uint, Dronebit> DronebitInfo = new()
+    {
+        [1310] = new() // Oizys
+        {
+            creditId = 49170,
+            boxId = 50414,
+        }
+        // [] = ???    // Next Planet (Maybe)
+    };
+
     // General use functions used across the codebase, specifically tied to cosmic related functions
     public static void OpenStellarMission()
     {
@@ -107,15 +123,21 @@ public static partial class CosmicHelper
         for (int i = 0; i < 11; i++)
         {
             uint jobId = (uint)i + 8;
-            byte toolClassId = (byte)(jobId - 7);  // Match DrawRelicXP's calculation
+            byte toolClassId = (byte)(jobId - 7);
             byte arrayIndex = (byte)(toolClassId - 1);  // This gives us 0-10 for array access
 
             var score = wksManager->Scores[arrayIndex];
+            var currentStage = wksManager->ResearchModule->CurrentStages[arrayIndex];
+            var nextStage = currentStage == CosmicHelper.MaxRelicLevel
+                ? CosmicHelper.MaxRelicLevel
+                : currentStage + 1;
+
+
             ClassInfo entry = new()
             {
                 Score = score,
-                Stage_Current = wksManager->ResearchModule->CurrentStages[arrayIndex],
-                Stage_Next = wksManager->ResearchModule->UnlockedStages[arrayIndex]
+                Stage_Current = currentStage,
+                Stage_Next = nextStage
             };
 
             for (byte type = 1; type <= MaxXpKind; type++)
