@@ -32,10 +32,16 @@ namespace ICE.Scheduler.Tasks
             }
             else if (P.Navmesh.IsRunning())
             {
-                if (usingCosmoliner || Player.IsJumping)
+                if (usingCosmoliner)
                     P.Navmesh.Stop();
 
-                CheckifIsStuck();
+                if (C.JumpIfStuck)
+                {
+                    if (CheckAndHandleStuck())
+                    {
+                        return false; // Let the stuck handler take control
+                    }
+                }
 
                 if (!mounted && Player.DistanceTo(pos) > minMountDistance)
                 {
@@ -96,7 +102,6 @@ namespace ICE.Scheduler.Tasks
                 if (usingCosmoliner || Player.IsJumping)
                 {
                     // We don't want navmesh/any checks to be running while using the cosmoliner, so just exiting out
-                    ResetInfo();
                     return false;
                 }
 
@@ -126,8 +131,6 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Telling navmesh to start"))
                         {
                             IceLogging.Debug("Telling navmesh to start pathfinding");
-                            whenStarted = DateTime.Now;
-                            ResetInfo();
                             IceLogging.DestinationLogs.Log(pos);
                             P.Navmesh.SetTolerance(0.25f);
                             P.Navmesh.PathfindAndMoveTo(pos, false);
@@ -157,9 +160,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Telling navmesh to start"))
                     {
-                        IceLogging.Debug("Telling navmesh to start pathfinding");
-                        whenStarted = DateTime.Now;
-                        ResetInfo();
+                        IceLogging.Verbose("Telling navmesh to start pathfinding");
                         IceLogging.DestinationLogs.Log(pos);
                         P.Navmesh.SetTolerance(0.25f);
                         P.Navmesh.PathfindAndMoveTo(pos, false);
@@ -170,35 +171,63 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        private static Vector3 lastPosition = Vector3.Zero;
-        private static DateTime whenStarted = DateTime.Now;
-        private static DateTime lastTimeTracked = DateTime.Now;
-        private static float distanceToBeStuck = 1.0f;
-        private static int stuckTimeThresh = 2000; // In ms (so 1 second esentially)
+        private static Vector3 _lastPosition = Vector3.Zero;
+        private static DateTime _lastPositionChange = DateTime.Now;
+        private static int _stuckAttempts = 0;
+        private const float STUCK_DISTANCE_THRESHOLD = 1.0f; // Consider stuck if moved less than this
+        private const int STUCK_TIME_THRESHOLD = 3000; // Time in ms before considering stuck
 
-        private static void ResetInfo()
-        {
-            lastPosition = Vector3.Zero;
-            lastTimeTracked = DateTime.Now;
-        }
-
-        private static unsafe void CheckifIsStuck()
+        private static unsafe bool CheckAndHandleStuck()
         {
             var currentPos = Player.Position;
-            var timeSinceLastChecked = (DateTime.Now - lastTimeTracked).TotalMilliseconds;
-            var navmeshStartTime = (DateTime.Now - whenStarted).TotalMilliseconds;
+            var timeSinceLastChange = (DateTime.Now - _lastPositionChange).TotalMilliseconds;
 
-            if (Vector3.Distance(currentPos, lastPosition) > distanceToBeStuck)
+            // Check if we've moved significantly
+            if (Vector3.Distance(currentPos, _lastPosition) > STUCK_DISTANCE_THRESHOLD)
             {
+                // We moved, reset tracking
                 ResetInfo();
+                return false;
             }
 
-            if (timeSinceLastChecked >= stuckTimeThresh && navmeshStartTime >= stuckTimeThresh)
+            // We haven't moved much, check if we've been stuck long enough
+            if (timeSinceLastChange > STUCK_TIME_THRESHOLD)
             {
-                if (EzThrottler.Throttle("Using jump action"))
-                    ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
-                ResetInfo();
+                _stuckAttempts++;
+
+                if (_stuckAttempts == 1)
+                {
+                    // First attempt: try jumping
+                    if (EzThrottler.Throttle("Stuck - attempting jump", 1000))
+                    {
+                        IceLogging.Warning("Player appears stuck, attempting to jump");
+                        ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
+                        _lastPositionChange = DateTime.Now; // Give it time to work
+                    }
+                    return true;
+                }
+                else if (_stuckAttempts >= 2)
+                {
+                    // Second attempt: stop navmesh after jump had time to execute
+                    if (EzThrottler.Throttle("Stuck - stopping navmesh", 1000))
+                    {
+                        IceLogging.Warning("Player still stuck after jump attempt, stopping navmesh");
+                        P.Navmesh.Stop();
+                        _stuckAttempts = 0; // Reset for next time
+                        _lastPositionChange = DateTime.Now;
+                    }
+                    return true;
+                }
             }
+
+            return false;
+        }
+
+        public static void ResetInfo()
+        {
+            _lastPosition = Vector3.Zero;
+            _lastPositionChange = DateTime.Now;
+            _stuckAttempts = 0;
         }
     }
 }
