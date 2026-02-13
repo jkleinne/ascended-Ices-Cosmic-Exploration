@@ -116,6 +116,15 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 UseDrone();
             }
+            if (ImGui.Button("Test Pathing to position"))
+            {
+                P.TaskManager.Enqueue(() => MovetoFlag());
+            }
+            ImGui.SameLine();
+            if (ImGui.Button($"Set position: {customDestination:N2}"))
+            {
+                customDestination = Player.Position;
+            }
         }
 
         private static unsafe void ClassInfo()
@@ -255,6 +264,20 @@ namespace ICE.Ui.DebugWindowTabs
 
             // If we get here, item wasn't found
             PluginLog.Warning($"Item {itemId} not found in any inventory container");
+        }
+
+        private static Vector3 customDestination = Vector3.Zero;
+
+        private static bool? MovetoFlag()
+        {
+            if (Task_NavmeshMove.Task_NavTo(customDestination, stayMounted: true).Value)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
