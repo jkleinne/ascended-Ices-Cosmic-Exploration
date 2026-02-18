@@ -144,7 +144,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         C.SelectedMode = ModeSelect.AgendaMode;
                         C.Save();
                     }
-                    ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                    ImGuiEx.HelpMarker(
                         "This mode is if you want to do a series of things in a particular order. So for example, if you wanted to grind out all the relics on all the classes back to back\n" +
                         "Or if you wanted to do the relic on WVR -> Then farm score on BTN -> Farm credits on BSM\n" +
                         "Really is the \"I want to do this order of things\" kind of thing.\n" +

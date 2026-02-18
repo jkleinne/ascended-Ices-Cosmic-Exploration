@@ -1867,7 +1867,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 criticalScore *= 60;
 
                             string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
-                            if (ImGui_Ice.ToggleButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
+                            if (ImGui_Ice.SliderButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
                             {
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();
@@ -1909,7 +1909,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 new() { type = "Gold", color = new Vector4(1.0f, 0.84f, 0.0f, 1.0f)}
                             };
                             string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
-                            if (ImGui_Ice.ToggleButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
+                            if (ImGui_Ice.SliderButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
                             {
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();

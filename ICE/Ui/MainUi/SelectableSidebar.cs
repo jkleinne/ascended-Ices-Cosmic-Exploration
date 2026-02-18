@@ -34,7 +34,7 @@ namespace ICE.Ui.MainUi
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Cosmic Helper", icon: FontAwesomeIcon.ListAlt))
                 {
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Mission Setup", "modeSelect_MissionSetup");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
+                    // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, "Cosmic Agenda", "modeSelect_CosmicAgenda");
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
@@ -61,7 +61,7 @@ namespace ICE.Ui.MainUi
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Planet Selection", FontAwesomeIcon.Moon))
                 {
-                    if (ImGui_Ice.ToggleButton("AutoSelectMoon", "Auto Select Moon", ref autoSelectMoon))
+                    if (ImGui_Ice.SliderButton("AutoSelectMoon", "Auto Select Moon", ref autoSelectMoon))
                     {
                         C.AutoSelectMoon = autoSelectMoon;
                         C.Save();
@@ -128,7 +128,7 @@ namespace ICE.Ui.MainUi
                     float iconSpacing = 4;
                     float leftOffset = 10f; // Simple offset from the current position
 
-                    if (ImGui_Ice.ToggleButton("AutoSelectJob", "Auto Select Job", ref autoSelectedJob))
+                    if (ImGui_Ice.SliderButton("AutoSelectJob", "Auto Select Job", ref autoSelectedJob))
                     {
                         C.AutoPickCurrentJob = autoSelectedJob;
                         C.Save();

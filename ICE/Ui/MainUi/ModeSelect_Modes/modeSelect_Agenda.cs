@@ -125,7 +125,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ModeSelect.Standard => "Standard",
                 ModeSelect.RelicMode => "Relic Grind Mode",
                 ModeSelect.LevelMode => "Leveling Mode",
-                ModeSelect.ScoreMode => "Scoring Mode",
+                // ModeSelect.ScoreMode => "Scoring Mode",
                 ModeSelect.AgendaMode => "Cosmic Agenda Mode",
                 _ => $"??? {mode}"
             };

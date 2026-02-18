@@ -26,7 +26,7 @@ namespace ICE.Scheduler.Tasks
         private static DateTime lastTimeTracked = DateTime.Now;
         private static bool isJumpInProgress = false;
 
-        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null)
+        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
         {
             string handle = "[Navmesh Task_NavTo]";
 
@@ -71,7 +71,7 @@ namespace ICE.Scheduler.Tasks
             }
 
             // Handle starting navmesh
-            return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle);
+            return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle, useMount, mountBeforeMove);
         }
         private static bool ShouldUseMount(bool inMission)
         {
@@ -136,7 +136,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle)
+        private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle, bool useMount = false, bool mountBeforeMove = false)
         {
             // Don't start navmesh while using cosmoliner
             if (usingCosmoliner)
@@ -155,6 +155,12 @@ namespace ICE.Scheduler.Tasks
             if (distanceToTarget < distance)
             {
                 return HandleArrival(mounted, stayMounted, distanceToTarget, distance, handle);
+            }
+
+            if (!mounted && useMount && mountBeforeMove)
+            {
+                Utils.MountAction();
+                return false;
             }
 
             // Start navmesh pathfinding
@@ -701,7 +707,7 @@ namespace ICE.Scheduler.Tasks
                     (
                         new(() => DestinationPathing(AethernetLoc.LandZone), "Traveling to Aetheryte"),
                         new(() => TravelToAethershard(bestTravel.Value), "Traveling Via Aethernet"),
-                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Aethernet")
+                        new(() => DestinationPathing(destination, waitForBusy, distance, mountBeforeMove: true), "Pathing to our destination: Aethernet")
                     );
             }
             else if (bestTravel.Key == "HubReturn")
@@ -721,7 +727,7 @@ namespace ICE.Scheduler.Tasks
                         new(() => Task_Repair.HubCheck(), "Returning back to hub"),
                         new(() => DestinationPathing(AethernetLoc.LandZone), "Traveling to the hub aetheryte"),
                         new(() => TravelToAethershard(bestTravel.Value), "Travel Via Aethernet"),
-                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: HubAethernet")
+                        new(() => DestinationPathing(destination, waitForBusy, distance, mountBeforeMove: true), "Pathing to our destination: HubAethernet")
                     );
             }
             else
@@ -791,11 +797,11 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static bool? DestinationPathing(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null)
+        private static bool? DestinationPathing(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null, bool mountBeforeMove = false)
         {
             string tag = "Navmesh Move: Destination Pathing";
 
-            if (!Task_NavTo(pos, waitForBusy, distance, stayMounted, npcLoc).Value)
+            if (!Task_NavTo(pos, waitForBusy, distance, stayMounted, npcLoc, mountBeforeMove:mountBeforeMove).Value)
             {
                 return false;
             }

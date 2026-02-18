@@ -6,6 +6,7 @@ using Dalamud.Interface.Utility.Raii;
 using ICE.Ui.MainUi;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace ICE.Utilities.ImGuiTools;
 
@@ -732,9 +733,10 @@ public static partial class ImGui_Ice
             }
         }
     }
-    public static void IconWithTooltip(FontAwesomeIcon icon, string? tooltip = null)
+    public static void IconWithTooltip(FontAwesomeIcon icon, string? tooltip = null, bool sameLine = true)
     {
-        ImGui.SameLine();
+        if (sameLine)
+            ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.TextUnformatted(icon.ToIconString());
         ImGui.PopFont();
@@ -748,7 +750,7 @@ public static partial class ImGui_Ice
         }
     }
     private static float Lerp(float a, float b, float t) => a + (b - a) * t;
-    public static bool ToggleButton(string id, string label, ref bool v)
+    public static bool SliderButton(string id, string label, ref bool v)
     {
         var pos = ImGui.GetCursorScreenPos();
         var dl = ImGui.GetWindowDrawList();

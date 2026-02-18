@@ -13,11 +13,31 @@ namespace ICE.Ui.SettingTabs
     {
         public static void Draw()
         {
-            MissionTypeOrderUi();
+            if (ImGui.BeginTabBar("Mission Priority Settings"))
+            {
+                if (ImGui.BeginTabItem("Mission Priority Order"))
+                {
+                    MissionTypeOrderUi();
 
-            TypePriorityUi();
+                    ImGui.EndTabItem();
+                }
 
-            JobPriorityUi();
+                if (ImGui.BeginTabItem("Provisional: Type Order"))
+                {
+                    TypePriorityUi();
+
+                    ImGui.EndTabItem();
+                }
+
+                if (ImGui.BeginTabItem("Provisional: Job Order"))
+                {
+                    JobPriorityUi();
+
+                    ImGui.EndTabItem();
+                }
+
+                ImGui.EndTabBar();
+            }
         }
 
         private static ImGuiEx.RealtimeDragDrop<ProvisionalTypes>? _dragDrop_ProvisionalType;
@@ -88,6 +108,12 @@ namespace ICE.Ui.SettingTabs
 
         private static void MissionTypeOrderUi()
         {
+            ImGui.Text("Mission Search Priority");
+            ImGui_Ice.IconWithTooltip(
+                FontAwesomeIcon.InfoCircle, 
+                "Order you would like to do the actions. It will work from the top down.\n" +
+                "So if you Have Red Arert -> Drone Search, if a red alert isn't available, it will proceed to use a drone box if it can");
+
             _dragDrop_MissionType ??= new ImGuiEx.RealtimeDragDrop<MissionTypes>(
                 "MissionTypeDragDrop",
                 (info) => $"{info}_{info.GetHashCode()}",
@@ -159,6 +185,17 @@ namespace ICE.Ui.SettingTabs
 
         private static void JobPriorityUi()
         {
+            ImGui.Text("Provisional Job Priority");
+            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.InfoCircle,
+                "Order you would like to do the provisional mission in, if multiple are selected and the option to do multiple classes is enabled");
+
+            bool provisionalAllJobs = C.GrindAllProvisionals;
+            if (ImGui_Ice.SliderButton("##Provisional_AllJobsToggle", "Allow for all Provisional Jobs", ref provisionalAllJobs))
+            {
+                C.GrindAllProvisionals = provisionalAllJobs;
+                C.Save();
+            }
+
             _dragDrop_JobPrio ??= new ImGuiEx.RealtimeDragDrop<uint>(
                 "JobPrioDragDrop",
                 (info) => ($"{info}_{info.GetHashCode()}"),
@@ -206,18 +243,6 @@ namespace ICE.Ui.SettingTabs
             _dragDrop_JobPrio.End();
         }
 
-        // Quick way of assigning Icons to the mission types
-        private static string GetMissionTypeIcon(ProvisionalTypes type)
-        {
-            return type switch
-            {
-                ProvisionalTypes.ProvisionalWeather => FontAwesomeIcon.Cloud.ToIconString(),
-                ProvisionalTypes.ProvisionalSequential => FontAwesomeIcon.ListOl.ToIconString(),
-                ProvisionalTypes.ProvisionalTimed => FontAwesomeIcon.Clock.ToIconString(),
-                _ => FontAwesomeIcon.Question.ToIconString()
-            };
-        }
-
         // Job name helper
         private static string GetJobName(uint jobId)
         {
@@ -235,18 +260,6 @@ namespace ICE.Ui.SettingTabs
                 17 => "Botanist",
                 18 => "Fisher",
                 _ => "Unknown Job"
-            };
-        }
-
-        // Job icon helper
-        private static string GetJobIcon(uint jobId)
-        {
-            return jobId switch
-            {
-                8 or 9 or 10 or 11 or 12 or 13 or 14 or 15 => FontAwesomeIcon.Hammer.ToIconString(), // Crafters
-                16 or 17 => FontAwesomeIcon.Mountain.ToIconString(), // MIN/BTN
-                18 => FontAwesomeIcon.Fish.ToIconString(), // FSH
-                _ => FontAwesomeIcon.Question.ToIconString()
             };
         }
     }

@@ -10,7 +10,7 @@ namespace ICE.Enums
         Standard = 0,
         RelicMode = 1,
         LevelMode = 2,
-        ScoreMode = 3,
+        // ScoreMode = 3,
 
         AgendaMode = 10,
     }
