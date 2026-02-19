@@ -56,10 +56,25 @@ namespace ICE.Ui
 
                 ImGui.TableHeadersRow();
 
-                WeatherForcastForTerritory(1291, "ICE.Resources.Phaenna.png");
-                TimedMissionDetailsForTerritory(1291, "ICE.Resources.Phaenna.png");
-                WeatherForcastForTerritory(1310, "ICE.Resources.Oizys.png");
-                TimedMissionDetailsForTerritory(1310, "ICE.Resources.Oizys.png");
+                if (C.Overlay_AllMoons)
+                {
+                    WeatherForcastForTerritory(1291, "ICE.Resources.Phaenna.png");
+                    TimedMissionDetailsForTerritory(1291, "ICE.Resources.Phaenna.png");
+                    WeatherForcastForTerritory(1310, "ICE.Resources.Oizys.png");
+                    TimedMissionDetailsForTerritory(1310, "ICE.Resources.Oizys.png");
+                }
+                else
+                {
+                    var territory = Player.Territory.RowId;
+                    var moonAsset = territory == 1291 ? "ICE.Resources.Phaenna.png"
+                                  : territory == 1310 ? "ICE.Resources.Oizys.png"
+                                  : null;
+                    if (moonAsset != null)
+                    {
+                        WeatherForcastForTerritory((ushort)territory, moonAsset);
+                        TimedMissionDetailsForTerritory((ushort)territory, moonAsset);
+                    }
+                }
 
                 ImGui.EndTable();
             }
@@ -252,7 +267,7 @@ namespace ICE.Ui
         }
         private void HomeButtons()
         {
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Home, "Open ICE"))
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Cogs, "Open ICE"))
             {
                 P.mainWindow.IsOpen = true;
             }

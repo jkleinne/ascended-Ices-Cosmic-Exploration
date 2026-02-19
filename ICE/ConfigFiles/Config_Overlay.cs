@@ -13,4 +13,5 @@ public partial class Config
     public bool ShowExpBars { get; set; } = true;
     public bool Overlay_AutoResize { get; set; } = true;
     public bool Overlay_FilterByJob { get; set; } = false;
+    public bool Overlay_AllMoons { get; set; } = true;
 }

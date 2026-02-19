@@ -106,6 +106,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
+            bool allMoons = C.Overlay_AllMoons;
+            if (ImGui.Checkbox("Show all moons in weather/timed table", ref allMoons))
+            {
+                C.Overlay_AllMoons = allMoons;
+                C.Save();
+            }
+
             bool filterByJob = C.Overlay_FilterByJob;
             if (ImGui.Checkbox("Filter timed missions by current job", ref filterByJob))
             {
