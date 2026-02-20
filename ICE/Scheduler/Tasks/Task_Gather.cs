@@ -217,7 +217,7 @@ namespace ICE.Scheduler.Tasks
                 _lastCollectProgress = DateTime.MinValue;
 
                 // if we've gotten this far, that means we're in a state that we should just be collecting
-                if (CanUseCollectableAction("BonusIntegrityChance", missingDur))
+                if (integrity < collectable.TotalIntegrity && CanUseCollectableAction("BonusIntegrityChance", missingDur))
                 {
                     if (EzThrottler.Throttle("Integrity bonus"))
                         UseCollectableAction("BonusIntegrityChance");
