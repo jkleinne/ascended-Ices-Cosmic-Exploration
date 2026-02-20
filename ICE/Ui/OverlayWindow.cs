@@ -313,7 +313,7 @@ namespace ICE.Ui
                 foreach (var job in ScoreInfo)
                 {
                     currentTotal += Math.Min(job.Value.Score, 500_000);
-                    if (currentTotal >= 500_000)
+                    if (job.Value.Score >= 500_000)
                         totalCompleted += 1;
                     actualTotal += job.Value.Score;
                 }

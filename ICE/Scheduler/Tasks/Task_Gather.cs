@@ -355,7 +355,7 @@ namespace ICE.Scheduler.Tasks
 
             bool missingDur = currentDur != maxDur;
 
-            if (C.SelectedMode == ModeSelect.LevelMode)
+            if (Mission_Settings.Mode == ModeSelect.LevelMode)
             {
                 if (EzThrottler.Throttle("Level grind message", 1000))
                     IceLogging.Debug("Leveling mode enabled, setting it to gatherProfile");

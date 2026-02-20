@@ -257,6 +257,8 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? AgendaCheck()
         {
+            string tag = "[Agenda Check]";
+
             var agenda = C.Cosmic_Agenda;
             var relicProgress = CosmicHelper.Cosmic_ClassInfo();
             PlayerHelper.GetItemCount(45690, out var creditAmount);
@@ -269,11 +271,13 @@ namespace ICE.Scheduler.Tasks
             }
 
             int dronebitAmount = 5000;
-            if (PlayerHelper.IsInCosmicZone())
+            if (PlayerHelper.IsInOizys())
             {
                 var dronebitId = CosmicHelper.DronebitInfo[territory].creditId;
                 PlayerHelper.GetItemCount(dronebitId, out dronebitAmount);
             }
+
+            IceLogging.Verbose("Checking to see which one we're going to start (if any)", tag);
 
             foreach (var entry in agenda)
             {
@@ -307,15 +311,19 @@ namespace ICE.Scheduler.Tasks
 
                 if (!achieved)
                 {
-                    IceLogging.Info($"Priority has been found to achieve: {goal}. Going to aim to complete this goal");
+                    IceLogging.Info($"Priority has been found to achieve: {goal}. Going to aim to complete this goal", tag);
                     Mission_Settings.Mode = entry.SelectedMode;
                     Mission_Settings.SelectedJob = entry.SelectedJob;
                     P.TaskManager.Enqueue(() => HubActivityCheck(), "Checking for reason to go to hub");
                     return true;
                 }
+                else
+                {
+                    IceLogging.Info($"The following goal is complete, ignoring it: Goal: {goal} Job: {job}", tag);
+                }
             }
 
-            IceLogging.Info("We've actually finished our agenda! Congrats. Stopping the process");
+            IceLogging.Info("We've actually finished our agenda! Congrats. Stopping the process", tag);
             P.TaskManager.Tasks.Clear();
             SchedulerMain.State = IceState.Idle;
 
@@ -334,6 +342,36 @@ namespace ICE.Scheduler.Tasks
             bool RepairVendor = false;
             bool TurninRelic = false;
 
+            bool needsRepair = PlayerHelper.NeedsRepair(C.RepairPercent);
+            bool selfRepairCraft = C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+            bool selfRepairGathering = C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((uint)Player.Job);
+
+            bool spiritbonded = C.SelfSpiritbondGather 
+                && CosmicHelper.GatheringJobList.Contains((uint)Player.Job)
+                && Task_Spiritbond.IsSpiritbondReadyAny();
+
+            if (needsRepair)
+            {
+                if (C.RepairAtVendor)
+                {
+                    RepairVendor = true;
+                }
+                else
+                {
+                    if (selfRepairCraft || selfRepairGathering)
+                    {
+                        SchedulerMain.State = IceState.Repair;
+                        return true;
+                    }
+                }
+            }
+
+            if (spiritbonded)
+            {
+                SchedulerMain.State = IceState.Spiritbond;
+                return true;
+            }
+
             if (CosmicHelper.DronebitInfo.TryGetValue(territoryId, out var dronebitAmount))
             {
                 BuyDrones = C.Cosmodrone_Buy && Task_ArtifactSearch.CanBuyDroneBoxes();
@@ -343,15 +381,6 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Verbose($"{C.GambaAtAmount} >= {gambaAmount} && Gamba between runs {C.GambaBetweenRuns}");
                 GambaWheel = C.GambaAtAmount <= gambaAmount && C.GambaBetweenRuns;
-            }
-            if (C.RepairAtVendor)
-            {
-                var jobid = (uint)Player.Job;
-                bool needsRepair = PlayerHelper.NeedsRepair(C.RepairPercent);
-                bool selfRepairCraft = C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(jobid);
-                bool selfRepairGather = C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(jobid);
-
-                RepairVendor = needsRepair && (selfRepairCraft || selfRepairGather);
             }
             if (C.BuyItems)
             {
@@ -384,11 +413,11 @@ namespace ICE.Scheduler.Tasks
             if (BuyDrones || GambaWheel || BuyItems || RepairVendor || TurninRelic)
             {
                 IceLogging.Info("We have some reason to return back to the base so... we're doing so.\n" +
-                                  $"Repairing at NPC: {BuyDrones}\n" +
-                                  $"Relic Turnin: {GambaWheel}\n" +
+                                  $"Can Buy Drones: {BuyDrones}\n" +
+                                  $"Gamba Wheel: {GambaWheel}\n" +
                                   $"Buying Cosmocredit Items: {BuyItems}\n" +
-                                  $"Can Gamba: {RepairVendor}\n" +
-                                  $"Can buy drones: {TurninRelic}", tag);
+                                  $"Repair At Vendor: {RepairVendor}\n" +
+                                  $"Turnin Relic: {TurninRelic}", tag);
                 Task_HubActivities.CanBuyDrones = BuyDrones;
                 Task_HubActivities.CanGamba = GambaWheel;
                 Task_HubActivities.CosmoBuy = BuyItems;

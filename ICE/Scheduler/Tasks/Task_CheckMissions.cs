@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
 using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -106,6 +107,9 @@ namespace ICE.Scheduler.Tasks
                         var jobLevel = Player.GetLevel((Job)job);
                         var missionLevel = mission.Value.Level;
 
+                        if (!mission.Value.Jobs.Contains(job))
+                            continue;
+
                         // Short end of it all, making sure to see what tier the player should be doing
                         // Taking the players level and making sure it matches to the tier
                         // 90+ = 90
@@ -122,22 +126,31 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (modeSelected == ModeSelect.RelicMode)
                     {
-                        if (!provisional)
+                        if (provisional)
+                            continue;
+
+                        var jobLevel = Math.Min(Player.GetLevel((Job)mission.Value.Jobs.First()), Player.GetLevel((Job)mission.Value.Jobs.Last()));
+                        if (jobLevel < mission.Value.Level)
+                            continue;
+
+                        if (C.XPRelicOnlyEnabled)
                         {
-                            if (C.XPRelicOnlyEnabled && config.Enabled)
-                            {
+                            if (config.Enabled)
                                 MissionLibrary[LibraryInfo(mission)].Add(missionId);
-                            }
-                            else
-                            {
-                                if (mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
-                                    MissionLibrary[LibraryInfo(mission)].Add(missionId);
-                            }
+                        }
+                        else
+                        {
+                            if (mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
+                                MissionLibrary[LibraryInfo(mission)].Add(missionId);
                         }
                     }
                     else if (modeSelected == ModeSelect.Standard)
                     {
                         if (!config.Enabled)
+                            continue;
+
+                        var jobLevel = Math.Min(Player.GetLevel((Job)mission.Value.Jobs.First()), Player.GetLevel((Job)mission.Value.Jobs.Last()));
+                        if (jobLevel < mission.Value.Level)
                             continue;
 
                         if (provisional)
@@ -190,6 +203,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 IceLogging.Verbose($"Mission finder says we have a valid mission list. So we gonna go find one", tag);
+                IceLogging.Verbose($"Stardard tab missions job: {Mission_Settings.SelectedJob}");
                 return true;
             }
         }
@@ -353,11 +367,51 @@ namespace ICE.Scheduler.Tasks
         private static bool? CheckMissions(List<uint> missionList, MissionTypes type)
         {
             string tag = "[Check Missions: Queue]";
+            void LogInfo(uint missionId)
+            {
+                var sheetInfo = CosmicHelper.SheetMissionDict[missionId];
+                bool provisional = sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                    || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                    || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+                var redAlert = sheetInfo.Attributes.HasFlag(MissionAttributes.Critical);
+                string jobs = string.Join(", ", sheetInfo.Jobs);
+
+                IceLogging.Info($"We found a mission! We're going to exit out of this task and grab the following\n: " +
+                    $"[Id] = {missionId} " +
+                    $"[Selected Job] = {Mission_Settings.SelectedJob}\n" +
+                    $"[Mission Job] = {jobs}" +
+                    $"Red Alert: {redAlert}" +
+                    $"Provisional: {provisional}", tag);
+            }
+
+            int JobTab(uint job)
+            {
+                int jobUnlocked = 0;
+                Dictionary<uint, int> jobTab = new();
+                for (int i = 0; i < CosmicHelper.SupportedJobs.Count(); i++)
+                {
+                    var currentJob = CosmicHelper.SupportedJobs[i];
+                    var level = Player.GetLevel((Job)currentJob);
+                    if (level != 0)
+                    {
+                        IceLogging.Verbose($"{currentJob} - tab: {jobUnlocked}");
+                        jobTab[currentJob] = jobUnlocked;
+                        jobUnlocked++;
+                    }
+                    else
+                    {
+                        jobTab[currentJob] = 0;
+                    }
+                }
+
+                return jobTab[job];
+            }
 
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
             {
                 if (type == MissionTypes.Standard)
                 {
+                    IceLogging.Verbose($"Checking Standard missions. Mission Count: {missionList.Count()}", tag);
                     bool OnCorrectTab()
                     {
                         foreach (var mission in missionInfo.StellerMissions)
@@ -368,10 +422,16 @@ namespace ICE.Scheduler.Tasks
                                 || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
                                 || sheetInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
 
+
                             if (isCritical || isProvisional)
                             {
                                 if (EzThrottler.Throttle("We're on the wrong tab... changing"))
                                 {
+                                    IceLogging.Verbose("Current Tab (Atleast what we think it is):\n" +
+                                        $"Critical? {isCritical}\n" +
+                                        $"Provisional? {isProvisional}\n" +
+                                        $"MissionID: {mission.MissionId}");
+                                    IceLogging.Info("Selecting basic tab", tag);
                                     missionInfo.BasicMissions();
                                 }
 
@@ -379,10 +439,11 @@ namespace ICE.Scheduler.Tasks
                             }
                             if (!sheetInfo.Jobs.Contains(Mission_Settings.SelectedJob))
                             {
-                                var jobTab = (int)Mission_Settings.SelectedJob - 8;
+                                var jobTab = JobTab(Mission_Settings.SelectedJob);
 
                                 if (EzThrottler.Throttle("Selecting job tab"))
                                 {
+                                    IceLogging.Verbose($"Selecting tab: {jobTab}");
                                     missionInfo.SelectClass[jobTab].Select();
                                 }
                                 return false;
@@ -402,6 +463,7 @@ namespace ICE.Scheduler.Tasks
                                 var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
                                 if (mission != null)
                                 {
+                                    LogInfo(missionId);
                                     Insert_GrabMissionTask(missionId);
                                     return true;
                                 }
@@ -418,6 +480,7 @@ namespace ICE.Scheduler.Tasks
                                 var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
                                 if (mission != null)
                                 {
+                                    LogInfo(missionId);
                                     Insert_GrabMissionTask(missionId);
                                     return true;
                                 }
@@ -426,9 +489,15 @@ namespace ICE.Scheduler.Tasks
                             var firstMission = missionInfo.StellerMissions.FirstOrDefault();
                             if (firstMission != null)
                             {
-                                IceLogging.Verbose($"The very first available mission is visible. Checking the level", tag);
                                 var TestMissionLevel = CosmicHelper.SheetMissionDict[firstMission.MissionId].Level;
                                 var ListMissionLevel = CosmicHelper.SheetMissionDict[missionList.First()].Level;
+
+                                if (EzThrottler.Throttle("Level message info"))
+                                {
+                                    IceLogging.Verbose($"The very first available mission is visible. Checking the level\n" +
+                                        $"Test level: {TestMissionLevel}\n" +
+                                        $"List Mission level: {ListMissionLevel}", tag);
+                                }
 
                                 if (TestMissionLevel < ListMissionLevel)
                                 {
@@ -488,6 +557,10 @@ namespace ICE.Scheduler.Tasks
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    return true;
+                                }
                             }
                         }
                         else if (mode == ModeSelect.RelicMode)
@@ -542,7 +615,13 @@ namespace ICE.Scheduler.Tasks
 
                             if (bestMissionId != null)
                             {
+                                LogInfo(bestMissionId.Value);
                                 Insert_GrabMissionTask(bestMissionId.Value);
+                                return true;
+                            }
+                            else
+                            {
+                                IceLogging.Info("Enabled only mode was set to on in the Relic grind mode. So we have to reroll WOOO");
                                 return true;
                             }
                         }
@@ -557,6 +636,7 @@ namespace ICE.Scheduler.Tasks
                             var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
                             if (mission != null)
                             {
+                                LogInfo(missionId);
                                 Insert_GrabMissionTask(missionId);
                                 return true;
                             }
@@ -575,6 +655,7 @@ namespace ICE.Scheduler.Tasks
                             var mission = missionInfo.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
                             if (mission != null)
                             {
+                                LogInfo(missionId);
                                 Insert_GrabMissionTask(missionId);
                                 return true;
                             }

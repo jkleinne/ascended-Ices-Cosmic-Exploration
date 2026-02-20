@@ -206,7 +206,7 @@ internal static class IceLogging
         private static List<LogEntry> logs = new();
         private static Dictionary<string, LogEntry> recentLogs = new(); // Track recent logs for time-window matching
         private static int maxLogCount = 1000;
-        private static TimeSpan consolidationWindow = TimeSpan.FromMilliseconds(100); // Merge duplicates within 500ms
+        private static TimeSpan consolidationWindow = TimeSpan.FromMilliseconds(250); // Merge duplicates within 500ms
 
         public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();
 

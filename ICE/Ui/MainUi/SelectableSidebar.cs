@@ -152,7 +152,6 @@ namespace ICE.Ui.MainUi
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Current Tool XP", FontAwesomeIcon.ArrowUpRightDots))
                 {
-                    var image = CosmicHelper.JobIconDict[currentClass];
                     ImGui_Ice.Draw_ExpTable(currentClass);
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Need Help?", FontAwesomeIcon.QuestionCircle))
@@ -225,7 +224,7 @@ namespace ICE.Ui.MainUi
         {
             var jobId = (uint)Player.Job;
 
-            bool needsUpdated = autoSelectClass && C.SelectedJob != jobId && jobId != 0;
+            bool needsUpdated = autoSelectClass && C.SelectedJob != jobId && CosmicHelper.SupportedJobs.Contains(jobId);
             if (needsUpdated)
             {
                 C.SelectedJob = (uint)Player.Job;

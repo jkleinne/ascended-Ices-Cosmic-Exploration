@@ -18,16 +18,13 @@ namespace ICE.Scheduler.Tasks
             {
                 var currentJob = (uint)Player.Job;
 
-                if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
-                {
-                    P.TaskManager.EnqueueMulti
-                    (
-                        new(OpenSelfRepair, "Opening the self repair window"),
-                        new(SelfRepair, "Executing the self repair"),
-                        new(CloseRepair, "Closing Self Repair")
-                    );
-                }
-                P.TaskManager.Enqueue(() =>  SchedulerMain.State = IceState.GrabMission);
+                P.TaskManager.EnqueueMulti
+                (
+                    new(OpenSelfRepair, "Opening the self repair window"),
+                    new(SelfRepair, "Executing the self repair"),
+                    new(CloseRepair, "Closing Self Repair"),
+                    new(() =>  SchedulerMain.State = IceState.GrabMission)
+                );
             }
         }
         public static unsafe bool? HubCheck()

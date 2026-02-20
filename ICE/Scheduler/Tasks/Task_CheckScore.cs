@@ -142,7 +142,7 @@ namespace ICE.Scheduler.Tasks
                                 IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
                                 shouldTurnin = true;
                             }
-                            else if (C.SelectedMode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                            else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
                             {
                                 IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
                                 shouldTurnin = true;
@@ -266,14 +266,17 @@ namespace ICE.Scheduler.Tasks
                     var currentScore = CurrentScore();
                     var rank = CurrentRank();
 
-                    if (sheet.Attributes.HasFlag(MissionAttributes.Critical) && sheet.BronzeScore > currentScore)
+                    if (sheet.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        // We just need to see if we meet the scoring threshold
-                        if (sheet.BronzeScore > currentScore)
+                        if (currentScore < sheet.BronzeScore)
                         {
                             IceLogging.Info("We still need score for the critical mission, so going to craft some more", tag);
                             SchedulerMain.State = IceState.Craft;
                             return true;
+                        }
+                        else
+                        {
+                            IceLogging.Info("Minimum score for criticals has been hit WOOO", tag);
                         }
                     }
                     else if (rank == MissionRank.None)
@@ -291,7 +294,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
                             shouldTurnin = true;
                         }
-                        else if (C.SelectedMode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                        else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
                         {
                             IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
                             shouldTurnin = true;
@@ -399,9 +402,13 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Verbose("We're in a critical mission, this needs to just be turned in", tag);
                             shouldTurnin = true;
                         }
-                        else if (C.SelectedMode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
+                        else if (Mission_Settings.Mode == ModeSelect.LevelMode && rank >= MissionRank.Bronze)
                         {
                             IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true");
+                            shouldTurnin = true;
+                        }
+                        else if (sheet.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        {
                             shouldTurnin = true;
                         }
                         else

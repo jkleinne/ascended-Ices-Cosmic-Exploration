@@ -266,7 +266,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 0,
                     AethernetId = 2015100,
-                    LandZone = new(-0.60f, 1.64f, -28.41f),
+                    LandZone = new(-2.66f, 1.64f, -29.62f),
                     Location = new(-3.80f, 1.64f, -32.15f),
                 },
                 new()
@@ -294,7 +294,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 4,
                     AethernetId = 2015056,
-                    LandZone = new(632.05f, -73.95f, -575.25f),
+                    LandZone = new(631.38f, -73.95f, -572.59f),
                     Location = new(629.80f, -73.95f, -572.78f),
                 }
             },
@@ -304,22 +304,22 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 0,
                     AethernetId = 2015057,
-                    Location = new(337.87f, 52.64f, -382.78f),
-                    LandZone = new(339.01f, 52.64f, -385.46f),
+                    Location = new(336.15f, 52.64f, -381.78f),
+                    LandZone = new(337.29f, 52.64f, -382.62f),
                 },
                 new()
                 {
                     MapSelector = 1,
                     AethernetId = 2015058,
                     Location = new(-150.82f, 29.05f, 314.44f),
-                    LandZone = new(-152.70f, 29.05f, 313.55f),
+                    LandZone = new(-151.47f, 29.05f, 313.33f),
                 },
                 new()
                 {
                     MapSelector = 2,
                     AethernetId = 2015059,
                     Location = new(-640.11f, -1.45f, -627.05f),
-                    LandZone = new(-640.68f, -1.45f, -629.19f),
+                    LandZone = new(-640.05f, -1.45f, -628.36f),
                 },
                 new()
                 {
@@ -333,7 +333,7 @@ namespace ICE.Scheduler.Tasks
                     MapSelector = 4,
                     AethernetId = 2015061,
                     Location = new(-590.90f, 28.50f, 722.25f),
-                    LandZone = new(-592.41f, 28.29f, 722.27f),
+                    LandZone = new(-591.95f, 28.50f, 722.10f),
                 }
             },
             [1310] = new()

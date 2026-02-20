@@ -18,6 +18,7 @@ public static unsafe partial class CosmicHelper
 
     public static readonly List<uint> CrafterJobList = [8, 9, 10, 11, 12, 13, 14, 15];
     public static readonly List<uint> GatheringJobList = [16, 17, 18];
+    public static readonly List<uint> SupportedJobs = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
     public static string GetJobName(uint jobId)
     {

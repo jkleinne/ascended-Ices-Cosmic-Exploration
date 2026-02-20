@@ -9,6 +9,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -22,10 +23,14 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-            P.TaskManager.Enqueue(() => Mission_TurninV2(), "Turning in the mission to the moon gods", Utils.TaskConfig);
-            P.TaskManager.Enqueue(() => GoldCheck(), "Checking if Gold Check Task needs to be completed");
-            P.TaskManager.Enqueue(() => CommandCheck(), "Checking for post mission commands");
-            P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking for necessary job swap");
+            P.TaskManager.EnqueueMulti
+                (
+                    new(() => Mission_TurninV2(), "Turning in the mission to the moon gods", Utils.TaskConfig),
+                    new(() => GoldCheck(), "Checking if Gold Check Task needs to be completed"),
+                    new(() => CommandCheck(), "Checking for post mission commands"),
+                    new(() => JobSwapCheck(), "Checking for necessary job swap"),
+                    new(() => ClearAllPostTask(), "Clearing all post task")
+                );
         }
 
         public static unsafe bool? TurninMission()
@@ -401,15 +406,6 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? JobSwapCheck()
         {
-            if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var sheetInfo))
-            {
-
-            }
-            else
-            {
-
-            }
-
             if (CosmicHelper.SheetMissionDict[PreviousMissionId].Jobs.Count == 2)
             {
                 if (Player.Job != (Job)Mission_Settings.SelectedJob && Mission_Settings.SelectedJob != 0)
@@ -475,7 +471,7 @@ namespace ICE.Scheduler.Tasks
 
         public static unsafe bool? CommandCheck()
         {
-            if (C.SelectedMode == ModeSelect.LevelMode && Utils.HasPlugin("Stylist"))
+            if (Mission_Settings.Mode == ModeSelect.LevelMode && Utils.HasPlugin("Stylist"))
             {
                 var jobId = (uint)Player.Job;
 
@@ -540,6 +536,13 @@ namespace ICE.Scheduler.Tasks
                     C.Save();
                 }
             }
+        }
+
+        public static bool? ClearAllPostTask()
+        {
+            P.TaskManager.Tasks.Clear();
+            IceLogging.Info("All task post turning in mission have been cleared. We should have a clean slate now");
+            return true;
         }
     }
 }

@@ -52,9 +52,9 @@ namespace ICE.Ui.MainUi.HelpFolder
             ImGui.InputTextWithHint("##LogSearch", "Search logs...", ref searchFilter, 256);
 
             ImGui.SameLine();
-            if (ImGui.Button("Clear"))
+            if (ImGui.Button("Copy Logs"))
             {
-                searchFilter = string.Empty;
+                LogSystem.CopyToClipboard();
             }
 
             ImGui.Spacing();
