@@ -156,6 +156,15 @@ namespace ICE.Ui
                     ImGui.Separator();
                     foreach (var mission in weatherMissions[forecast.IconId])
                     {
+                        foreach (var jobId in mission.Value.Jobs)
+                        {
+                            if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                            {
+                                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
+                                ImGui.SameLine(0, 4);
+                            }
+                        }
+                        ImGui.AlignTextToFramePadding();
                         ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
                     }
                 }
