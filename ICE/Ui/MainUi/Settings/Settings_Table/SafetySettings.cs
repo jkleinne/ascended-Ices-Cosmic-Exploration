@@ -74,12 +74,24 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
-            ImGui.Text("If stuck during nav movement:");
+            bool unstuckEnabled = C.JumpIfStuck || C.RetargetIfStuck;
+            if (ImGui.Checkbox("If stuck during nav movement:", ref unstuckEnabled))
+            {
+                if (unstuckEnabled)
+                    C.JumpIfStuck = true;
+                else
+                {
+                    C.JumpIfStuck = false;
+                    C.RetargetIfStuck = false;
+                }
+                C.Save();
+            }
             ImGui.SameLine();
             ImGuiEx.HelpMarker(
                 "When stuck during navmesh movement for the configured delay:\n" +
                 "- Jump: attempts to jump over the obstacle\n" +
                 "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)");
+            if (!unstuckEnabled) ImGui.BeginDisabled();
             if (ImGui.RadioButton("Jump", C.JumpIfStuck && !C.RetargetIfStuck))
             {
                 C.JumpIfStuck = true;
@@ -106,6 +118,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     C.SaveDebounced();
                 }
             }
+            if (!unstuckEnabled) ImGui.EndDisabled();
             ImGui.Dummy(Vector2.Zero);
 
             int delayRelic = C.DelayPostRelic;
