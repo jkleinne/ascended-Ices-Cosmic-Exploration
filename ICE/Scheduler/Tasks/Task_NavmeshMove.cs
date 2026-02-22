@@ -244,7 +244,7 @@ namespace ICE.Scheduler.Tasks
             }
 
             // If stuck for long enough, try jumping
-            if (timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)
+            if (C.JumpIfStuck && timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)
             {
                 if (EzThrottler.Throttle("Using jump action"))
                 {
