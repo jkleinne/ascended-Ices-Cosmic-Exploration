@@ -71,8 +71,6 @@ namespace ICE.Ui
                 ImGui.EndTable();
             }
 
-            HomeButtons();
-
             ClassExpDetails();
 
             ClassRelicDetails();
@@ -116,6 +114,17 @@ namespace ICE.Ui
         }
         private void MissionDetails()
         {
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Cogs, "##OpenICE"))
+            {
+                P.mainWindow.IsOpen = true;
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Open ICE");
+                ImGui.EndTooltip();
+            }
+            ImGui.SameLine();
             if (ImGuiEx.IconButton(FontAwesomeIcon.ListUl, "##OverlayModeSelect"))
             {
                 ImGui.OpenPopup("Overlay Mode Select");
@@ -127,7 +136,30 @@ namespace ICE.Ui
                 ImGui.EndTooltip();
             }
             DrawModeSelectPopup("Overlay Mode Select");
+            if (PlayerHelper.IsInOizys())
+            {
+                ImGui.SameLine();
+                bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
+                if (droneActive)
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
+                if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder"))
+                {
+                    if (droneActive)
+                        SchedulerMain.DisablePlugin();
+                    else
+                        SchedulerMain.State = IceState.ArtifactSearch;
+                }
+                if (droneActive)
+                    ImGui.PopStyleColor();
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text(droneActive ? "Stop Drone Finder" : "Run Drone Finder");
+                    ImGui.EndTooltip();
+                }
+            }
             ImGui.SameLine();
+
             var modeName = C.SelectedMode switch
             {
                 ModeSelect.Standard => "Standard",
@@ -423,35 +455,6 @@ namespace ICE.Ui
             else
             {
                 return hour >= mission.StartTime || hour < mission.EndTime;
-            }
-        }
-        private void HomeButtons()
-        {
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Cogs, "Open ICE"))
-            {
-                P.mainWindow.IsOpen = true;
-            }
-
-            // Drone finder toggle (only on Oizys)
-            if (!PlayerHelper.IsInOizys()) return;
-            ImGui.SameLine();
-            bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
-            if (droneActive)
-                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
-            if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder"))
-            {
-                if (droneActive)
-                    SchedulerMain.DisablePlugin();
-                else
-                    SchedulerMain.State = IceState.ArtifactSearch;
-            }
-            if (droneActive)
-                ImGui.PopStyleColor();
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.BeginTooltip();
-                ImGui.Text(droneActive ? "Stop Drone Finder" : "Run Drone Finder");
-                ImGui.EndTooltip();
             }
         }
         private void ClassExpDetails()
