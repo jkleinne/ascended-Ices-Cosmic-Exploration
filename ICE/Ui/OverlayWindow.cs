@@ -253,9 +253,18 @@ namespace ICE.Ui
             }
 #endif
         }
+        private static HashSet<uint> GetOverlayJobFilter()
+        {
+            if (C.Overlay_FilterByCurrentJob)
+                return new HashSet<uint> { (uint)Player.Job };
+            if (C.Overlay_FilterJobs.Count > 0)
+                return C.Overlay_FilterJobs;
+            return null;
+        }
+
         private static Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> GetExPlusTokenWeatherMissions(uint territoryId)
         {
-            var jobFilter = C.Overlay_FilterByJob ? (uint?)C.SelectedJob : null;
+            var jobFilter = GetOverlayJobFilter();
             var result = new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
             foreach (var kvp in SheetMissionDict)
             {
@@ -264,7 +273,7 @@ namespace ICE.Ui
                     && mission.Rank >= 6
                     && mission.Weather != CosmicWeather.None
                     && mission.RewardItem != 0
-                    && (jobFilter == null || mission.Jobs.Contains(jobFilter.Value))
+                    && (jobFilter == null || mission.Jobs.Any(j => jobFilter.Contains(j)))
                     && CosmicHelper.WeatherIds.TryGetValue(mission.Weather, out var iconId))
                 {
                     var key = (uint)iconId;
@@ -356,19 +365,19 @@ namespace ICE.Ui
             int currentHour = eorzeaTime.Hour;
             int nextHour = (currentHour + 1) % 24;
 
-            var jobFilter = C.Overlay_FilterByJob ? (uint?)C.SelectedJob : null;
+            var jobFilter = GetOverlayJobFilter();
 
             var currentHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, currentHour))
                 .Where(kvp => kvp.Value.TerritoryId == territoryId)
-                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Any(j => jobFilter.Contains(j)))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
             var nextHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, nextHour))
                 .Where(kvp => kvp.Value.TerritoryId == territoryId)
-                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Any(j => jobFilter.Contains(j)))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 

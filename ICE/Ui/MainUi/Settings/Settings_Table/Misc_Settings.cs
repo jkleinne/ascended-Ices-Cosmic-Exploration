@@ -1,4 +1,5 @@
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -105,11 +106,42 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
-            bool filterByJob = C.Overlay_FilterByJob;
-            if (ImGui.Checkbox("Filter by currently selected class (auto for current job only)", ref filterByJob))
+            bool filterByCurrentJob = C.Overlay_FilterByCurrentJob;
+            if (ImGui.Checkbox("Filter by current job only", ref filterByCurrentJob))
             {
-                C.Overlay_FilterByJob = filterByJob;
+                C.Overlay_FilterByCurrentJob = filterByCurrentJob;
                 C.Save();
+            }
+            if (!filterByCurrentJob)
+            {
+                float scale = ImGuiHelpers.GlobalScaleSafe;
+                float iconSize = 26 * scale;
+                float iconSpacing = 4;
+                var classDict = new Dictionary<uint, string>
+                {
+                    [8] = "CRP", [9] = "BSM", [10] = "ARM", [11] = "GSM",
+                    [12] = "LTW", [13] = "WVR", [14] = "ALC", [15] = "CUL",
+                    [16] = "MIN", [17] = "BTN", [18] = "FSH",
+                };
+                foreach (var (jobId, name) in classDict)
+                {
+                    bool isSelected = C.Overlay_FilterJobs.Contains(jobId);
+                    var icon = isSelected
+                        ? CosmicHelper.JobIconDict.TryGetValue(jobId, out var tex) ? tex.GetWrapOrEmpty() : null
+                        : ImGui_Ice.GetGreyscaleJob(jobId);
+                    if (icon != null && ImGui_Ice.DrawStyledImageButton(icon, new Vector2(iconSize, iconSize), isSelected))
+                    {
+                        if (isSelected)
+                            C.Overlay_FilterJobs.Remove(jobId);
+                        else
+                            C.Overlay_FilterJobs.Add(jobId);
+                        C.Save();
+                    }
+                    if (ImGui.IsItemHovered())
+                        ImGui.SetTooltip(name);
+                    ImGui.SameLine(0, iconSpacing);
+                }
+                ImGui.NewLine();
             }
 
             bool disableHudClipping = C.DisableHudClipping;
