@@ -477,16 +477,20 @@ namespace ICE.Scheduler.Tasks
 
         public static unsafe bool? CommandCheck()
         {
+            string tag = "Turnin Mission: Command Check";
+
             if (Mission_Settings.Mode == ModeSelect.LevelMode && Utils.HasPlugin("Stylist"))
             {
                 var jobId = (uint)Player.Job;
 
                 if (CosmicHelper.CrafterJobList.Contains(jobId))
                 {
+                    IceLogging.Info("Executing command [/stylist crafter]");
                     ExecuteCommand("/stylist crafter");
                 }
                 else if (CosmicHelper.GatheringJobList.Contains(jobId))
                 {
+                    IceLogging.Info("Executing command [/stylist gatherer]");
                     ExecuteCommand("/stylist gatherer");
                 }
                 P.TaskManager.EnqueueDelay(500);
@@ -494,6 +498,9 @@ namespace ICE.Scheduler.Tasks
 
             foreach (var task in C.PostMissionCommands)
             {
+                IceLogging.Info($"Queueing up the following command:\n" +
+                    $"{task.command}\n" +
+                    $"Delay: {task.Delay}");
                 P.TaskManager.Enqueue(() => ExecuteCommand(task.command));
                 if (task.Delay > 0)
                     P.TaskManager.EnqueueDelay(task.Delay);
@@ -504,6 +511,7 @@ namespace ICE.Scheduler.Tasks
         public static bool? ExecuteCommand(string command)
         {
             Svc.Commands.ProcessCommand(command);
+            IceLogging.Info($"Command has been processed: {command}", "Turnin Mission: Execute Command");
             return true;
         }
 
