@@ -361,6 +361,8 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? PathandCheckNode()
         {
+            string tag = "Gather: Navmesh Movement";
+
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
@@ -368,20 +370,9 @@ namespace ICE.Scheduler.Tasks
 
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
-
-            // Use smart routing (aethernet/hub) for far nodes when closest node selection is active
-            if (C.ClosestNodeSelection && Player.DistanceTo(location.LandZone) > SmartRoutingThreshold)
-            {
-                IceLogging.Info($"Node is far ({Player.DistanceTo(location.LandZone):N0}y), using smart routing", "[Gathering: SmartRoute]");
-                P.TaskManager.Tasks.Clear();
-                Task_NavmeshMove.Enqueue_NavmeshTask(location.LandZone, distance: 2);
-                return true;
-            }
-
-            if (!Task_NavmeshMove.Task_NavTo(location.LandZone, distance: 2).Value)
+            if (!Task_NavmeshMove.Task_GatherMove(location).Value)
             {
                 UseCordial();
-                ThrottleMessage("Currently in the process of moving, so going to wait", "Task_Gather: NavmeshMovement");
                 return false;
             }
             else
