@@ -61,6 +61,7 @@ public static unsafe partial class CosmicHelper
     public static readonly int MaximumLevel = Player.MaxLevel;
 
     public static readonly int MaxRelicLevel = 17;
+    public static readonly float MaxRelicExpStatus = 17.6f;
 
     #region Dictionaries
 
@@ -88,6 +89,9 @@ public static unsafe partial class CosmicHelper
     public class CosmicInfo
     {
         // - - - Crafter Specific - - - //
+        /// <summary>
+        /// Key = What's used in the config per recipe. This keeps track of it on a per-recipe basis
+        /// </summary>
         public Dictionary<ushort, CraftingInfo> Crafts_Main { get; set; } = new();
         public Dictionary<ushort, CraftingInfo> Crafts_Pre { get; set; } = new();
         public bool IsExpert { get; set; } = false;
@@ -117,6 +121,7 @@ public static unsafe partial class CosmicHelper
         public List<uint> Jobs { get; set; } = new();
         public uint ToDoId { get; set; } = 0;
         public uint Rank { get; set; } = 1;
+        public MissionClass Rankv2 { get; set; } = MissionClass.D;
         public uint Level { get; set; } = 0;
         public MissionAttributes Attributes { get; set; }
         public CosmicWeather Weather { get; set; }

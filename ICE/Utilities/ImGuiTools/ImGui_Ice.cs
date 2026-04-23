@@ -459,7 +459,7 @@ public static partial class ImGui_Ice
             ImGui.EndTooltip();
         }
     }
-    public static void Draw_XPBar(int current, int needed, int max = 0, string label = null, Vector2? size = null)
+    public static void Draw_XPBar(float current, float needed, float max = 0, string label = null, Vector2? size = null)
     {
         // If we want it to have a standard label above the bar. Not required but for small things it's nice to just have the option
         if (label != null)
@@ -484,9 +484,9 @@ public static partial class ImGui_Ice
         // Now comes the fun part, actually creating the filling (that sounds bad)
 
         // Defining the colors globaly here just cause they're used across the board
-        var blueColor = new Vector4(0.2f, 0.6f, 1f, 1f);      // Blue #3399ff  - Fill Bar Part #1 (Left Side) 
-        var greenColor = new Vector4(0.6f, 1f, 0.8f, 1f);     // Green #99ffcc - Fill Bar Part #2 (Right Side)
-        var goldColor = new Vector4(1f, 0.84f, 0f, 1f);       // Gold #ffd600  - Overcap color
+        var blueColor = new Vector4(0.2f, 0.6f, 1f, 1f);      // Blue #3399ff  - Fill Bar Part #1 (Left Side)
+        var greenColor = new Vector4(0.6f, 1f, 0.8f, 1f);      // Green #99ffcc - Fill Bar Part #2 (Right Side)
+        var goldColor = new Vector4(1f, 0.84f, 0f, 1f);      // Gold #ffd600  - Overcap color
 
         // Case 1: At or above cap when needed == max (show full gold) [Really only used when at max stage for that planet when a new one comes out)
         if (needed > 0 && needed == max && current >= needed)
@@ -524,8 +524,8 @@ public static partial class ImGui_Ice
             );
 
             // Gold overlay for overcap amount
-            int overcapAmount = current - needed;
-            int overcapRange = max - needed;
+            float overcapAmount = current - needed;
+            float overcapRange = max - needed;
             float overcapFraction = Math.Clamp((float)overcapAmount / overcapRange, 0f, 1f);
             float goldWidth = actualSize.X * overcapFraction;
 
@@ -548,6 +548,9 @@ public static partial class ImGui_Ice
             }
         }
 
+        // Reset to captured pos before Dummy so manual cursor shifts (e.g. vertical centering)
+        // don't cause the Dummy to double-advance. No-op for normal usage.
+        ImGui.SetCursorScreenPos(pos);
         ImGui.Dummy(actualSize);
     }
     public static bool DrawCategoryButton(string label, string categoryId, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
@@ -628,7 +631,7 @@ public static partial class ImGui_Ice
 
         return isExpanded;
     }
-    private static uint GetButtonColor(bool isExpanded, bool isHovered, bool disabled)
+    public static uint GetButtonColor(bool isExpanded, bool isHovered, bool disabled)
     {
         if (disabled)
         {
@@ -815,5 +818,78 @@ public static partial class ImGui_Ice
                 }
             }
         }
+    }
+    public static bool Table_CenterCheckbox(string id, ref bool value)
+    {
+        var cursorPos = ImGui.GetCursorPos();
+        var availWidth = ImGui.GetContentRegionAvail().X;
+
+        var checkboxSize = ImGui.GetFrameHeight();
+        ImGui.SetCursorPosX(cursorPos.X + (availWidth - checkboxSize) * 0.5f);
+        ImGui.AlignTextToFramePadding();
+
+        return ImGui.Checkbox($"##{id}", ref value);
+    }
+    public static void Table_FullCenterText(string text)
+    {
+        var cursorPosX = ImGui.GetCursorPosX();
+        var availWidth = ImGui.GetContentRegionAvail().X;
+        var textWidth = ImGui.CalcTextSize(text).X;
+
+        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
+        ImGui.AlignTextToFramePadding();
+
+        ImGui.TextUnformatted(text);
+    }
+    public static void Table_FullCenterText(string icon, Vector4 color)
+    {
+        var cursorPosX = ImGui.GetCursorPosX();
+        var availWidth = ImGui.GetContentRegionAvail().X;
+        var textWidth = ImGui.CalcTextSize(icon).X;
+
+        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
+        ImGui.AlignTextToFramePadding();
+
+        FontAwesome.Print(color, icon);
+    }
+    public static void Table_FontFullCenter(FontAwesomeIcon icon)
+    {
+        var cursorPosX = ImGui.GetCursorPosX();
+        var availWidth = ImGui.GetContentRegionAvail().X;
+        var textWidth = ImGui.CalcTextSize(icon.ToIconString()).X;
+
+        ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
+        ImGui.AlignTextToFramePadding();
+
+        ImGui.PushFont(UiBuilder.IconFont);
+        ImGui.Text(icon.ToIconString());
+        ImGui.PopFont();
+    }
+    public static bool Table_CenteredButton(string label, Vector2? buttonSize = null)
+    {
+        var cursorPosX = ImGui.GetCursorPosX();
+        var availWidth = ImGui.GetContentRegionAvail().X;
+
+        Vector2 actualButtonSize;
+        if (buttonSize.HasValue)
+        {
+            actualButtonSize = buttonSize.Value;
+        }
+        else
+        {
+            var textSize = ImGui.CalcTextSize(label);
+            var framePadding = ImGui.GetStyle().FramePadding;
+            actualButtonSize = new Vector2(textSize.X + framePadding.X * 2 + 10f, textSize.Y + framePadding.Y * 2);
+        }
+
+        ImGui.SetCursorPosX(cursorPosX + (availWidth - actualButtonSize.X) * 0.5f);
+        return ImGui.Button(label, actualButtonSize);
+    }
+    public static void Table_FontCenter(FontAwesomeIcon icon)
+    {
+        ImGui.AlignTextToFramePadding();
+        ImGui.PushFont(UiBuilder.IconFont);
+        ImGui.Text(icon.ToIconString());
+        ImGui.PopFont();
     }
 }

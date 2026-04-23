@@ -1,28 +1,44 @@
 using Dalamud.Interface;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using ICE.Ui.DebugWindowTabs;
+using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class TravelSettings
     {
+        private static FishingDebug _fishingDebug = null;
+
         public static unsafe void Draw()
+        {
+            if (_fishingDebug == null)
+            {
+                _fishingDebug = new FishingDebug();
+            }
+
+            PathfindingSettings();
+
+            Separator();
+            StuckSettings();
+
+            Separator();
+            CraftingLocations();
+
+            Separator();
+            FishingLocations();
+        }
+
+        private static void Separator()
         {
             ImGui.Dummy(new Vector2(0, 5));
             ImGui.Separator();
             ImGui.Dummy(new Vector2(0, 5));
-            PathfindingSettings();
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            StuckSettings();
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            CraftingLocations();
         }
 
         private static void PathfindingSettings()
@@ -219,6 +235,79 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.SameLine();
                     ImGui.Text("No location set");
                 }
+            }
+        }
+
+        private static void FishingLocations()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Fish, "Personalized Fishing Spots");
+            ImGui.SameLine();
+            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle, "A way for you to save your own positions if you choose to not use a randomized spot that's included in the plugin\n" +
+                "You don't have to use this, it will just use a random spot if:\n" +
+                "1: A position is saved:\n" +
+                "2: A random spot even is saved", false);
+            ImGui.Dummy(new Vector2(0, 5));
+
+            var currentTerritory = Player.Territory.RowId;
+
+            if (GatheringUtil.MoonFishingLocations.TryGetValue(currentTerritory, out var fishingHoles))
+            {
+                ImGui.Text($"Planet: {Player.Territory.Value.PlaceName.Value.Name}");
+                ImGui.Checkbox("Show fishing spot raycast", ref _fishingDebug.ShowFishRay);
+                if (PlayerHelper.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
+                {
+                    _fishingDebug.Draw();
+                }
+
+                ImGui.Separator();
+
+                foreach (var hole in fishingHoles.Keys)
+                {
+                    // Find existing entry for this zone + map coord, or creating a new one if one doesn't exist
+                    var entry = C.Personal_FishLocation.FirstOrDefault(f => f.ZoneId == currentTerritory && f.MapCoords == hole);
+
+                    if (entry == null)
+                    {
+                        entry = new FishingLocations
+                        {
+                            ZoneId = currentTerritory,
+                            X = hole.X,
+                            Y = hole.Y,
+                            WorldPosition = null
+                        };
+                        C.Personal_FishLocation.Add(entry);
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.PushID($"{hole}_Flag");
+
+                    if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Flag, $"  X: {hole.X:N2} Y: {hole.Y:N2}"))
+                    {
+                        var mission = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == hole).FirstOrDefault();
+                        Utils.SetGatheringRing(mission.Value.TerritoryId, (int)hole.X, (int)hole.Y, mission.Value.Radius, $"{hole.X:N2} {hole.Y:N2}");
+                    }
+                    ImGui.SameLine();
+
+                    string currentPos = entry.WorldPosition == null ? "Add New" : $"Remove";
+
+                    if (ImGui.Button($"{currentPos}"))
+                    {
+                        entry.WorldPosition = entry.WorldPosition == null ? Player.Position : null;
+                        C.Save();
+                    }
+
+                    if (entry.WorldPosition != null)
+                    {
+                        ImGui.SameLine();
+                        ImGui.Text($"{entry.WorldPosition.Value:N2}");
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+            else
+            {
+                ImGui.Text($"Current planet has no stored fishing holes in the sheets. (Might need to be added?)");
             }
         }
     }

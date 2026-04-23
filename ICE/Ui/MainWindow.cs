@@ -79,6 +79,7 @@ namespace ICE.Ui
                 modeSelect_Standard.Draw();
             },
             ["modeSelect_CosmicAgenda"] = () => modeSelect_Agenda.Draw(),
+            ["modeSelect_ExpeditionLogs"] = () => Expedition_Log.Draw(),
 
             // Settings
             ["setting_StopWhen"] = () => StopWhen.Draw(),
