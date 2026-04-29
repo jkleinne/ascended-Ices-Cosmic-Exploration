@@ -38,7 +38,8 @@ public static partial class CosmicHelper
         }
     }
     public static unsafe uint? CurrentBait => WKSManager.Instance()->FishingBait;
-    public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
+    // public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
+    public static unsafe uint CurrentLunarDevelopment = 0;
 
     public static int MaxXpKind = 6;
 
