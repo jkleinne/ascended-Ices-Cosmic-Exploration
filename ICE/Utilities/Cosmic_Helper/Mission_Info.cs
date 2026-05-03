@@ -138,7 +138,7 @@ public static partial class CosmicHelper
             return cosmicClassInfo;
         }
 
-        var wks = (WKSManagerCustom*)wksManagerPtr;
+        var wks = wksManagerPtr;
         var researchModule = wks->ResearchModule;
 
         if (researchModule == null || !researchModule->IsLoaded)
@@ -149,7 +149,7 @@ public static partial class CosmicHelper
         }
 
         // Use original pointer only for member function calls
-        var researchModuleFuncs = (WKSResearchModule*)researchModule;
+        var researchModuleFuncs = researchModule;
 
         for (int i = 0; i < 11; i++)
         {

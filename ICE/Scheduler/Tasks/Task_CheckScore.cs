@@ -518,7 +518,7 @@ namespace ICE.Scheduler.Tasks
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return 0;
 
-            var manager = (WKSManagerCustom*)managerPtr;
+            var manager = managerPtr;
             return manager->CurrentScore;
         }
 
