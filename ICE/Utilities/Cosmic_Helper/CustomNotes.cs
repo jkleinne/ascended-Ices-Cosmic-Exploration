@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 public static partial class CosmicHelper
 {
@@ -214,7 +214,6 @@ public static partial class CosmicHelper
         // BTN
         1292, 1293, 1294, 1295, 1296, 1297, 1298, 1299,
     };
-
     public class LevelInfo
     {
         public uint Level { get; set; } = 10;

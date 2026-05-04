@@ -1,11 +1,6 @@
 ﻿using Dalamud.Interface;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.Settings
 {

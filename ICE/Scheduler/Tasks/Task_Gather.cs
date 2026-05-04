@@ -9,6 +9,7 @@ using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.ConfigFiles.Config;
+using static FFXIVClientStructs.FFXIV.Client.Game.WKS.WKSManager;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -380,7 +381,7 @@ namespace ICE.Scheduler.Tasks
                 var rank = Task_CheckScore.CurrentRank();
 
 
-                if (rank == WKSManagerCustom.MissionRank.Depleted)
+                if (rank == MissionRank.Failed)
                 {
                     IceLogging.Info($"We've managed to time out the mission. Going to attempt to turnin, and abandon if not", "[Gathering: Open Gathering Menu]");
                     SchedulerMain.State = IceState.AbandonMission;

@@ -3,7 +3,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.Utilities.Cosmic;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
@@ -724,7 +724,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
 #endif
                     }
-                    if (GatheringUtil.CriticalLocations.TryGetValue(Id, out var criticalLoc))
+                    if (CosmicHelper.CriticalLocations.TryGetValue(Id, out var criticalLoc))
                     {
                         ImGui.SameLine();
                         ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
@@ -1571,7 +1571,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
 
-                    if (GatheringUtil.CriticalLocations.TryGetValue(selectedMission, out var criticalLoc))
+                    if (CosmicHelper.CriticalLocations.TryGetValue(selectedMission, out var criticalLoc))
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);

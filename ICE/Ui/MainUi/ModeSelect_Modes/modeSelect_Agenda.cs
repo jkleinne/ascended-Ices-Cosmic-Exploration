@@ -1,11 +1,11 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes

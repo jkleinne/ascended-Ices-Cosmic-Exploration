@@ -1,9 +1,6 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Event;
-using ICE.Ui.MainUi.ModeSelect_Modes;
-using System;
+﻿using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace ICE.Ui.DebugWindowTabs
 {

@@ -1,11 +1,10 @@
 ﻿using Dalamud.Interface;
-using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Ui.MainUi.ModeSelect_Modes;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
-using SharpDX.Direct2D1.Effects;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -15,7 +14,7 @@ namespace ICE.Ui.MainUi
     {
         public static void Draw()
         {
-            var scale = ImGuiHelpers.GlobalScaleSafe;
+            var scale = ImGuiHelpers.GlobalScale;
             int baseSize = 200;
             var scaledWidth = baseSize * scale;
             var height = ImGui.GetContentRegionAvail().Y;

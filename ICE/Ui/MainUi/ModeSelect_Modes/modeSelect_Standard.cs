@@ -1,14 +1,11 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Utility;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using ICE.Ui.MainUi.Settings;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Windows.Forms;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {

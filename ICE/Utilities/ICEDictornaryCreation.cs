@@ -5,9 +5,8 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
-using TerraFX.Interop.Windows;
 using static ICE.ConfigFiles.Config;
-using static ICE.Utilities.CosmicHelper;
+using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
 using static ICE.Utilities.ExcelHelper;
 
 namespace ICE;
@@ -551,9 +550,9 @@ public sealed partial class ICE
                 rewardItemAmount = rewardSheet.ItemCount;
             }
 
-            if (!SheetMissionDict.ContainsKey(keyId))
+            if (!CosmicHelper.SheetMissionDict.ContainsKey(keyId))
             {
-                SheetMissionDict[keyId] = new CosmicInfo()
+                CosmicHelper.SheetMissionDict[keyId] = new CosmicInfo()
                 {
                     Name = missionName,
                     Jobs = jobs,
@@ -664,7 +663,7 @@ public sealed partial class ICE
             }
         }
 
-        for (int i = 0; i < GreyIconList.Count; i++)
+        for (int i = 0; i < CosmicHelper.GreyIconList.Count; i++)
         {
             var slot = i + 8;
             var iconId = GreyIconList[i];
@@ -679,15 +678,15 @@ public sealed partial class ICE
 
         foreach (var entry in C.ScoreKeeper)
         {
-            if (SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
+            if (CosmicHelper.SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
                 missionEntry.ClassScore = entry.Value;
         }
 
-        foreach (var entry in SheetMissionDict)
+        foreach (var entry in CosmicHelper.SheetMissionDict)
         {
             var missionId = entry.Key;
 
-            if (MissionScoreDict.TryGetValue(missionId, out var score) && score != 0)
+            if (CosmicHelper.MissionScoreDict.TryGetValue(missionId, out var score) && score != 0)
             {
                 entry.Value.ClassScore = score;
             }
@@ -725,7 +724,7 @@ public sealed partial class ICE
             }
         }
 
-        foreach (var weather in WeatherIds)
+        foreach (var weather in CosmicHelper.WeatherIds)
         {
             if (Svc.Texture.TryGetFromGameIcon(weather.Value, out var texture))
             {
