@@ -1,6 +1,8 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
@@ -131,6 +133,9 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.Text($"Any need repaired: {PlayerHelper.AnyNeedsRepair(99)}");
+
+            ImGui.Separator();
+            TimerUpdate();
         }
 
         private static unsafe void ClassInfo()
@@ -296,6 +301,26 @@ namespace ICE.Ui.DebugWindowTabs
                 return 0;
 
             return wks->DevGrade;
+        }
+
+        private static unsafe void TimerUpdate()
+        {
+            var c = UIState.Instance()->MassivePcContentTodo.Director;
+            if (c != null)
+            {
+                for (int i = 0; i < c->MassivePcContentTodos.Length; i++)
+                {
+                    var todo = c->MassivePcContentTodos[i];
+                    for (int i1 = 0; i1 < todo.Count; i1++)
+                    {
+                        var t = todo[i1];
+                        if (t.Enabled)
+                        {
+                            ImGuiEx.Text($"{i} - {i1} - {t.EndTimestamp - Framework.GetServerTime()}");
+                        }
+                    }
+                }
+            }
         }
     }
 }
