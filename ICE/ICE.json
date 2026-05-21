@@ -9,6 +9,8 @@
   "Tags": [
     "Gatherers"
   ],
+  "DalamudApiLevel": 15,
+  "TestingDalamudApiLevel": 15,
   "CategoryTags": [
     "other"
   ],

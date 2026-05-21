@@ -24,7 +24,18 @@ jobs:
 
       - name: Download Dalamud Latest
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          $downloadAttempts = 3
+          for ($attempt = 1; $attempt -le $downloadAttempts; $attempt++) {
+            try {
+              Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+              break
+            } catch {
+              if ($attempt -eq $downloadAttempts) {
+                throw "Downloading Dalamud latest.zip failed after $downloadAttempts attempts: $($_.Exception.Message)"
+              }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore NuGet Packages

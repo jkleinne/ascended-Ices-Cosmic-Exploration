@@ -36,7 +36,18 @@ jobs:
       - name: Download Dalamud Latest
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          $downloadAttempts = 3
+          for ($attempt = 1; $attempt -le $downloadAttempts; $attempt++) {
+            try {
+              Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+              break
+            } catch {
+              if ($attempt -eq $downloadAttempts) {
+                throw "Downloading Dalamud latest.zip failed after $downloadAttempts attempts: $($_.Exception.Message)"
+              }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
           Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
       - name: Restore NuGet Packages
@@ -214,6 +225,14 @@ jobs:
           ConvertTo-Json -InputObject @([pscustomobject]$entry) -Depth 10 |
             Set-Content -LiteralPath $pluginmasterPath -Encoding UTF8
 
+      - name: Checkout Hub Repo
+        uses: actions/checkout@v6
+        with:
+          repository: jkleinne/ascended-plugins
+          ref: main
+          token: ${{ secrets.PLUGIN_HUB_TOKEN }}
+          path: hub
+
       - name: Publish Plugin
         uses: softprops/action-gh-release@v3
         with:
@@ -223,13 +242,6 @@ jobs:
             ./build/ICE/latest.zip
             ./pluginmaster.json
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout Hub Repo
-        uses: actions/checkout@v6
-        with:
-          repository: jkleinne/ascended-plugins
-          token: ${{ secrets.PLUGIN_HUB_TOKEN }}
-          path: hub
 
       - name: Sync Entry to Hub
         shell: pwsh
@@ -296,7 +308,23 @@ jobs:
             }
 
             git commit -m "chore: publish ICE $env:tag"
-            git push
+            $maxPushAttempts = 3
+            for ($attempt = 1; $attempt -le $maxPushAttempts; $attempt++) {
+              git pull --rebase origin main
+              if ($LASTEXITCODE -ne 0) {
+                throw "Rebasing hub pluginmaster update onto origin/main failed."
+              }
+
+              git push origin HEAD:main
+              if ($LASTEXITCODE -eq 0) {
+                return
+              }
+
+              if ($attempt -eq $maxPushAttempts) {
+                throw "Pushing hub pluginmaster update failed after $maxPushAttempts attempts."
+              }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
           } finally {
             Pop-Location
           }
