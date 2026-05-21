@@ -4,7 +4,7 @@
 	<PropertyGroup>
 		<Version>0.0.77.13</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
-		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/jkleinne/ascended-Ices-Cosmic-Exploration</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
 		<IsPackable>true</IsPackable>
 		<RootNamespace>ICE</RootNamespace>

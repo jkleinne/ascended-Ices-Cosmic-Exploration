@@ -1,10 +1,22 @@
 {
   "Author": "Ice",
   "Name": "Ice's Cosmic Exploration",
+  "InternalName": "ICE",
+  "RepoUrl": "https://github.com/jkleinne/ascended-Ices-Cosmic-Exploration",
   "Punchline": "The gathering companion that we all needed.",
   "Description": "A little helper to go gather your heart out.",
   "ApplicableVersion": "any",
   "Tags": [
     "Gatherers"
-  ]
+  ],
+  "CategoryTags": [
+    "other"
+  ],
+  "LoadRequiredState": 0,
+  "LoadSync": false,
+  "CanUnloadAsync": false,
+  "LoadPriority": 0,
+  "IsTestingExclusive": false,
+  "IconUrl": "",
+  "AcceptsFeedback": true
 }
