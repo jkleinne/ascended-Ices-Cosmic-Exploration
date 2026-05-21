@@ -1,8 +1,4 @@
-﻿using Dalamud.Interface;
-using Dalamud.Interface.Colors;
-using Dalamud.Interface.Textures;
-using Dalamud.Interface.Utility.Raii;
-using ECommons.GameHelpers;
+﻿using Dalamud.Interface.Utility.Raii;
 using ICE.Ui.MainUi;
 using ICE.Ui.MainUi.HelpFolder;
 using ICE.Ui.MainUi.ModeSelect_Modes;
@@ -28,8 +24,6 @@ namespace ICE.Ui
                 MinimumSize = new Vector2(500, 500),
                 MaximumSize = new Vector2(4000, 4000),
             };
-            TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip("♥ Ko-fi (Buy me an ice coffee)"), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });
-
             P.windowSystem.AddWindow(this);
 
             AllowPinning = true;
