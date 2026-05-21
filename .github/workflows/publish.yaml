@@ -67,6 +67,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $sourceManifestPath = './ICE/ICE.json'
           $manifestPath = './build/ICE/ICE.json'
           $zipPath = './build/ICE/latest.zip'
           $pluginmasterPath = './pluginmaster.json'
@@ -153,6 +154,27 @@ jobs:
             }
           }
 
+          function Copy-ManifestFallback {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Target,
+              [Parameter(Mandatory = $true)] [pscustomobject] $Source,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            if ($null -ne $Target.PSObject.Properties[$Name]) {
+              return
+            }
+
+            $sourceProperty = $Source.PSObject.Properties[$Name]
+            if ($null -ne $sourceProperty) {
+              $Target | Add-Member -NotePropertyName $Name -NotePropertyValue $sourceProperty.Value
+            }
+          }
+
+          if (-not (Test-Path -LiteralPath $sourceManifestPath -PathType Leaf)) {
+            throw "Source manifest '$sourceManifestPath' was not found."
+          }
+
           if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
             throw "Built manifest '$manifestPath' was not found."
           }
@@ -161,7 +183,29 @@ jobs:
             throw "Plugin artifact '$zipPath' was not found."
           }
 
+          $sourceManifest = Get-Content -LiteralPath $sourceManifestPath -Raw | ConvertFrom-Json
           $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          @(
+            'Author',
+            'Name',
+            'InternalName',
+            'RepoUrl',
+            'Punchline',
+            'Description',
+            'ApplicableVersion',
+            'DalamudApiLevel',
+            'Tags',
+            'CategoryTags',
+            'LoadRequiredState',
+            'LoadSync',
+            'CanUnloadAsync',
+            'LoadPriority',
+            'IsTestingExclusive',
+            'IconUrl',
+            'AcceptsFeedback',
+            'TestingDalamudApiLevel'
+          ) | ForEach-Object { Copy-ManifestFallback -Target $manifest -Source $sourceManifest -Name $_ }
+
           @(
             'Author',
             'Name',
