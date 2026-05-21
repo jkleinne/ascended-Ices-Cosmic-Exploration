@@ -1,0 +1,302 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "*.*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Get Environment Variables
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+            throw "Tag '$tag' must match ^\d+\.\d+\.\d+\.\d+$."
+          }
+
+          "tag=$tag" >> $env:GITHUB_ENV
+          "assembly_version=$tag" >> $env:GITHUB_ENV
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download Dalamud Latest
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: Restore NuGet Packages
+        shell: pwsh
+        run: dotnet restore ICE/ICE.csproj
+
+      - name: Build Plugin
+        shell: pwsh
+        run: |
+          dotnet build --no-restore -c Release ICE/ICE.csproj --output ./build `
+            -p:AssemblyVersion=$env:assembly_version `
+            -p:FileVersion=$env:assembly_version `
+            -p:PackageVersion=$env:tag `
+            -p:InformationalVersion=$env:tag
+
+      - name: Generate pluginmaster.json
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $manifestPath = './build/ICE/ICE.json'
+          $zipPath = './build/ICE/latest.zip'
+          $pluginmasterPath = './pluginmaster.json'
+          $downloadUrl = "https://github.com/jkleinne/ascended-Ices-Cosmic-Exploration/releases/download/$env:tag/latest.zip"
+
+          function Assert-NonEmptyString {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Object,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $property = $Object.PSObject.Properties[$Name]
+            if ($null -eq $property -or $property.Value -isnot [string] -or [string]::IsNullOrWhiteSpace($property.Value)) {
+              throw "Manifest field '$Name' must be a non-empty string."
+            }
+          }
+
+          function Assert-OptionalString {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Object,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $property = $Object.PSObject.Properties[$Name]
+            if ($null -ne $property -and $null -ne $property.Value -and $property.Value -isnot [string]) {
+              throw "Manifest field '$Name' must be a string when present."
+            }
+          }
+
+          function Assert-StringArray {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Object,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $property = $Object.PSObject.Properties[$Name]
+            if ($null -eq $property -or $property.Value -isnot [System.Array]) {
+              throw "Manifest field '$Name' must be an array of strings."
+            }
+            if ($property.Value.Count -eq 0) {
+              throw "Manifest field '$Name' must contain at least one item."
+            }
+
+            foreach ($item in $property.Value) {
+              if ($item -isnot [string] -or [string]::IsNullOrWhiteSpace($item)) {
+                throw "Manifest field '$Name' must contain only non-empty strings."
+              }
+            }
+          }
+
+          function Assert-IntegerField {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Object,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $property = $Object.PSObject.Properties[$Name]
+            if ($null -eq $property -or ($property.Value -isnot [int] -and $property.Value -isnot [long])) {
+              throw "Manifest field '$Name' must be an integer."
+            }
+          }
+
+          function Assert-BooleanField {
+            param(
+              [Parameter(Mandatory = $true)] [pscustomobject] $Object,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $property = $Object.PSObject.Properties[$Name]
+            if ($null -eq $property -or $property.Value -isnot [bool]) {
+              throw "Manifest field '$Name' must be a boolean."
+            }
+          }
+
+          function Assert-AbsoluteUri {
+            param(
+              [Parameter(Mandatory = $true)] [string] $Value,
+              [Parameter(Mandatory = $true)] [string] $Name
+            )
+
+            $uri = $null
+            if (-not [System.Uri]::TryCreate($Value, [System.UriKind]::Absolute, [ref] $uri)) {
+              throw "Manifest field '$Name' must be an absolute URI."
+            }
+          }
+
+          if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+            throw "Built manifest '$manifestPath' was not found."
+          }
+
+          if (-not (Test-Path -LiteralPath $zipPath -PathType Leaf)) {
+            throw "Plugin artifact '$zipPath' was not found."
+          }
+
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          @(
+            'Author',
+            'Name',
+            'InternalName',
+            'RepoUrl',
+            'Punchline',
+            'Description',
+            'ApplicableVersion'
+          ) | ForEach-Object { Assert-NonEmptyString -Object $manifest -Name $_ }
+
+          Assert-OptionalString -Object $manifest -Name 'IconUrl'
+          Assert-StringArray -Object $manifest -Name 'Tags'
+          Assert-StringArray -Object $manifest -Name 'CategoryTags'
+          @('LoadRequiredState', 'LoadPriority', 'DalamudApiLevel') | ForEach-Object {
+            Assert-IntegerField -Object $manifest -Name $_
+          }
+          @('LoadSync', 'CanUnloadAsync', 'IsTestingExclusive', 'AcceptsFeedback') | ForEach-Object {
+            Assert-BooleanField -Object $manifest -Name $_
+          }
+
+          Assert-AbsoluteUri -Value $manifest.RepoUrl -Name 'RepoUrl'
+          Assert-AbsoluteUri -Value $downloadUrl -Name 'DownloadLinkInstall'
+          if (-not [string]::IsNullOrWhiteSpace($manifest.IconUrl)) {
+            Assert-AbsoluteUri -Value $manifest.IconUrl -Name 'IconUrl'
+          }
+
+          if ($null -eq $manifest.PSObject.Properties['TestingDalamudApiLevel']) {
+            $manifest | Add-Member -NotePropertyName 'TestingDalamudApiLevel' -NotePropertyValue $manifest.DalamudApiLevel
+          } else {
+            Assert-IntegerField -Object $manifest -Name 'TestingDalamudApiLevel'
+          }
+
+          $entry = [ordered]@{
+            Author = $manifest.Author
+            Name = $manifest.Name
+            InternalName = $manifest.InternalName
+            AssemblyVersion = $env:assembly_version
+            TestingAssemblyVersion = $env:assembly_version
+            Description = $manifest.Description
+            ApplicableVersion = $manifest.ApplicableVersion
+            RepoUrl = $manifest.RepoUrl
+            DalamudApiLevel = $manifest.DalamudApiLevel
+            TestingDalamudApiLevel = $manifest.TestingDalamudApiLevel
+            DownloadLinkInstall = $downloadUrl
+            DownloadLinkTesting = $downloadUrl
+            DownloadLinkUpdate = $downloadUrl
+            DownloadCount = 0
+            LastUpdate = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+            Punchline = $manifest.Punchline
+            Tags = $manifest.Tags
+            CategoryTags = $manifest.CategoryTags
+            LoadRequiredState = $manifest.LoadRequiredState
+            LoadSync = $manifest.LoadSync
+            CanUnloadAsync = $manifest.CanUnloadAsync
+            LoadPriority = $manifest.LoadPriority
+            IsTestingExclusive = $manifest.IsTestingExclusive
+            IconUrl = $manifest.IconUrl
+            AcceptsFeedback = $manifest.AcceptsFeedback
+          }
+
+          ConvertTo-Json -InputObject @([pscustomobject]$entry) -Depth 10 |
+            Set-Content -LiteralPath $pluginmasterPath -Encoding UTF8
+
+      - name: Publish Plugin
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+          files: |
+            ./build/ICE/latest.zip
+            ./pluginmaster.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Hub Repo
+        uses: actions/checkout@v6
+        with:
+          repository: jkleinne/ascended-plugins
+          token: ${{ secrets.PLUGIN_HUB_TOKEN }}
+          path: hub
+
+      - name: Sync Entry to Hub
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $entryPath = './pluginmaster.json'
+          $hubPath = './hub/pluginmaster.json'
+
+          function Copy-WithoutLastUpdate {
+            param([Parameter(Mandatory = $true)] [pscustomobject] $Entry)
+
+            $copy = [ordered]@{}
+            foreach ($property in ($Entry.PSObject.Properties | Sort-Object -Property Name)) {
+              if ($property.Name -ne 'LastUpdate') {
+                $copy[$property.Name] = $property.Value
+              }
+            }
+
+            return [pscustomobject]$copy
+          }
+
+          if (-not (Test-Path -LiteralPath $entryPath -PathType Leaf)) {
+            throw "Generated pluginmaster entry '$entryPath' was not found."
+          }
+
+          if (-not (Test-Path -LiteralPath $hubPath -PathType Leaf)) {
+            throw "Hub pluginmaster '$hubPath' was not found."
+          }
+
+          $newEntry = @(Get-Content -LiteralPath $entryPath -Raw | ConvertFrom-Json)[0]
+          $hubEntries = @(Get-Content -LiteralPath $hubPath -Raw | ConvertFrom-Json)
+          $existingEntry = $hubEntries | Where-Object { $_.InternalName -eq $newEntry.InternalName } | Select-Object -First 1
+
+          if ($null -ne $existingEntry) {
+            $existingWithoutLastUpdate = Copy-WithoutLastUpdate -Entry $existingEntry
+            $newWithoutLastUpdate = Copy-WithoutLastUpdate -Entry $newEntry
+            $existingJson = $existingWithoutLastUpdate | ConvertTo-Json -Depth 10 -Compress
+            $newJson = $newWithoutLastUpdate | ConvertTo-Json -Depth 10 -Compress
+
+            if ($existingJson -eq $newJson) {
+              Write-Host "Hub pluginmaster entry is already current."
+              return
+            }
+          }
+
+          $updatedEntries = @($hubEntries | ForEach-Object {
+            if ($_.InternalName -eq $newEntry.InternalName) { $newEntry } else { $_ }
+          })
+          if ($null -eq $existingEntry) {
+            $updatedEntries += $newEntry
+          }
+          ConvertTo-Json -InputObject @($updatedEntries) -Depth 10 |
+            Set-Content -LiteralPath $hubPath -Encoding UTF8
+
+          Push-Location ./hub
+          try {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add pluginmaster.json
+            git diff --cached --quiet -- pluginmaster.json
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Hub pluginmaster entry is already current."
+              return
+            }
+
+            git commit -m "chore: publish ICE $env:tag"
+            git push
+          } finally {
+            Pop-Location
+          }
