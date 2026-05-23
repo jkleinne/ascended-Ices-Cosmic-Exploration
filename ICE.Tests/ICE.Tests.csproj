@@ -27,6 +27,7 @@
 		<Compile Include="..\ICE\MechPilot\MechIntentKind.cs" Link="MechPilot\MechIntentKind.cs" />
 		<Compile Include="..\ICE\MechPilot\MechIntent.cs" Link="MechPilot\MechIntent.cs" />
 		<Compile Include="..\ICE\MechPilot\MechIntentResult.cs" Link="MechPilot\MechIntentResult.cs" />
+		<Compile Include="..\ICE\MechPilot\MechPilotController.cs" Link="MechPilot\MechPilotController.cs" />
 		<Compile Include="..\ICE\MechPilot\MechDecisionEngine.cs" Link="MechPilot\MechDecisionEngine.cs" />
 		<Compile Include="..\ICE\MechPilot\MechSnapshotFormatter.cs" Link="MechPilot\MechSnapshotFormatter.cs" />
 		<Compile Include="..\ICE\MechPilot\MechDebugState.cs" Link="MechPilot\MechDebugState.cs" />

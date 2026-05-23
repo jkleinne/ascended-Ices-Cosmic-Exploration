@@ -13,3 +13,13 @@ internal enum MechWorldEvent
     MechOpsDeploying = 5,
     WaitingForDevelopmentStage = 6,
 }
+
+internal static class MechWorldEventExtensions
+{
+    internal static bool IsMechRuntimeEvidence(this MechWorldEvent worldEvent)
+    {
+        return worldEvent is MechWorldEvent.MechOpsCommenced
+            or MechWorldEvent.MechOpsIssues
+            or MechWorldEvent.MechOpsDeploying;
+    }
+}
