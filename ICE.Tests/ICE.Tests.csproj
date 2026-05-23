@@ -23,6 +23,7 @@
 		<Compile Include="..\ICE\MechPilot\MechTargetSnapshot.cs" Link="MechPilot\MechTargetSnapshot.cs" />
 		<Compile Include="..\ICE\MechPilot\MechMissionSnapshot.cs" Link="MechPilot\MechMissionSnapshot.cs" />
 		<Compile Include="..\ICE\MechPilot\MechMissionProfile.cs" Link="MechPilot\MechMissionProfile.cs" />
+		<Compile Include="..\ICE\MechPilot\MechMissionCatalog.cs" Link="MechPilot\MechMissionCatalog.cs" />
 		<Compile Include="..\ICE\MechPilot\MechIntentKind.cs" Link="MechPilot\MechIntentKind.cs" />
 		<Compile Include="..\ICE\MechPilot\MechIntent.cs" Link="MechPilot\MechIntent.cs" />
 		<Compile Include="..\ICE\MechPilot\MechIntentResult.cs" Link="MechPilot\MechIntentResult.cs" />
