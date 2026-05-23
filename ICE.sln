@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICE", "ICE\ICE.csproj", "{A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pictomancy", "ffxiv_pictomancy\Pictomancy\Pictomancy.csproj", "{825F17D8-2704-24F6-DF8B-2542AC92C765}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICE.Tests", "ICE.Tests\ICE.Tests.csproj", "{7145C287-555D-4316-B734-AF2DBC820AC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -32,6 +34,10 @@ Global
 		{825F17D8-2704-24F6-DF8B-2542AC92C765}.Debug|x64.Build.0 = Debug|x64
 		{825F17D8-2704-24F6-DF8B-2542AC92C765}.Release|x64.ActiveCfg = Release|x64
 		{825F17D8-2704-24F6-DF8B-2542AC92C765}.Release|x64.Build.0 = Release|x64
+		{7145C287-555D-4316-B734-AF2DBC820AC9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7145C287-555D-4316-B734-AF2DBC820AC9}.Debug|x64.Build.0 = Debug|Any CPU
+		{7145C287-555D-4316-B734-AF2DBC820AC9}.Release|x64.ActiveCfg = Release|Any CPU
+		{7145C287-555D-4316-B734-AF2DBC820AC9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
