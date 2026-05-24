@@ -11,14 +11,14 @@ public sealed class MechPilotControllerTests
     private const string MovementStopFailure = "Navmesh IPC failed";
 
     [Fact]
-    public void Execute_WithWaitIntent_LeavesSchedulerStateUnchanged()
+    public void Execute_WithWaitIntent_CompletesSchedulerTaskWithoutSideEffects()
     {
         var actions = new FakeMechPilotActions();
         var controller = new MechPilotController(actions);
 
         var result = controller.Execute(MechIntent.Wait(WaitReason));
 
-        Assert.False(result.IsComplete);
+        Assert.True(result.IsComplete);
         Assert.Equal(WaitReason, result.Message);
         Assert.Equal(0, actions.StopMovementCalls);
         Assert.False(actions.EnteredManualMode);

@@ -36,25 +36,36 @@ public sealed class MechDecisionEngineTests
     }
 
     [Fact]
-    public void Decide_WithUnknownProfile_ReturnsManualFallback()
+    public void Decide_WithUnknownProfileAndManualFallback_ReturnsManualFallback()
     {
         var snapshot = CreateSnapshot();
 
-        var intent = MechDecisionEngine.Decide(snapshot, profile: null, MechFallbackMode.Abandon);
+        var intent = MechDecisionEngine.Decide(snapshot, profile: null, MechFallbackMode.Manual);
 
         Assert.Equal(MechIntentKind.ManualFallback, intent.Kind);
         Assert.Equal($"No Mech profile is recorded for mission {RecordedMissionId}", intent.Reason);
     }
 
     [Fact]
-    public void Decide_WithMismatchedProfile_ReturnsManualFallback()
+    public void Decide_WithUnknownProfileAndAbandonFallback_ReturnsAbandon()
+    {
+        var snapshot = CreateSnapshot();
+
+        var intent = MechDecisionEngine.Decide(snapshot, profile: null, MechFallbackMode.Abandon);
+
+        Assert.Equal(MechIntentKind.Abandon, intent.Kind);
+        Assert.Equal($"No Mech profile is recorded for mission {RecordedMissionId}", intent.Reason);
+    }
+
+    [Fact]
+    public void Decide_WithMismatchedProfileAndAbandonFallback_ReturnsAbandon()
     {
         var snapshot = CreateSnapshot();
         var profile = new MechMissionProfile(RecordedMissionId + 1, RecordedMissionName, RecordedMissionNotes);
 
         var intent = MechDecisionEngine.Decide(snapshot, profile, MechFallbackMode.Abandon);
 
-        Assert.Equal(MechIntentKind.ManualFallback, intent.Kind);
+        Assert.Equal(MechIntentKind.Abandon, intent.Kind);
         Assert.Equal($"No Mech profile is recorded for mission {RecordedMissionId}", intent.Reason);
     }
 

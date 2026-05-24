@@ -19,7 +19,10 @@ internal static class MechDecisionEngine
 
         if (profile is null || profile.MissionId != snapshot.CurrentMissionId)
         {
-            return MechIntent.ManualFallback($"No Mech profile is recorded for mission {snapshot.CurrentMissionId}");
+            var reason = $"No Mech profile is recorded for mission {snapshot.CurrentMissionId}";
+            return fallbackMode == MechFallbackMode.Abandon
+                ? MechIntent.Abandon(reason)
+                : MechIntent.ManualFallback(reason);
         }
 
         return MechIntent.Wait($"Mech profile is recorded for mission {profile.MissionId}. Instrumentation is waiting for captured tactics.");
