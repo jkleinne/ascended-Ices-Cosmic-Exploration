@@ -25,6 +25,15 @@ namespace ICE.Scheduler.Tasks
             // Updating the Mission state to be the same as the current mission that's fired.
             SchedulerMain.MissionState = missionDictInfo.Attributes;
         }
+
+        private static bool EnterManualModeForUnknownMission(uint missionId, string tag)
+        {
+            IceLogging.Info($"Mission {missionId} is not recorded in the Cosmic mission sheet. Switching to manual mode.", tag);
+            SchedulerMain.State = IceState.ManualMode;
+            P.TaskManager.Tasks.Clear();
+            return true;
+        }
+
         private static bool? CheckStateV2()
         {
             string tag = "[Task: Check State]";
@@ -35,7 +44,20 @@ namespace ICE.Scheduler.Tasks
             var currentMode = C.SelectedMode;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
             if (CosmicHelper.CurrentLunarMission != 0)
+            {
+                if (Task_MechPilot.ShouldEnter())
+                {
+                    IceLogging.Info($"Mech runtime state is visible for mission {currentMissionId}. Switching to Mech Pilot.", tag);
+                    SchedulerMain.State = IceState.MechPilot;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+
+                if (!CosmicHelper.SheetMissionDict.ContainsKey(currentMissionId))
+                    return EnterManualModeForUnknownMission(currentMissionId, tag);
+
                 UpdateMissionState(currentMissionId);
+            }
 
             if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lottery) && lottery.IsAddonReady)
             {
@@ -60,17 +82,24 @@ namespace ICE.Scheduler.Tasks
                     else
                     {
                         IceLogging.Debug($"Mission isn't timed out... checking other states");
+                        if (!CosmicHelper.SheetMissionDict.ContainsKey(currentMissionId))
+                            return EnterManualModeForUnknownMission(currentMissionId, tag);
+
                         UpdateMissionState(currentMissionId);
-                        C.MissionConfig.TryGetValue(currentMissionId, out var config);
+                        var hasMissionConfig = C.MissionConfig.TryGetValue(currentMissionId, out var config);
 
                         var s = SchedulerMain.MissionState;
                         bool dualMission = (s.HasFlag(MissionAttributes.Craft) && (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish)));
                         // In the middle of a dual mission. 
                         // First, checking to see if you're in the middle of a gathering or crafting action
-                        if (C.OnlyGrabMission_Debug || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
+                        if (C.OnlyGrabMission_Debug || !hasMissionConfig || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
                         {
                             // TODO: Remove this once properly coded
-                            if (s.HasFlag(MissionAttributes.Fish))
+                            if (!hasMissionConfig)
+                            {
+                                IceLogging.Info($"Mission {currentMissionId} has no mission configuration. Swapping to manual mode");
+                            }
+                            else if (s.HasFlag(MissionAttributes.Fish))
                             {
                                 IceLogging.Info("Currently not built in/supported yet. Swapping to manual mode");
                             }
@@ -100,19 +129,18 @@ namespace ICE.Scheduler.Tasks
                         else if (s.HasFlag(MissionAttributes.Fish))
                         {
                             IceLogging.Debug("We seem to be in the middle of a fishing mission. Going to check presets");
-							var missionConfig = C.MissionConfig[currentMissionId];
-							if (config.Use_BuildinPreset)
-							{
-								IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
-								P.AutoHook.DeleteAllAnonymousPresets();
-								Task_ExecuteMission.FishingTask(currentMissionId);
-							}
-							else
-							{
-								IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
-								string presetName = missionConfig.AutoHookPresetName;
-								P.AutoHook.SetPreset(presetName);
-							}
+                            if (config.Use_BuildinPreset)
+                            {
+                                IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
+                                P.AutoHook.DeleteAllAnonymousPresets();
+                                Task_ExecuteMission.FishingTask(currentMissionId);
+                            }
+                            else
+                            {
+                                IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
+                                string presetName = config.AutoHookPresetName;
+                                P.AutoHook.SetPreset(presetName);
+                            }
                             SchedulerMain.State = IceState.ScoreCheck;
                         }
                         else

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<!-- Keep this project limited to pure sources so macOS tests never require Dalamud build files. -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+		<PackageReference Include="xunit.v3" Version="3.2.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\ICE\MechPilot\MechWorldEvent.cs" Link="MechPilot\MechWorldEvent.cs" />
+		<Compile Include="..\ICE\MechPilot\MechFallbackMode.cs" Link="MechPilot\MechFallbackMode.cs" />
+		<Compile Include="..\ICE\MechPilot\MechTargetSnapshot.cs" Link="MechPilot\MechTargetSnapshot.cs" />
+		<Compile Include="..\ICE\MechPilot\MechMissionSnapshot.cs" Link="MechPilot\MechMissionSnapshot.cs" />
+		<Compile Include="..\ICE\MechPilot\MechMissionProfile.cs" Link="MechPilot\MechMissionProfile.cs" />
+		<Compile Include="..\ICE\MechPilot\MechMissionCatalog.cs" Link="MechPilot\MechMissionCatalog.cs" />
+		<Compile Include="..\ICE\MechPilot\MechIntentKind.cs" Link="MechPilot\MechIntentKind.cs" />
+		<Compile Include="..\ICE\MechPilot\MechIntent.cs" Link="MechPilot\MechIntent.cs" />
+		<Compile Include="..\ICE\MechPilot\MechIntentResult.cs" Link="MechPilot\MechIntentResult.cs" />
+		<Compile Include="..\ICE\MechPilot\MechPilotController.cs" Link="MechPilot\MechPilotController.cs" />
+		<Compile Include="..\ICE\MechPilot\MechDecisionEngine.cs" Link="MechPilot\MechDecisionEngine.cs" />
+		<Compile Include="..\ICE\MechPilot\MechSnapshotFormatter.cs" Link="MechPilot\MechSnapshotFormatter.cs" />
+		<Compile Include="..\ICE\MechPilot\MechDebugState.cs" Link="MechPilot\MechDebugState.cs" />
+	</ItemGroup>
+
+</Project>
