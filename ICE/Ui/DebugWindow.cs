@@ -61,6 +61,7 @@ internal class DebugWindow : Window
         ["Navmesh Testing"] = () => Ui_NavmeshTesting.Draw(),
         ["Relic Info"] = () => Ui_RelicInfo.Draw(),
         ["TaskManager Testing"] = () => Ui_TaskManagerInfo.Draw(),
+        ["Mech Pilot"] = () => Ui_MechPilotDebug.Draw(),
         ["NPC Box Viewer"] = () => Ui_NpcViewer.Draw(),
         ["ImGui Testing"] = () => UI_Test.Draw(),
         ["Relic Info V2"] = () => Ui_ClassInfo.Draw(),
