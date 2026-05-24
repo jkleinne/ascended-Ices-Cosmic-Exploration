@@ -1,12 +1,12 @@
 using Dalamud.Interface.Utility.Raii;
 using System.Globalization;
 using ICE.MechPilot;
+using ICE.Utilities.Cosmic_Helper;
 
 namespace ICE.Ui.DebugWindowTabs;
 
 internal static class Ui_MechPilotDebug
 {
-    private const uint MaxTextBlockLength = 32768;
     private const float TextBlockHeight = 160.0f;
     private const string LogTag = "[Mech Pilot Capture]";
 
@@ -106,12 +106,12 @@ internal static class Ui_MechPilotDebug
     private static void DrawTextBlock(string label, string text)
     {
         ImGui.Text(label);
-        var displayText = text;
-        ImGui.InputTextMultiline(
-            $"##{label}",
-            ref displayText,
-            MaxTextBlockLength,
-            new Vector2(ImGui.GetContentRegionAvail().X, TextBlockHeight),
-            ImGuiInputTextFlags.ReadOnly);
+        using (ImRaii.Child(
+                   $"##{label}",
+                   new Vector2(ImGui.GetContentRegionAvail().X, TextBlockHeight),
+                   true))
+        {
+            ImGui.TextUnformatted(text);
+        }
     }
 }
